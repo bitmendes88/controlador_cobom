@@ -110,18 +110,20 @@ export const FleetDashboard = () => {
           <CardTitle className="text-red-800">Fire Station</CardTitle>
         </CardHeader>
         <CardContent className="p-4">
-          <Select value={selectedStation} onValueChange={setSelectedStation}>
-            <SelectTrigger className="w-64">
-              <SelectValue placeholder="Select a fire station" />
-            </SelectTrigger>
-            <SelectContent>
-              {stations.map((station) => (
-                <SelectItem key={station.id} value={station.id}>
-                  {station.name} - {station.address}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {stations.length > 0 && (
+            <Select value={selectedStation} onValueChange={setSelectedStation}>
+              <SelectTrigger className="w-64">
+                <SelectValue placeholder="Select a fire station" />
+              </SelectTrigger>
+              <SelectContent>
+                {stations.map((station) => (
+                  <SelectItem key={station.id} value={station.id}>
+                    {station.name} - {station.address}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </CardContent>
       </Card>
 

@@ -82,6 +82,10 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
     }
   };
 
+  const handleCategoryChange = (value: string) => {
+    setFormData({ ...formData, category: value });
+  };
+
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent>
@@ -107,7 +111,7 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
 
           <div>
             <Label htmlFor="category">Category *</Label>
-            <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+            <Select value={formData.category} onValueChange={handleCategoryChange}>
               <SelectTrigger className="border-red-300 focus:border-red-500">
                 <SelectValue placeholder="Select vehicle category" />
               </SelectTrigger>
