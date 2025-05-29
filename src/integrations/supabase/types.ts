@@ -9,7 +9,270 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      crew_members: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          phone: string | null
+          position: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          position?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          position?: string | null
+        }
+        Relationships: []
+      }
+      crew_training: {
+        Row: {
+          completion_date: string | null
+          created_at: string | null
+          crew_member_id: string | null
+          expiry_date: string | null
+          id: string
+          training_course_id: string | null
+        }
+        Insert: {
+          completion_date?: string | null
+          created_at?: string | null
+          crew_member_id?: string | null
+          expiry_date?: string | null
+          id?: string
+          training_course_id?: string | null
+        }
+        Update: {
+          completion_date?: string | null
+          created_at?: string | null
+          crew_member_id?: string | null
+          expiry_date?: string | null
+          id?: string
+          training_course_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_training_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crew_training_training_course_id_fkey"
+            columns: ["training_course_id"]
+            isOneToOne: false
+            referencedRelation: "training_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_service_notes: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          date: string | null
+          id: string
+          notes: string
+          station_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          date?: string | null
+          id?: string
+          notes: string
+          station_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          date?: string | null
+          id?: string
+          notes?: string
+          station_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_service_notes_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "fire_stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fire_stations: {
+        Row: {
+          address: string | null
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      training_courses: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      vehicle_crew_assignments: {
+        Row: {
+          created_at: string | null
+          crew_member_id: string | null
+          duty_end: string | null
+          duty_start: string | null
+          id: string
+          vehicle_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          crew_member_id?: string | null
+          duty_end?: string | null
+          duty_start?: string | null
+          id?: string
+          vehicle_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          crew_member_id?: string | null
+          duty_end?: string | null
+          duty_start?: string | null
+          id?: string
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_crew_assignments_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicle_crew_assignments_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vehicle_observations: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          observation: string
+          vehicle_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          observation: string
+          vehicle_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          observation?: string
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_observations_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vehicles: {
+        Row: {
+          category: Database["public"]["Enums"]["vehicle_category"]
+          created_at: string | null
+          id: string
+          image_url: string | null
+          prefix: string
+          station_id: string | null
+          status: Database["public"]["Enums"]["vehicle_status"] | null
+          updated_at: string | null
+          vehicle_type: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["vehicle_category"]
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          prefix: string
+          station_id?: string | null
+          status?: Database["public"]["Enums"]["vehicle_status"] | null
+          updated_at?: string | null
+          vehicle_type: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["vehicle_category"]
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          prefix?: string
+          station_id?: string | null
+          status?: Database["public"]["Enums"]["vehicle_status"] | null
+          updated_at?: string | null
+          vehicle_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicles_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "fire_stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +281,19 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      vehicle_category:
+        | "Engine"
+        | "Ladder"
+        | "Rescue"
+        | "Ambulance"
+        | "Chief"
+        | "Utility"
+      vehicle_status:
+        | "Available"
+        | "En Route"
+        | "On Scene"
+        | "En Route to Hospital"
+        | "Returning to Base"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +408,22 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      vehicle_category: [
+        "Engine",
+        "Ladder",
+        "Rescue",
+        "Ambulance",
+        "Chief",
+        "Utility",
+      ],
+      vehicle_status: [
+        "Available",
+        "En Route",
+        "On Scene",
+        "En Route to Hospital",
+        "Returning to Base",
+      ],
+    },
   },
 } as const
