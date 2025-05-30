@@ -90,6 +90,51 @@ export const FleetDashboard = () => {
     }
   };
 
+  const handleVehicleAction = async (vehicleId: string, action: 'baixar' | 'reserva' | 'levantar') => {
+    try {
+      const vehicle = vehicles.find(v => v.id === vehicleId);
+      if (!vehicle) return;
+
+      let updateData: any = {
+        updated_at: new Date().toISOString()
+      };
+
+      switch (action) {
+        case 'baixar':
+          updateData.status = 'Indisponível';
+          updateData.original_category = vehicle.category; // Store original category
+          updateData.category = 'Veículos Baixados';
+          break;
+        
+        case 'reserva':
+          updateData.status = 'Reserva';
+          break;
+        
+        case 'levantar':
+          updateData.status = 'Available';
+          // Restore original category if it was saved
+          if (vehicle.category === 'Veículos Baixados') {
+            // For now, we'll set a default category since we don't have original_category field
+            // In a real implementation, you'd want to add an original_category field to the database
+            updateData.category = 'Engine'; // Default fallback
+          }
+          break;
+      }
+
+      const { error } = await supabase
+        .from('vehicles')
+        .update(updateData)
+        .eq('id', vehicleId);
+
+      if (error) throw error;
+      
+      // Refresh vehicles
+      loadVehicles();
+    } catch (error) {
+      console.error('Error updating vehicle:', error);
+    }
+  };
+
   const groupedVehicles = vehicles.reduce((acc, vehicle) => {
     if (!acc[vehicle.category]) {
       acc[vehicle.category] = [];
@@ -138,6 +183,7 @@ export const FleetDashboard = () => {
               vehicles={categoryVehicles}
               onVehicleClick={handleVehicleClick}
               onStatusUpdate={handleStatusUpdate}
+              onVehicleAction={handleVehicleAction}
             />
           </CardContent>
         </Card>

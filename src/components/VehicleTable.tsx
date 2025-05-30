@@ -10,6 +10,7 @@ interface VehicleTableProps {
   vehicles: Vehicle[];
   onVehicleClick: (vehicle: Vehicle) => void;
   onStatusUpdate: (vehicleId: string, status: string) => void;
+  onVehicleAction: (vehicleId: string, action: 'baixar' | 'reserva' | 'levantar') => void;
 }
 
 const statusColors: Record<string, string> = {
@@ -18,6 +19,8 @@ const statusColors: Record<string, string> = {
   'On Scene': 'bg-yellow-500',
   'En Route to Hospital': 'bg-purple-500',
   'Returning to Base': 'bg-orange-500',
+  'Indisponível': 'bg-red-500',
+  'Reserva': 'bg-gray-500',
 };
 
 const statusOptions = [
@@ -28,7 +31,7 @@ const statusOptions = [
   'Returning to Base'
 ];
 
-export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate }: VehicleTableProps) => {
+export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate, onVehicleAction }: VehicleTableProps) => {
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -87,26 +90,32 @@ export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate }: Vehic
                   <Button 
                     variant="outline" 
                     size="sm"
-                    className="border-red-300 text-red-600 hover:bg-red-50"
+                    onClick={() => onVehicleAction(vehicle.id, 'baixar')}
+                    className="border-red-500 text-red-600 hover:bg-red-50"
+                    disabled={vehicle.status === 'Indisponível'}
                   >
                     <Download className="w-4 h-4 mr-1" />
-                    Download
+                    Baixar
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm"
-                    className="border-red-300 text-red-600 hover:bg-red-50"
+                    onClick={() => onVehicleAction(vehicle.id, 'reserva')}
+                    className="border-gray-500 text-gray-600 hover:bg-gray-50"
+                    disabled={vehicle.status === 'Reserva'}
                   >
                     <Calendar className="w-4 h-4 mr-1" />
-                    Reserve
+                    Reserva
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm"
-                    className="border-red-300 text-red-600 hover:bg-red-50"
+                    onClick={() => onVehicleAction(vehicle.id, 'levantar')}
+                    className="border-green-500 text-green-600 hover:bg-green-50"
+                    disabled={vehicle.status === 'Available'}
                   >
                     <Play className="w-4 h-4 mr-1" />
-                    Deploy
+                    Levantar
                   </Button>
                 </div>
               </td>
