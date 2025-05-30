@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { VehicleTable } from '@/components/VehicleTable';
 import { VehicleDetailModal } from '@/components/VehicleDetailModal';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Vehicle = Tables<'vehicles'>;
@@ -16,6 +17,8 @@ export const FleetDashboard = () => {
   const [selectedStation, setSelectedStation] = useState<string>('');
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [originalCategories, setOriginalCategories] = useState<Record<string, string>>({});
+  const { toast } = useToast();
 
   useEffect(() => {
     loadData();
@@ -61,7 +64,18 @@ export const FleetDashboard = () => {
         .order('prefix');
 
       if (error) throw error;
-      setVehicles(data || []);
+      
+      const vehicleData = data || [];
+      setVehicles(vehicleData);
+
+      // Store original categories for vehicles not in "Veículos Baixados"
+      const originals: Record<string, string> = {};
+      vehicleData.forEach(vehicle => {
+        if (vehicle.category !== 'Veículos Baixados') {
+          originals[vehicle.id] = vehicle.category;
+        }
+      });
+      setOriginalCategories(prev => ({ ...prev, ...originals }));
     } catch (error) {
       console.error('Erro ao carregar veículos:', error);
     }
@@ -76,17 +90,27 @@ export const FleetDashboard = () => {
       const { error } = await supabase
         .from('vehicles')
         .update({ 
-          status: newStatus as any,
+          status: newStatus,
           updated_at: new Date().toISOString()
         })
         .eq('id', vehicleId);
 
       if (error) throw error;
       
+      toast({
+        title: "Status Atualizado",
+        description: `Status do veículo alterado para ${newStatus}`,
+      });
+      
       // Refresh vehicles
       loadVehicles();
     } catch (error) {
       console.error('Erro ao atualizar status do veículo:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao atualizar status do veículo. Tente novamente.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -101,6 +125,13 @@ export const FleetDashboard = () => {
 
       switch (action) {
         case 'baixar':
+          // Store original category before changing to "Veículos Baixados"
+          if (vehicle.category !== 'Veículos Baixados') {
+            setOriginalCategories(prev => ({
+              ...prev,
+              [vehicleId]: vehicle.category
+            }));
+          }
           updateData.status = 'Indisponível';
           updateData.category = 'Veículos Baixados';
           break;
@@ -111,9 +142,9 @@ export const FleetDashboard = () => {
         
         case 'levantar':
           updateData.status = 'Disponível';
-          // Restore original category if it was 'Veículos Baixados'
+          // Restore original category if it was "Veículos Baixados"
           if (vehicle.category === 'Veículos Baixados') {
-            updateData.category = 'Engine'; // Default fallback
+            updateData.category = originalCategories[vehicleId] || 'Engine';
           }
           break;
       }
@@ -125,10 +156,26 @@ export const FleetDashboard = () => {
 
       if (error) throw error;
       
+      const actionMessages = {
+        'baixar': 'Veículo baixado com sucesso',
+        'reserva': 'Veículo colocado em reserva',
+        'levantar': 'Veículo levantado e disponibilizado'
+      };
+
+      toast({
+        title: "Ação Realizada",
+        description: actionMessages[action],
+      });
+      
       // Refresh vehicles
       loadVehicles();
     } catch (error) {
       console.error('Erro ao atualizar veículo:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao executar ação no veículo. Tente novamente.",
+        variant: "destructive",
+      });
     }
   };
 
