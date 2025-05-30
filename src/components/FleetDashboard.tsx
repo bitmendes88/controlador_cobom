@@ -11,6 +11,27 @@ import type { Tables } from '@/integrations/supabase/types';
 type Vehicle = Tables<'vehicles'>;
 type FireStation = Tables<'fire_stations'>;
 
+// Map Portuguese categories to English database values
+const categoryToDbMap: Record<string, string> = {
+  'Autobomba': 'Engine',
+  'Escada': 'Ladder', 
+  'Resgate': 'Rescue',
+  'Ambulância': 'Ambulance',
+  'Comando': 'Chief',
+  'Utilitário': 'Utility',
+  'Veículos Baixados': 'Utility' // We'll use a different approach for this
+};
+
+// Map English database values to Portuguese display
+const dbToCategoryMap: Record<string, string> = {
+  'Engine': 'Autobomba',
+  'Ladder': 'Escada',
+  'Rescue': 'Resgate', 
+  'Ambulance': 'Ambulância',
+  'Chief': 'Comando',
+  'Utility': 'Utilitário'
+};
+
 export const FleetDashboard = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [stations, setStations] = useState<FireStation[]>([]);
@@ -18,6 +39,8 @@ export const FleetDashboard = () => {
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [originalCategories, setOriginalCategories] = useState<Record<string, string>>({});
+  const [baixadoVehicles, setBaixadoVehicles] = useState<Set<string>>(new Set());
+  const [reservaVehicles, setReservaVehicles] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   useEffect(() => {
@@ -71,7 +94,8 @@ export const FleetDashboard = () => {
       // Store original categories for vehicles not in "Veículos Baixados"
       const originals: Record<string, string> = {};
       vehicleData.forEach(vehicle => {
-        if (vehicle.category !== 'Veículos Baixados') {
+        const displayCategory = getDisplayCategory(vehicle);
+        if (displayCategory !== 'Veículos Baixados') {
           originals[vehicle.id] = vehicle.category;
         }
       });
@@ -79,6 +103,14 @@ export const FleetDashboard = () => {
     } catch (error) {
       console.error('Erro ao carregar veículos:', error);
     }
+  };
+
+  const getDisplayCategory = (vehicle: Vehicle): string => {
+    // Check if vehicle is "baixado"
+    if (baixadoVehicles.has(vehicle.id)) {
+      return 'Veículos Baixados';
+    }
+    return dbToCategoryMap[vehicle.category] || vehicle.category;
   };
 
   const handleVehicleClick = (vehicle: Vehicle) => {
@@ -90,16 +122,25 @@ export const FleetDashboard = () => {
       const { error } = await supabase
         .from('vehicles')
         .update({ 
-          status: newStatus,
+          status: newStatus as any,
           updated_at: new Date().toISOString()
         })
         .eq('id', vehicleId);
 
       if (error) throw error;
       
+      // Map back to Portuguese for display
+      const statusMap: Record<string, string> = {
+        'Available': 'Disponível',
+        'En Route': 'A Caminho',
+        'On Scene': 'No Local',
+        'En Route to Hospital': 'A Caminho do Hospital',
+        'Returning to Base': 'Retornando à Base'
+      };
+      
       toast({
         title: "Status Atualizado",
-        description: `Status do veículo alterado para ${newStatus}`,
+        description: `Status do veículo alterado para ${statusMap[newStatus] || newStatus}`,
       });
       
       // Refresh vehicles
@@ -125,27 +166,35 @@ export const FleetDashboard = () => {
 
       switch (action) {
         case 'baixar':
-          // Store original category before changing to "Veículos Baixados"
-          if (vehicle.category !== 'Veículos Baixados') {
+          // Store original category before marking as baixado
+          if (!baixadoVehicles.has(vehicleId)) {
             setOriginalCategories(prev => ({
               ...prev,
               [vehicleId]: vehicle.category
             }));
+            setBaixadoVehicles(prev => new Set([...prev, vehicleId]));
           }
-          updateData.status = 'Indisponível';
-          updateData.category = 'Veículos Baixados';
+          updateData.status = 'Available'; // Keep database status as Available
           break;
         
         case 'reserva':
-          updateData.status = 'Reserva';
+          setReservaVehicles(prev => new Set([...prev, vehicleId]));
+          updateData.status = 'Available'; // Keep database status as Available
           break;
         
         case 'levantar':
-          updateData.status = 'Disponível';
-          // Restore original category if it was "Veículos Baixados"
-          if (vehicle.category === 'Veículos Baixados') {
-            updateData.category = originalCategories[vehicleId] || 'Engine';
-          }
+          updateData.status = 'Available';
+          // Remove from special status sets
+          setBaixadoVehicles(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(vehicleId);
+            return newSet;
+          });
+          setReservaVehicles(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(vehicleId);
+            return newSet;
+          });
           break;
       }
 
@@ -180,10 +229,11 @@ export const FleetDashboard = () => {
   };
 
   const groupedVehicles = vehicles.reduce((acc, vehicle) => {
-    if (!acc[vehicle.category]) {
-      acc[vehicle.category] = [];
+    const displayCategory = getDisplayCategory(vehicle);
+    if (!acc[displayCategory]) {
+      acc[displayCategory] = [];
     }
-    acc[vehicle.category].push(vehicle);
+    acc[displayCategory].push(vehicle);
     return acc;
   }, {} as Record<string, Vehicle[]>);
 

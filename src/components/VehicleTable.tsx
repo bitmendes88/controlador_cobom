@@ -16,6 +16,26 @@ interface VehicleTableProps {
   onVehicleAction: (vehicleId: string, action: 'baixar' | 'reserva' | 'levantar') => void;
 }
 
+// Map Portuguese status to English database values
+const statusToDbMap: Record<string, string> = {
+  'Disponível': 'Available',
+  'A Caminho': 'En Route',
+  'No Local': 'On Scene',
+  'A Caminho do Hospital': 'En Route to Hospital',
+  'Retornando à Base': 'Returning to Base',
+  'Indisponível': 'Available', // We'll handle this differently
+  'Reserva': 'Available' // We'll handle this differently
+};
+
+// Map English database values to Portuguese display
+const dbToStatusMap: Record<string, string> = {
+  'Available': 'Disponível',
+  'En Route': 'A Caminho',
+  'On Scene': 'No Local',
+  'En Route to Hospital': 'A Caminho do Hospital',
+  'Returning to Base': 'Retornando à Base'
+};
+
 const statusColors: Record<string, string> = {
   'Disponível': 'bg-green-500',
   'A Caminho': 'bg-blue-500',
@@ -66,6 +86,18 @@ export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate, onVehic
     }
   };
 
+  const getDisplayStatus = (vehicle: Vehicle) => {
+    // Check for special statuses first
+    if (vehicle.category === 'Utility' && vehicle.status === 'Available') {
+      // This could be a "baixado" vehicle, check if it's in "Veículos Baixados" category
+      return 'Indisponível';
+    }
+    
+    // For vehicles marked as reserve (we'll need a custom field for this)
+    // For now, we'll use the database status
+    return dbToStatusMap[vehicle.status as string] || vehicle.status;
+  };
+
   return (
     <TooltipProvider>
       <div className="overflow-x-auto">
@@ -80,89 +112,92 @@ export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate, onVehic
             </tr>
           </thead>
           <tbody>
-            {vehicles.map((vehicle) => (
-              <tr key={vehicle.id} className="border-b hover:bg-gray-50">
-                <td className="p-4">
-                  <div className="flex items-center gap-3">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+            {vehicles.map((vehicle) => {
+              const displayStatus = getDisplayStatus(vehicle);
+              return (
+                <tr key={vehicle.id} className="border-b hover:bg-gray-50">
+                  <td className="p-4">
+                    <div className="flex items-center gap-3">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onVehicleClick(vehicle)}
+                            className="p-2 hover:bg-red-100"
+                          >
+                            <Truck className="w-5 h-5 text-red-600" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{vehicleObservations[vehicle.id] || 'Nenhuma observação disponível'}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <span className="font-bold text-lg text-red-800">{vehicle.prefix}</span>
+                    </div>
+                  </td>
+                  <td className="p-4 text-gray-700">{vehicle.vehicle_type}</td>
+                  <td className="p-4">
+                    <Badge className={`${statusColors[displayStatus]} text-white`}>
+                      {displayStatus}
+                    </Badge>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex gap-2 flex-wrap">
+                      {statusOptions.map((status) => (
                         <Button
-                          variant="ghost"
+                          key={status}
+                          variant={displayStatus === status ? "default" : "outline"}
                           size="sm"
-                          onClick={() => onVehicleClick(vehicle)}
-                          className="p-2 hover:bg-red-100"
+                          onClick={() => onStatusUpdate(vehicle.id, statusToDbMap[status])}
+                          className={`text-xs ${
+                            displayStatus === status 
+                              ? 'bg-red-600 hover:bg-red-700 text-white' 
+                              : 'border-red-300 text-red-600 hover:bg-red-50'
+                          }`}
                         >
-                          <Truck className="w-5 h-5 text-red-600" />
+                          {status === 'A Caminho do Hospital' ? 'Para Hospital' : status}
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{vehicleObservations[vehicle.id] || 'Nenhuma observação disponível'}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                    <span className="font-bold text-lg text-red-800">{vehicle.prefix}</span>
-                  </div>
-                </td>
-                <td className="p-4 text-gray-700">{vehicle.vehicle_type}</td>
-                <td className="p-4">
-                  <Badge className={`${statusColors[vehicle.status || 'Disponível']} text-white`}>
-                    {vehicle.status}
-                  </Badge>
-                </td>
-                <td className="p-4">
-                  <div className="flex gap-2 flex-wrap">
-                    {statusOptions.map((status) => (
-                      <Button
-                        key={status}
-                        variant={vehicle.status === status ? "default" : "outline"}
+                      ))}
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
                         size="sm"
-                        onClick={() => onStatusUpdate(vehicle.id, status)}
-                        className={`text-xs ${
-                          vehicle.status === status 
-                            ? 'bg-red-600 hover:bg-red-700 text-white' 
-                            : 'border-red-300 text-red-600 hover:bg-red-50'
-                        }`}
+                        onClick={() => onVehicleAction(vehicle.id, 'baixar')}
+                        className="border-red-500 text-red-600 hover:bg-red-50"
+                        disabled={displayStatus === 'Indisponível'}
                       >
-                        {status === 'A Caminho do Hospital' ? 'Para Hospital' : status}
+                        <Download className="w-4 h-4 mr-1" />
+                        Baixar
                       </Button>
-                    ))}
-                  </div>
-                </td>
-                <td className="p-4">
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => onVehicleAction(vehicle.id, 'baixar')}
-                      className="border-red-500 text-red-600 hover:bg-red-50"
-                      disabled={vehicle.status === 'Indisponível'}
-                    >
-                      <Download className="w-4 h-4 mr-1" />
-                      Baixar
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => onVehicleAction(vehicle.id, 'reserva')}
-                      className="border-gray-500 text-gray-600 hover:bg-gray-50"
-                      disabled={vehicle.status === 'Reserva'}
-                    >
-                      <Calendar className="w-4 h-4 mr-1" />
-                      Reserva
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => onVehicleAction(vehicle.id, 'levantar')}
-                      className="border-green-500 text-green-600 hover:bg-green-50"
-                      disabled={vehicle.status === 'Disponível'}
-                    >
-                      <Play className="w-4 h-4 mr-1" />
-                      Levantar
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => onVehicleAction(vehicle.id, 'reserva')}
+                        className="border-gray-500 text-gray-600 hover:bg-gray-50"
+                        disabled={displayStatus === 'Reserva'}
+                      >
+                        <Calendar className="w-4 h-4 mr-1" />
+                        Reserva
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => onVehicleAction(vehicle.id, 'levantar')}
+                        className="border-green-500 text-green-600 hover:bg-green-50"
+                        disabled={displayStatus === 'Disponível'}
+                      >
+                        <Play className="w-4 h-4 mr-1" />
+                        Levantar
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
