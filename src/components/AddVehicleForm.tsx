@@ -24,14 +24,14 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const categories = ['Engine', 'Ladder', 'Rescue', 'Ambulance', 'Chief', 'Utility'];
+  const categories = ['Autobomba', 'Escada', 'Resgate', 'Ambulância', 'Comando', 'Utilitário'];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.prefix || !formData.category || !formData.vehicle_type) {
       toast({
-        title: "Error",
-        description: "Please fill in all required fields.",
+        title: "Erro",
+        description: "Por favor, preencha todos os campos obrigatórios.",
         variant: "destructive",
       });
       return;
@@ -65,16 +65,16 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
       if (error) throw error;
 
       toast({
-        title: "Vehicle Added",
-        description: `${formData.prefix} has been added to the fleet successfully.`,
+        title: "Veículo Adicionado",
+        description: `${formData.prefix} foi adicionado à frota com sucesso.`,
       });
       
       onClose();
     } catch (error: any) {
-      console.error('Error adding vehicle:', error);
+      console.error('Erro ao adicionar veículo:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to add vehicle. Please try again.",
+        title: "Erro",
+        description: error.message || "Falha ao adicionar veículo. Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -92,16 +92,16 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-red-800">
             <Plus className="w-5 h-5" />
-            Add New Vehicle
+            Adicionar Novo Veículo
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="prefix">Unit Prefix *</Label>
+            <Label htmlFor="prefix">Prefixo da Unidade *</Label>
             <Input
               id="prefix"
-              placeholder="e.g., E-2, L-3, R-1"
+              placeholder="ex: AB-2, AE-3, UR-1"
               value={formData.prefix}
               onChange={(e) => setFormData({ ...formData, prefix: e.target.value })}
               className="border-red-300 focus:border-red-500"
@@ -110,10 +110,10 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
           </div>
 
           <div>
-            <Label htmlFor="category">Category *</Label>
+            <Label htmlFor="category">Categoria *</Label>
             <Select value={formData.category} onValueChange={handleCategoryChange}>
               <SelectTrigger className="border-red-300 focus:border-red-500">
-                <SelectValue placeholder="Select vehicle category" />
+                <SelectValue placeholder="Selecione a categoria do veículo" />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((category) => (
@@ -126,10 +126,10 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
           </div>
 
           <div>
-            <Label htmlFor="vehicle_type">Vehicle Type *</Label>
+            <Label htmlFor="vehicle_type">Tipo de Veículo *</Label>
             <Input
               id="vehicle_type"
-              placeholder="e.g., Fire Engine, Ladder Truck, Heavy Rescue"
+              placeholder="ex: Autobomba, Escada Mecânica, Resgate Pesado"
               value={formData.vehicle_type}
               onChange={(e) => setFormData({ ...formData, vehicle_type: e.target.value })}
               className="border-red-300 focus:border-red-500"
@@ -138,10 +138,10 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
           </div>
 
           <div>
-            <Label htmlFor="image_url">Image URL (Optional)</Label>
+            <Label htmlFor="image_url">URL da Imagem (Opcional)</Label>
             <Input
               id="image_url"
-              placeholder="https://example.com/vehicle-image.jpg"
+              placeholder="https://exemplo.com/imagem-veiculo.jpg"
               value={formData.image_url}
               onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
               className="border-red-300 focus:border-red-500"
@@ -150,14 +150,14 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
 
           <div className="flex gap-2 justify-end">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              Cancelar
             </Button>
             <Button 
               type="submit" 
               disabled={isLoading}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
-              {isLoading ? 'Adding...' : 'Add Vehicle'}
+              {isLoading ? 'Adicionando...' : 'Adicionar Veículo'}
             </Button>
           </div>
         </form>

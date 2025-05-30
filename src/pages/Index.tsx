@@ -16,15 +16,15 @@ const Index = () => {
         <div className="container mx-auto px-4 py-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold">Fire Department Fleet Management</h1>
-              <p className="text-red-100 mt-1">Emergency Vehicle Status & Control System</p>
+              <h1 className="text-3xl font-bold">Sistema de Gestão da Frota - Corpo de Bombeiros</h1>
+              <p className="text-red-100 mt-1">Sistema de Controle e Status de Veículos de Emergência</p>
             </div>
             <Button 
               onClick={() => setShowAddVehicle(true)}
               className="bg-white text-red-600 hover:bg-gray-100 font-semibold"
             >
               <Plus className="w-5 h-5 mr-2" />
-              Add Vehicle
+              Adicionar Veículo
             </Button>
           </div>
         </div>

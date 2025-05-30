@@ -14,21 +14,21 @@ interface VehicleTableProps {
 }
 
 const statusColors: Record<string, string> = {
-  'Available': 'bg-green-500',
-  'En Route': 'bg-blue-500',
-  'On Scene': 'bg-yellow-500',
-  'En Route to Hospital': 'bg-purple-500',
-  'Returning to Base': 'bg-orange-500',
+  'Disponível': 'bg-green-500',
+  'A Caminho': 'bg-blue-500',
+  'No Local': 'bg-yellow-500',
+  'A Caminho do Hospital': 'bg-purple-500',
+  'Retornando à Base': 'bg-orange-500',
   'Indisponível': 'bg-red-500',
   'Reserva': 'bg-gray-500',
 };
 
 const statusOptions = [
-  'Available',
-  'En Route',
-  'On Scene',
-  'En Route to Hospital',
-  'Returning to Base'
+  'Disponível',
+  'A Caminho',
+  'No Local',
+  'A Caminho do Hospital',
+  'Retornando à Base'
 ];
 
 export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate, onVehicleAction }: VehicleTableProps) => {
@@ -37,11 +37,11 @@ export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate, onVehic
       <table className="w-full">
         <thead className="bg-gray-50 border-b">
           <tr>
-            <th className="text-left p-4 font-semibold text-gray-900">Unit</th>
-            <th className="text-left p-4 font-semibold text-gray-900">Type</th>
+            <th className="text-left p-4 font-semibold text-gray-900">Unidade</th>
+            <th className="text-left p-4 font-semibold text-gray-900">Tipo</th>
             <th className="text-left p-4 font-semibold text-gray-900">Status</th>
-            <th className="text-left p-4 font-semibold text-gray-900">Status Controls</th>
-            <th className="text-left p-4 font-semibold text-gray-900">Actions</th>
+            <th className="text-left p-4 font-semibold text-gray-900">Controles de Status</th>
+            <th className="text-left p-4 font-semibold text-gray-900">Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -62,7 +62,7 @@ export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate, onVehic
               </td>
               <td className="p-4 text-gray-700">{vehicle.vehicle_type}</td>
               <td className="p-4">
-                <Badge className={`${statusColors[vehicle.status || 'Available']} text-white`}>
+                <Badge className={`${statusColors[vehicle.status || 'Disponível']} text-white`}>
                   {vehicle.status}
                 </Badge>
               </td>
@@ -80,7 +80,7 @@ export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate, onVehic
                           : 'border-red-300 text-red-600 hover:bg-red-50'
                       }`}
                     >
-                      {status === 'En Route to Hospital' ? 'To Hospital' : status}
+                      {status === 'A Caminho do Hospital' ? 'Para Hospital' : status}
                     </Button>
                   ))}
                 </div>
@@ -112,7 +112,7 @@ export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate, onVehic
                     size="sm"
                     onClick={() => onVehicleAction(vehicle.id, 'levantar')}
                     className="border-green-500 text-green-600 hover:bg-green-50"
-                    disabled={vehicle.status === 'Available'}
+                    disabled={vehicle.status === 'Disponível'}
                   >
                     <Play className="w-4 h-4 mr-1" />
                     Levantar

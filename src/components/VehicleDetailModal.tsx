@@ -1,18 +1,16 @@
+
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Truck, Users, Phone, Clock, GraduationCap, FileText, Save } from 'lucide-react';
+import { Truck, Users, Phone, Clock, FileText, Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Vehicle = Tables<'vehicles'>;
-type CrewMember = Tables<'crew_members'>;
-type VehicleCrewAssignment = Tables<'vehicle_crew_assignments'>;
-type TrainingCourse = Tables<'training_courses'>;
 type VehicleObservation = Tables<'vehicle_observations'>;
 
 interface VehicleDetailModalProps {
@@ -61,7 +59,7 @@ export const VehicleDetailModal = ({ vehicle, onClose }: VehicleDetailModalProps
       setObservations(obsData || []);
 
     } catch (error) {
-      console.error('Error loading vehicle details:', error);
+      console.error('Erro ao carregar detalhes do veículo:', error);
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +74,7 @@ export const VehicleDetailModal = ({ vehicle, onClose }: VehicleDetailModalProps
         .insert({
           vehicle_id: vehicle.id,
           observation: newObservation,
-          created_by: 'Current User'
+          created_by: 'Usuário Atual'
         });
 
       if (error) throw error;
@@ -85,25 +83,27 @@ export const VehicleDetailModal = ({ vehicle, onClose }: VehicleDetailModalProps
       loadVehicleDetails();
       
       toast({
-        title: "Observation Added",
-        description: "Vehicle observation has been recorded successfully.",
+        title: "Observação Adicionada",
+        description: "A observação do veículo foi registrada com sucesso.",
       });
     } catch (error) {
-      console.error('Error adding observation:', error);
+      console.error('Erro ao adicionar observação:', error);
       toast({
-        title: "Error",
-        description: "Failed to add observation. Please try again.",
+        title: "Erro",
+        description: "Falha ao adicionar observação. Tente novamente.",
         variant: "destructive",
       });
     }
   };
 
   const statusColors: Record<string, string> = {
-    'Available': 'bg-green-500',
-    'En Route': 'bg-blue-500',
-    'On Scene': 'bg-yellow-500',
-    'En Route to Hospital': 'bg-purple-500',
-    'Returning to Base': 'bg-orange-500',
+    'Disponível': 'bg-green-500',
+    'A Caminho': 'bg-blue-500',
+    'No Local': 'bg-yellow-500',
+    'A Caminho do Hospital': 'bg-purple-500',
+    'Retornando à Base': 'bg-orange-500',
+    'Indisponível': 'bg-red-500',
+    'Reserva': 'bg-gray-500',
   };
 
   return (
@@ -120,24 +120,24 @@ export const VehicleDetailModal = ({ vehicle, onClose }: VehicleDetailModalProps
           {/* Vehicle Info */}
           <Card className="border-red-200">
             <CardHeader className="bg-red-50">
-              <CardTitle className="text-red-800">Vehicle Details</CardTitle>
+              <CardTitle className="text-red-800">Detalhes do Veículo</CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-3">
               <div className="flex justify-between">
-                <span className="font-semibold">Unit:</span>
+                <span className="font-semibold">Unidade:</span>
                 <span className="font-bold text-red-800">{vehicle.prefix}</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-semibold">Category:</span>
+                <span className="font-semibold">Categoria:</span>
                 <span>{vehicle.category}</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-semibold">Type:</span>
+                <span className="font-semibold">Tipo:</span>
                 <span>{vehicle.vehicle_type}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="font-semibold">Status:</span>
-                <Badge className={`${statusColors[vehicle.status || 'Available']} text-white`}>
+                <Badge className={`${statusColors[vehicle.status || 'Disponível']} text-white`}>
                   {vehicle.status}
                 </Badge>
               </div>
@@ -145,7 +145,7 @@ export const VehicleDetailModal = ({ vehicle, onClose }: VehicleDetailModalProps
                 <div className="mt-4">
                   <img 
                     src={vehicle.image_url} 
-                    alt={`${vehicle.prefix} vehicle`}
+                    alt={`Veículo ${vehicle.prefix}`}
                     className="w-full h-48 object-cover rounded-lg border-2 border-red-200"
                   />
                 </div>
@@ -158,12 +158,12 @@ export const VehicleDetailModal = ({ vehicle, onClose }: VehicleDetailModalProps
             <CardHeader className="bg-red-50">
               <CardTitle className="flex items-center gap-2 text-red-800">
                 <Users className="w-5 h-5" />
-                Current Crew
+                Guarnição Atual
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4">
               {isLoading ? (
-                <p>Loading crew information...</p>
+                <p>Carregando informações da guarnição...</p>
               ) : crewAssignments.length > 0 ? (
                 <div className="space-y-3">
                   {crewAssignments.map((assignment) => (
@@ -177,15 +177,15 @@ export const VehicleDetailModal = ({ vehicle, onClose }: VehicleDetailModalProps
                       {assignment.duty_start && (
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                           <Clock className="w-4 h-4" />
-                          {new Date(assignment.duty_start).toLocaleString()} - 
-                          {assignment.duty_end ? new Date(assignment.duty_end).toLocaleString() : 'On Duty'}
+                          {new Date(assignment.duty_start).toLocaleString('pt-BR')} - 
+                          {assignment.duty_end ? new Date(assignment.duty_end).toLocaleString('pt-BR') : 'Em Serviço'}
                         </div>
                       )}
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500">No crew currently assigned</p>
+                <p className="text-gray-500">Nenhuma guarnição atribuída no momento</p>
               )}
             </CardContent>
           </Card>
@@ -195,14 +195,14 @@ export const VehicleDetailModal = ({ vehicle, onClose }: VehicleDetailModalProps
             <CardHeader className="bg-red-50">
               <CardTitle className="flex items-center gap-2 text-red-800">
                 <FileText className="w-5 h-5" />
-                Vehicle Observations
+                Observações do Veículo
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
               {/* Add new observation */}
               <div className="space-y-2">
                 <Textarea
-                  placeholder="Add a new observation about this vehicle..."
+                  placeholder="Adicione uma nova observação sobre este veículo..."
                   value={newObservation}
                   onChange={(e) => setNewObservation(e.target.value)}
                   className="border-red-300 focus:border-red-500"
@@ -212,7 +212,7 @@ export const VehicleDetailModal = ({ vehicle, onClose }: VehicleDetailModalProps
                   className="bg-red-600 hover:bg-red-700 text-white"
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  Add Observation
+                  Adicionar Observação
                 </Button>
               </div>
 
@@ -223,12 +223,12 @@ export const VehicleDetailModal = ({ vehicle, onClose }: VehicleDetailModalProps
                     <div key={obs.id} className="bg-gray-50 p-3 rounded border-l-4 border-red-500">
                       <p className="text-sm">{obs.observation}</p>
                       <div className="text-xs text-gray-500 mt-2">
-                        By {obs.created_by} on {new Date(obs.created_at || '').toLocaleString()}
+                        Por {obs.created_by} em {new Date(obs.created_at || '').toLocaleString('pt-BR')}
                       </div>
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-500">No observations recorded yet</p>
+                  <p className="text-gray-500">Nenhuma observação registrada ainda</p>
                 )}
               </div>
             </CardContent>
@@ -237,7 +237,7 @@ export const VehicleDetailModal = ({ vehicle, onClose }: VehicleDetailModalProps
 
         <div className="flex justify-end">
           <Button onClick={onClose} variant="outline">
-            Close
+            Fechar
           </Button>
         </div>
       </DialogContent>

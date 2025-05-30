@@ -43,7 +43,7 @@ export const FleetDashboard = () => {
         setSelectedStation(stationsData[0].id);
       }
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('Erro ao carregar dados:', error);
     } finally {
       setIsLoading(false);
     }
@@ -63,7 +63,7 @@ export const FleetDashboard = () => {
       if (error) throw error;
       setVehicles(data || []);
     } catch (error) {
-      console.error('Error loading vehicles:', error);
+      console.error('Erro ao carregar veículos:', error);
     }
   };
 
@@ -86,7 +86,7 @@ export const FleetDashboard = () => {
       // Refresh vehicles
       loadVehicles();
     } catch (error) {
-      console.error('Error updating vehicle status:', error);
+      console.error('Erro ao atualizar status do veículo:', error);
     }
   };
 
@@ -102,7 +102,6 @@ export const FleetDashboard = () => {
       switch (action) {
         case 'baixar':
           updateData.status = 'Indisponível';
-          updateData.original_category = vehicle.category; // Store original category
           updateData.category = 'Veículos Baixados';
           break;
         
@@ -111,11 +110,9 @@ export const FleetDashboard = () => {
           break;
         
         case 'levantar':
-          updateData.status = 'Available';
-          // Restore original category if it was saved
+          updateData.status = 'Disponível';
+          // Restore original category if it was 'Veículos Baixados'
           if (vehicle.category === 'Veículos Baixados') {
-            // For now, we'll set a default category since we don't have original_category field
-            // In a real implementation, you'd want to add an original_category field to the database
             updateData.category = 'Engine'; // Default fallback
           }
           break;
@@ -131,7 +128,7 @@ export const FleetDashboard = () => {
       // Refresh vehicles
       loadVehicles();
     } catch (error) {
-      console.error('Error updating vehicle:', error);
+      console.error('Erro ao atualizar veículo:', error);
     }
   };
 
@@ -144,7 +141,7 @@ export const FleetDashboard = () => {
   }, {} as Record<string, Vehicle[]>);
 
   if (isLoading) {
-    return <div className="text-center py-8">Loading fleet data...</div>;
+    return <div className="text-center py-8">Carregando dados da frota...</div>;
   }
 
   return (
@@ -152,13 +149,13 @@ export const FleetDashboard = () => {
       {/* Station Selector */}
       <Card className="border-red-200">
         <CardHeader className="bg-red-50 border-b border-red-200">
-          <CardTitle className="text-red-800">Fire Station</CardTitle>
+          <CardTitle className="text-red-800">Quartel de Bombeiros</CardTitle>
         </CardHeader>
         <CardContent className="p-4">
           {stations.length > 0 && (
             <Select value={selectedStation} onValueChange={setSelectedStation}>
               <SelectTrigger className="w-64">
-                <SelectValue placeholder="Select a fire station" />
+                <SelectValue placeholder="Selecione um quartel" />
               </SelectTrigger>
               <SelectContent>
                 {stations.map((station) => (
@@ -176,7 +173,7 @@ export const FleetDashboard = () => {
       {Object.entries(groupedVehicles).map(([category, categoryVehicles]) => (
         <Card key={category} className="border-red-200 shadow-lg">
           <CardHeader className="bg-red-50 border-b border-red-200">
-            <CardTitle className="text-red-800">{category} Units</CardTitle>
+            <CardTitle className="text-red-800">{category}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <VehicleTable
