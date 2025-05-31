@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StationVehiclesRow } from '@/components/StationVehiclesRow';
 import { VehicleDetailModal } from '@/components/VehicleDetailModal';
+import { EditVehicleForm } from '@/components/EditVehicleForm';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Tables } from '@/integrations/supabase/types';
@@ -29,6 +30,7 @@ export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [subStations, setSubStations] = useState<FireSubStation[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [vehicleObservations, setVehicleObservations] = useState<Record<string, string>>({});
   const { toast } = useToast();
@@ -108,6 +110,10 @@ export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
 
   const handleVehicleClick = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
+  };
+
+  const handleEditVehicle = (vehicle: Vehicle) => {
+    setEditingVehicle(vehicle);
   };
 
   const handleStatusUpdate = async (vehicleId: string, newStatus: string) => {
@@ -216,7 +222,7 @@ export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
     return acc;
   }, {} as Record<string, Record<string, Vehicle[]>>);
 
-  // Separate "Viaturas Baixadas" to show at the end
+  // Ensure "Viaturas Baixadas" appears at the end
   const orderedCategories = Object.keys(groupedData).sort((a, b) => {
     if (a === 'Viaturas Baixadas') return 1;
     if (b === 'Viaturas Baixadas') return -1;
@@ -268,6 +274,16 @@ export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
           onClose={() => setSelectedVehicle(null)}
           onVehicleAction={handleVehicleAction}
           onVehicleDelete={handleVehicleDelete}
+          onEditVehicle={handleEditVehicle}
+        />
+      )}
+
+      {/* Edit Vehicle Modal */}
+      {editingVehicle && (
+        <EditVehicleForm
+          vehicle={editingVehicle}
+          onClose={() => setEditingVehicle(null)}
+          onVehicleUpdated={loadVehicles}
         />
       )}
     </div>

@@ -2,8 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Save, Calendar } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -16,6 +15,17 @@ export const DailyServiceNotes = () => {
   useEffect(() => {
     loadTodaysNotes();
   }, []);
+
+  // Auto-save when notes change
+  useEffect(() => {
+    if (notes.trim() === '') return; // Don't save empty notes
+    
+    const saveTimeout = setTimeout(() => {
+      saveNotes();
+    }, 2000); // Auto-save after 2 seconds of inactivity
+
+    return () => clearTimeout(saveTimeout);
+  }, [notes]);
 
   const loadTodaysNotes = async () => {
     try {
@@ -35,6 +45,8 @@ export const DailyServiceNotes = () => {
   };
 
   const saveNotes = async () => {
+    if (isLoading) return;
+    
     setIsLoading(true);
     try {
       const { error } = await supabase
@@ -47,16 +59,11 @@ export const DailyServiceNotes = () => {
         });
 
       if (error) throw error;
-
-      toast({
-        title: "Anotações Salvas",
-        description: "As anotações de serviço diário foram atualizadas com sucesso.",
-      });
     } catch (error) {
       console.error('Erro ao salvar anotações:', error);
       toast({
         title: "Erro",
-        description: "Falha ao salvar anotações. Tente novamente.",
+        description: "Falha ao salvar anotações automaticamente.",
         variant: "destructive",
       });
     } finally {
@@ -70,6 +77,7 @@ export const DailyServiceNotes = () => {
         <CardTitle className="flex items-center gap-2 text-red-800">
           <Calendar className="w-5 h-5" />
           Anotações de Serviço Diário - {today}
+          {isLoading && <span className="text-xs text-gray-500">(Salvando...)</span>}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-6">
@@ -80,15 +88,8 @@ export const DailyServiceNotes = () => {
             onChange={(e) => setNotes(e.target.value)}
             className="min-h-[120px] resize-none border-gray-300 focus:border-red-500 focus:ring-red-500"
           />
-          <div className="flex justify-end">
-            <Button 
-              onClick={saveNotes}
-              disabled={isLoading}
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {isLoading ? 'Salvando...' : 'Salvar Anotações'}
-            </Button>
+          <div className="text-xs text-gray-500">
+            As anotações são salvas automaticamente
           </div>
         </div>
       </CardContent>

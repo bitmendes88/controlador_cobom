@@ -7,24 +7,27 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Plus } from 'lucide-react';
+import { Edit } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
+type Vehicle = Tables<'vehicles'>;
 type FireStation = Tables<'fire_stations'>;
 type FireSubStation = Tables<'fire_sub_stations'>;
 
-interface AddVehicleFormProps {
+interface EditVehicleFormProps {
+  vehicle: Vehicle;
   onClose: () => void;
+  onVehicleUpdated: () => void;
 }
 
-export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
+export const EditVehicleForm = ({ vehicle, onClose, onVehicleUpdated }: EditVehicleFormProps) => {
   const [formData, setFormData] = useState({
-    prefix: '',
-    category: '',
-    vehicle_type: '',
-    station_id: '',
-    sub_station_id: '',
-    image_url: ''
+    prefix: vehicle.prefix || '',
+    category: vehicle.category || '',
+    vehicle_type: vehicle.vehicle_type || '',
+    station_id: vehicle.station_id || '',
+    sub_station_id: vehicle.sub_station_id || '',
+    image_url: vehicle.image_url || ''
   });
   const [stations, setStations] = useState<FireStation[]>([]);
   const [subStations, setSubStations] = useState<FireSubStation[]>([]);
@@ -87,28 +90,31 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
     try {
       const { error } = await supabase
         .from('vehicles')
-        .insert({
+        .update({
           prefix: formData.prefix,
           category: formData.category as any,
           vehicle_type: formData.vehicle_type,
           station_id: formData.station_id,
           sub_station_id: formData.sub_station_id || null,
-          image_url: formData.image_url || null
-        });
+          image_url: formData.image_url || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', vehicle.id);
 
       if (error) throw error;
 
       toast({
-        title: "Viatura Adicionada",
-        description: `${formData.prefix} foi adicionada à frota com sucesso.`,
+        title: "Viatura Atualizada",
+        description: `${formData.prefix} foi atualizada com sucesso.`,
       });
       
+      onVehicleUpdated();
       onClose();
     } catch (error: any) {
-      console.error('Erro ao adicionar viatura:', error);
+      console.error('Erro ao atualizar viatura:', error);
       toast({
         title: "Erro",
-        description: error.message || "Falha ao adicionar viatura. Tente novamente.",
+        description: error.message || "Falha ao atualizar viatura. Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -121,8 +127,8 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-red-800">
-            <Plus className="w-5 h-5" />
-            Adicionar Nova Viatura
+            <Edit className="w-5 h-5" />
+            Editar Viatura {vehicle.prefix}
           </DialogTitle>
         </DialogHeader>
 
@@ -230,7 +236,7 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
               disabled={isLoading}
               className="bg-red-800 hover:bg-red-900 text-white"
             >
-              {isLoading ? 'Adicionando...' : 'Adicionar Viatura'}
+              {isLoading ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
           </div>
         </form>

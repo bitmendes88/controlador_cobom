@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Truck, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Vehicle = Tables<'vehicles'>;
@@ -95,12 +95,33 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="relative cursor-pointer" onClick={() => onVehicleClick(vehicle)}>
-              <div className="w-12 h-12 bg-red-700 rounded-full flex items-center justify-center">
-                <Truck className="w-6 h-6 text-white" />
+              <div className="relative w-16 h-16 flex items-center justify-center">
+                {/* Vehicle image or default placeholder */}
+                {vehicle.image_url ? (
+                  <img 
+                    src={vehicle.image_url} 
+                    alt={`Viatura ${vehicle.prefix}`}
+                    className="w-12 h-12 object-contain"
+                  />
+                ) : (
+                  <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
+                    <span className="text-gray-500 text-xs">IMG</span>
+                  </div>
+                )}
+                
+                {/* Prefix with larger font and shadow */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div 
+                    className="text-red-800 font-bold text-lg whitespace-nowrap pointer-events-none"
+                    style={{
+                      textShadow: '1px 1px 2px rgba(255,255,255,0.8), -1px -1px 2px rgba(255,255,255,0.8), 1px -1px 2px rgba(255,255,255,0.8), -1px 1px 2px rgba(255,255,255,0.8)'
+                    }}
+                  >
+                    {vehicle.prefix}
+                  </div>
+                </div>
               </div>
-              <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 px-2 py-1 rounded text-xs font-bold text-red-800 whitespace-nowrap">
-                {vehicle.prefix}
-              </div>
+              
               {vehicleObservation && (
                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center">
                   <AlertCircle className="w-3 h-3 text-white" />
@@ -125,7 +146,7 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
         <Button
           onClick={handleStatusClick}
           size="sm"
-          className="text-xs bg-red-700 hover:bg-red-800 text-white"
+          className="text-xs bg-red-800 hover:bg-red-900 text-white"
         >
           Status
         </Button>
