@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Truck, Users, Phone, Clock, FileText, Save } from 'lucide-react';
+import { Truck, Users, Phone, Clock, FileText, Save, Download, Calendar, Play } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Tables } from '@/integrations/supabase/types';
@@ -16,9 +15,19 @@ type VehicleObservation = Tables<'vehicle_observations'>;
 interface VehicleDetailModalProps {
   vehicle: Vehicle;
   onClose: () => void;
+  onVehicleAction?: (vehicleId: string, action: 'baixar' | 'reserva' | 'levantar') => void;
 }
 
-export const VehicleDetailModal = ({ vehicle, onClose }: VehicleDetailModalProps) => {
+// Map English database values to Portuguese display
+const dbToStatusMap: Record<string, string> = {
+  'Available': 'Disponível',
+  'En Route': 'A Caminho',
+  'On Scene': 'No Local',
+  'En Route to Hospital': 'A Caminho do Hospital',
+  'Returning to Base': 'Retornando à Base'
+};
+
+export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction }: VehicleDetailModalProps) => {
   const [crewAssignments, setCrewAssignments] = useState<any[]>([]);
   const [observations, setObservations] = useState<VehicleObservation[]>([]);
   const [newObservation, setNewObservation] = useState('');
@@ -102,9 +111,9 @@ export const VehicleDetailModal = ({ vehicle, onClose }: VehicleDetailModalProps
     'No Local': 'bg-yellow-500',
     'A Caminho do Hospital': 'bg-purple-500',
     'Retornando à Base': 'bg-orange-500',
-    'Indisponível': 'bg-red-500',
-    'Reserva': 'bg-gray-500',
   };
+
+  const currentStatus = dbToStatusMap[vehicle.status as string] || vehicle.status || 'Disponível';
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -137,8 +146,8 @@ export const VehicleDetailModal = ({ vehicle, onClose }: VehicleDetailModalProps
               </div>
               <div className="flex justify-between items-center">
                 <span className="font-semibold">Status:</span>
-                <Badge className={`${statusColors[vehicle.status || 'Disponível']} text-white`}>
-                  {vehicle.status}
+                <Badge className={`${statusColors[currentStatus]} text-white`}>
+                  {currentStatus}
                 </Badge>
               </div>
               {vehicle.image_url && (
@@ -148,6 +157,42 @@ export const VehicleDetailModal = ({ vehicle, onClose }: VehicleDetailModalProps
                     alt={`Veículo ${vehicle.prefix}`}
                     className="w-full h-48 object-cover rounded-lg border-2 border-red-200"
                   />
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              {onVehicleAction && (
+                <div className="mt-4 space-y-2">
+                  <h4 className="font-semibold text-red-800">Ações</h4>
+                  <div className="flex gap-2 flex-wrap">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => onVehicleAction(vehicle.id, 'baixar')}
+                      className="border-red-500 text-red-600 hover:bg-red-50"
+                    >
+                      <Download className="w-4 h-4 mr-1" />
+                      Baixar
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => onVehicleAction(vehicle.id, 'reserva')}
+                      className="border-gray-500 text-gray-600 hover:bg-gray-50"
+                    >
+                      <Calendar className="w-4 h-4 mr-1" />
+                      Reserva
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => onVehicleAction(vehicle.id, 'levantar')}
+                      className="border-green-500 text-green-600 hover:bg-green-50"
+                    >
+                      <Play className="w-4 h-4 mr-1" />
+                      Levantar
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardContent>

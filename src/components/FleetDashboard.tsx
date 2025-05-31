@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { VehicleTable } from '@/components/VehicleTable';
+import { StationVehiclesRow } from '@/components/StationVehiclesRow';
 import { VehicleDetailModal } from '@/components/VehicleDetailModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -10,17 +10,7 @@ import type { Tables } from '@/integrations/supabase/types';
 
 type Vehicle = Tables<'vehicles'>;
 type FireStation = Tables<'fire_stations'>;
-
-// Map Portuguese categories to English database values
-const categoryToDbMap: Record<string, string> = {
-  'Autobomba': 'Engine',
-  'Escada': 'Ladder', 
-  'Resgate': 'Rescue',
-  'Ambulância': 'Ambulance',
-  'Comando': 'Chief',
-  'Utilitário': 'Utility',
-  'Veículos Baixados': 'Utility' // We'll use a different approach for this
-};
+type FireSubStation = Tables<'fire_sub_stations'>;
 
 // Map English database values to Portuguese display
 const dbToCategoryMap: Record<string, string> = {
@@ -35,12 +25,11 @@ const dbToCategoryMap: Record<string, string> = {
 export const FleetDashboard = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [stations, setStations] = useState<FireStation[]>([]);
+  const [subStations, setSubStations] = useState<FireSubStation[]>([]);
   const [selectedStation, setSelectedStation] = useState<string>('');
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [originalCategories, setOriginalCategories] = useState<Record<string, string>>({});
-  const [baixadoVehicles, setBaixadoVehicles] = useState<Set<string>>(new Set());
-  const [reservaVehicles, setReservaVehicles] = useState<Set<string>>(new Set());
+  const [vehicleObservations, setVehicleObservations] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
   useEffect(() => {
@@ -49,13 +38,18 @@ export const FleetDashboard = () => {
 
   useEffect(() => {
     if (selectedStation) {
+      loadSubStations();
       loadVehicles();
     }
   }, [selectedStation]);
 
+  useEffect(() => {
+    loadObservations();
+  }, [vehicles]);
+
   const loadData = async () => {
     try {
-      // Load stations
+      // Load stations (now called Grupamentos)
       const { data: stationsData, error: stationsError } = await supabase
         .from('fire_stations')
         .select('*')
@@ -75,6 +69,23 @@ export const FleetDashboard = () => {
     }
   };
 
+  const loadSubStations = async () => {
+    if (!selectedStation) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('fire_sub_stations')
+        .select('*')
+        .eq('station_id', selectedStation)
+        .order('name');
+
+      if (error) throw error;
+      setSubStations(data || []);
+    } catch (error) {
+      console.error('Erro ao carregar sub-estações:', error);
+    }
+  };
+
   const loadVehicles = async () => {
     if (!selectedStation) return;
 
@@ -87,30 +98,35 @@ export const FleetDashboard = () => {
         .order('prefix');
 
       if (error) throw error;
-      
-      const vehicleData = data || [];
-      setVehicles(vehicleData);
-
-      // Store original categories for vehicles not in "Veículos Baixados"
-      const originals: Record<string, string> = {};
-      vehicleData.forEach(vehicle => {
-        const displayCategory = getDisplayCategory(vehicle);
-        if (displayCategory !== 'Veículos Baixados') {
-          originals[vehicle.id] = vehicle.category;
-        }
-      });
-      setOriginalCategories(prev => ({ ...prev, ...originals }));
+      setVehicles(data || []);
     } catch (error) {
       console.error('Erro ao carregar veículos:', error);
     }
   };
 
-  const getDisplayCategory = (vehicle: Vehicle): string => {
-    // Check if vehicle is "baixado"
-    if (baixadoVehicles.has(vehicle.id)) {
-      return 'Veículos Baixados';
+  const loadObservations = async () => {
+    try {
+      const vehicleIds = vehicles.map(v => v.id);
+      if (vehicleIds.length === 0) return;
+
+      const { data, error } = await supabase
+        .from('vehicle_observations')
+        .select('vehicle_id, observation')
+        .in('vehicle_id', vehicleIds)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const obsMap: Record<string, string> = {};
+      data?.forEach(obs => {
+        if (!obsMap[obs.vehicle_id]) {
+          obsMap[obs.vehicle_id] = obs.observation;
+        }
+      });
+      setVehicleObservations(obsMap);
+    } catch (error) {
+      console.error('Erro ao carregar observações:', error);
     }
-    return dbToCategoryMap[vehicle.category] || vehicle.category;
   };
 
   const handleVehicleClick = (vehicle: Vehicle) => {
@@ -157,44 +173,17 @@ export const FleetDashboard = () => {
 
   const handleVehicleAction = async (vehicleId: string, action: 'baixar' | 'reserva' | 'levantar') => {
     try {
-      const vehicle = vehicles.find(v => v.id === vehicleId);
-      if (!vehicle) return;
-
       let updateData: any = {
         updated_at: new Date().toISOString()
       };
 
       switch (action) {
         case 'baixar':
-          // Store original category before marking as baixado
-          if (!baixadoVehicles.has(vehicleId)) {
-            setOriginalCategories(prev => ({
-              ...prev,
-              [vehicleId]: vehicle.category
-            }));
-            setBaixadoVehicles(prev => new Set([...prev, vehicleId]));
-          }
-          updateData.status = 'Available'; // Keep database status as Available
-          break;
-        
         case 'reserva':
-          setReservaVehicles(prev => new Set([...prev, vehicleId]));
-          updateData.status = 'Available'; // Keep database status as Available
+          updateData.status = 'Available';
           break;
-        
         case 'levantar':
           updateData.status = 'Available';
-          // Remove from special status sets
-          setBaixadoVehicles(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(vehicleId);
-            return newSet;
-          });
-          setReservaVehicles(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(vehicleId);
-            return newSet;
-          });
           break;
       }
 
@@ -216,7 +205,8 @@ export const FleetDashboard = () => {
         description: actionMessages[action],
       });
       
-      // Refresh vehicles
+      // Close modal and refresh vehicles
+      setSelectedVehicle(null);
       loadVehicles();
     } catch (error) {
       console.error('Erro ao atualizar veículo:', error);
@@ -228,14 +218,21 @@ export const FleetDashboard = () => {
     }
   };
 
-  const groupedVehicles = vehicles.reduce((acc, vehicle) => {
-    const displayCategory = getDisplayCategory(vehicle);
-    if (!acc[displayCategory]) {
-      acc[displayCategory] = [];
+  // Group vehicles by category (subgrupamentos) and then by sub-station
+  const groupedData = vehicles.reduce((acc, vehicle) => {
+    const category = dbToCategoryMap[vehicle.category] || vehicle.category;
+    if (!acc[category]) {
+      acc[category] = {};
     }
-    acc[displayCategory].push(vehicle);
+
+    const subStationId = vehicle.sub_station_id || 'unassigned';
+    if (!acc[category][subStationId]) {
+      acc[category][subStationId] = [];
+    }
+
+    acc[category][subStationId].push(vehicle);
     return acc;
-  }, {} as Record<string, Vehicle[]>);
+  }, {} as Record<string, Record<string, Vehicle[]>>);
 
   if (isLoading) {
     return <div className="text-center py-8">Carregando dados da frota...</div>;
@@ -246,13 +243,13 @@ export const FleetDashboard = () => {
       {/* Station Selector */}
       <Card className="border-red-200">
         <CardHeader className="bg-red-50 border-b border-red-200">
-          <CardTitle className="text-red-800">Quartel de Bombeiros</CardTitle>
+          <CardTitle className="text-red-800">Grupamento de Bombeiros</CardTitle>
         </CardHeader>
         <CardContent className="p-4">
           {stations.length > 0 && (
             <Select value={selectedStation} onValueChange={setSelectedStation}>
               <SelectTrigger className="w-64">
-                <SelectValue placeholder="Selecione um quartel" />
+                <SelectValue placeholder="Selecione um grupamento" />
               </SelectTrigger>
               <SelectContent>
                 {stations.map((station) => (
@@ -266,19 +263,30 @@ export const FleetDashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Vehicle Tables by Category */}
-      {Object.entries(groupedVehicles).map(([category, categoryVehicles]) => (
+      {/* Categories (Subgrupamentos) with Stations and Vehicles */}
+      {Object.entries(groupedData).map(([category, stationGroups]) => (
         <Card key={category} className="border-red-200 shadow-lg">
           <CardHeader className="bg-red-50 border-b border-red-200">
             <CardTitle className="text-red-800">{category}</CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
-            <VehicleTable
-              vehicles={categoryVehicles}
-              onVehicleClick={handleVehicleClick}
-              onStatusUpdate={handleStatusUpdate}
-              onVehicleAction={handleVehicleAction}
-            />
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              {Object.entries(stationGroups).map(([subStationId, vehicles]) => {
+                const subStation = subStations.find(s => s.id === subStationId);
+                const stationName = subStation ? subStation.name : 'Estação Não Atribuída';
+                
+                return (
+                  <StationVehiclesRow
+                    key={subStationId}
+                    station={{ id: subStationId, name: stationName } as FireSubStation}
+                    vehicles={vehicles}
+                    onVehicleClick={handleVehicleClick}
+                    onStatusUpdate={handleStatusUpdate}
+                    vehicleObservations={vehicleObservations}
+                  />
+                );
+              })}
+            </div>
           </CardContent>
         </Card>
       ))}
@@ -288,6 +296,7 @@ export const FleetDashboard = () => {
         <VehicleDetailModal
           vehicle={selectedVehicle}
           onClose={() => setSelectedVehicle(null)}
+          onVehicleAction={handleVehicleAction}
         />
       )}
     </div>

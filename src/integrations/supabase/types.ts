@@ -134,6 +134,35 @@ export type Database = {
         }
         Relationships: []
       }
+      fire_sub_stations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          station_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          station_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          station_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fire_sub_stations_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "fire_stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_courses: {
         Row: {
           created_at: string | null
@@ -238,6 +267,8 @@ export type Database = {
           prefix: string
           station_id: string | null
           status: Database["public"]["Enums"]["vehicle_status"] | null
+          status_changed_at: string | null
+          sub_station_id: string | null
           updated_at: string | null
           vehicle_type: string
         }
@@ -249,6 +280,8 @@ export type Database = {
           prefix: string
           station_id?: string | null
           status?: Database["public"]["Enums"]["vehicle_status"] | null
+          status_changed_at?: string | null
+          sub_station_id?: string | null
           updated_at?: string | null
           vehicle_type: string
         }
@@ -260,6 +293,8 @@ export type Database = {
           prefix?: string
           station_id?: string | null
           status?: Database["public"]["Enums"]["vehicle_status"] | null
+          status_changed_at?: string | null
+          sub_station_id?: string | null
           updated_at?: string | null
           vehicle_type?: string
         }
@@ -269,6 +304,13 @@ export type Database = {
             columns: ["station_id"]
             isOneToOne: false
             referencedRelation: "fire_stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicles_sub_station_id_fkey"
+            columns: ["sub_station_id"]
+            isOneToOne: false
+            referencedRelation: "fire_sub_stations"
             referencedColumns: ["id"]
           },
         ]
