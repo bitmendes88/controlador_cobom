@@ -1,10 +1,11 @@
+
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Truck, Users, Phone, Clock, FileText, Save, Download, Calendar, Play } from 'lucide-react';
+import { Truck, Users, Phone, Clock, FileText, Save, Download, Calendar, Play, Trash2, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Tables } from '@/integrations/supabase/types';
@@ -16,6 +17,7 @@ interface VehicleDetailModalProps {
   vehicle: Vehicle;
   onClose: () => void;
   onVehicleAction?: (vehicleId: string, action: 'baixar' | 'reserva' | 'levantar') => void;
+  onVehicleDelete?: (vehicleId: string) => void;
 }
 
 // Map English database values to Portuguese display
@@ -27,7 +29,7 @@ const dbToStatusMap: Record<string, string> = {
   'Returning to Base': 'Retornando à Base'
 };
 
-export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction }: VehicleDetailModalProps) => {
+export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction, onVehicleDelete }: VehicleDetailModalProps) => {
   const [crewAssignments, setCrewAssignments] = useState<any[]>([]);
   const [observations, setObservations] = useState<VehicleObservation[]>([]);
   const [newObservation, setNewObservation] = useState('');
@@ -68,7 +70,7 @@ export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction }: Vehicl
       setObservations(obsData || []);
 
     } catch (error) {
-      console.error('Erro ao carregar detalhes do veículo:', error);
+      console.error('Erro ao carregar detalhes da viatura:', error);
     } finally {
       setIsLoading(false);
     }
@@ -93,7 +95,7 @@ export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction }: Vehicl
       
       toast({
         title: "Observação Adicionada",
-        description: "A observação do veículo foi registrada com sucesso.",
+        description: "A observação da viatura foi registrada com sucesso.",
       });
     } catch (error) {
       console.error('Erro ao adicionar observação:', error);
@@ -105,12 +107,67 @@ export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction }: Vehicl
     }
   };
 
+  const deleteObservation = async (observationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('vehicle_observations')
+        .delete()
+        .eq('id', observationId);
+
+      if (error) throw error;
+
+      loadVehicleDetails();
+      
+      toast({
+        title: "Observação Excluída",
+        description: "A observação foi removida com sucesso.",
+      });
+    } catch (error) {
+      console.error('Erro ao excluir observação:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao excluir observação. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteVehicle = async () => {
+    if (window.confirm('Tem certeza que deseja excluir esta viatura? Esta ação não pode ser desfeita.')) {
+      try {
+        const { error } = await supabase
+          .from('vehicles')
+          .delete()
+          .eq('id', vehicle.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Viatura Excluída",
+          description: "A viatura foi removida do sistema.",
+        });
+
+        if (onVehicleDelete) {
+          onVehicleDelete(vehicle.id);
+        }
+        onClose();
+      } catch (error) {
+        console.error('Erro ao excluir viatura:', error);
+        toast({
+          title: "Erro",
+          description: "Falha ao excluir viatura. Tente novamente.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   const statusColors: Record<string, string> = {
-    'Disponível': 'bg-green-500',
-    'A Caminho': 'bg-blue-500',
-    'No Local': 'bg-yellow-500',
-    'A Caminho do Hospital': 'bg-purple-500',
-    'Retornando à Base': 'bg-orange-500',
+    'Disponível': 'bg-green-600',
+    'A Caminho': 'bg-blue-600',
+    'No Local': 'bg-yellow-600',
+    'A Caminho do Hospital': 'bg-purple-600',
+    'Retornando à Base': 'bg-orange-600',
   };
 
   const currentStatus = dbToStatusMap[vehicle.status as string] || vehicle.status || 'Disponível';
@@ -129,7 +186,7 @@ export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction }: Vehicl
           {/* Vehicle Info */}
           <Card className="border-red-200">
             <CardHeader className="bg-red-50">
-              <CardTitle className="text-red-800">Detalhes do Veículo</CardTitle>
+              <CardTitle className="text-red-800">Detalhes da Viatura</CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-3">
               <div className="flex justify-between">
@@ -154,7 +211,7 @@ export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction }: Vehicl
                 <div className="mt-4">
                   <img 
                     src={vehicle.image_url} 
-                    alt={`Veículo ${vehicle.prefix}`}
+                    alt={`Viatura ${vehicle.prefix}`}
                     className="w-full h-48 object-cover rounded-lg border-2 border-red-200"
                   />
                 </div>
@@ -195,6 +252,19 @@ export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction }: Vehicl
                   </div>
                 </div>
               )}
+
+              {/* Delete Vehicle Button */}
+              <div className="mt-6 pt-4 border-t border-red-200">
+                <Button 
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleDeleteVehicle}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Excluir Viatura
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
@@ -240,21 +310,21 @@ export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction }: Vehicl
             <CardHeader className="bg-red-50">
               <CardTitle className="flex items-center gap-2 text-red-800">
                 <FileText className="w-5 h-5" />
-                Observações do Veículo
+                Observações da Viatura
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
               {/* Add new observation */}
               <div className="space-y-2">
                 <Textarea
-                  placeholder="Adicione uma nova observação sobre este veículo..."
+                  placeholder="Adicione uma nova observação sobre esta viatura..."
                   value={newObservation}
                   onChange={(e) => setNewObservation(e.target.value)}
                   className="border-red-300 focus:border-red-500"
                 />
                 <Button 
                   onClick={addObservation}
-                  className="bg-red-600 hover:bg-red-700 text-white"
+                  className="bg-red-700 hover:bg-red-800 text-white"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   Adicionar Observação
@@ -265,8 +335,16 @@ export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction }: Vehicl
               <div className="space-y-3 max-h-48 overflow-y-auto">
                 {observations.length > 0 ? (
                   observations.map((obs) => (
-                    <div key={obs.id} className="bg-gray-50 p-3 rounded border-l-4 border-red-500">
-                      <p className="text-sm">{obs.observation}</p>
+                    <div key={obs.id} className="bg-gray-50 p-3 rounded border-l-4 border-red-500 relative">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteObservation(obs.id)}
+                        className="absolute top-2 right-2 p-1 h-6 w-6 text-red-600 hover:bg-red-100"
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                      <p className="text-sm pr-8">{obs.observation}</p>
                       <div className="text-xs text-gray-500 mt-2">
                         Por {obs.created_by} em {new Date(obs.created_at || '').toLocaleString('pt-BR')}
                       </div>

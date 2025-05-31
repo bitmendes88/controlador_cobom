@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { StationVehiclesRow } from '@/components/StationVehiclesRow';
 import { VehicleDetailModal } from '@/components/VehicleDetailModal';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,19 +21,17 @@ const dbToCategoryMap: Record<string, string> = {
   'Utility': 'Utilitário'
 };
 
-export const FleetDashboard = () => {
+interface FleetDashboardProps {
+  selectedStation: string;
+}
+
+export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [stations, setStations] = useState<FireStation[]>([]);
   const [subStations, setSubStations] = useState<FireSubStation[]>([]);
-  const [selectedStation, setSelectedStation] = useState<string>('');
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [vehicleObservations, setVehicleObservations] = useState<Record<string, string>>({});
   const { toast } = useToast();
-
-  useEffect(() => {
-    loadData();
-  }, []);
 
   useEffect(() => {
     if (selectedStation) {
@@ -46,28 +43,6 @@ export const FleetDashboard = () => {
   useEffect(() => {
     loadObservations();
   }, [vehicles]);
-
-  const loadData = async () => {
-    try {
-      // Load stations (now called Grupamentos)
-      const { data: stationsData, error: stationsError } = await supabase
-        .from('fire_stations')
-        .select('*')
-        .order('name');
-
-      if (stationsError) throw stationsError;
-      setStations(stationsData || []);
-
-      // Set first station as default
-      if (stationsData && stationsData.length > 0) {
-        setSelectedStation(stationsData[0].id);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const loadSubStations = async () => {
     if (!selectedStation) return;
@@ -100,7 +75,9 @@ export const FleetDashboard = () => {
       if (error) throw error;
       setVehicles(data || []);
     } catch (error) {
-      console.error('Erro ao carregar veículos:', error);
+      console.error('Erro ao carregar viaturas:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -156,16 +133,16 @@ export const FleetDashboard = () => {
       
       toast({
         title: "Status Atualizado",
-        description: `Status do veículo alterado para ${statusMap[newStatus] || newStatus}`,
+        description: `Status da viatura alterado para ${statusMap[newStatus] || newStatus}`,
       });
       
       // Refresh vehicles
       loadVehicles();
     } catch (error) {
-      console.error('Erro ao atualizar status do veículo:', error);
+      console.error('Erro ao atualizar status da viatura:', error);
       toast({
         title: "Erro",
-        description: "Falha ao atualizar status do veículo. Tente novamente.",
+        description: "Falha ao atualizar status da viatura. Tente novamente.",
         variant: "destructive",
       });
     }
@@ -195,9 +172,9 @@ export const FleetDashboard = () => {
       if (error) throw error;
       
       const actionMessages = {
-        'baixar': 'Veículo baixado com sucesso',
-        'reserva': 'Veículo colocado em reserva',
-        'levantar': 'Veículo levantado e disponibilizado'
+        'baixar': 'Viatura baixada com sucesso',
+        'reserva': 'Viatura colocada em reserva',
+        'levantar': 'Viatura levantada e disponibilizada'
       };
 
       toast({
@@ -209,13 +186,18 @@ export const FleetDashboard = () => {
       setSelectedVehicle(null);
       loadVehicles();
     } catch (error) {
-      console.error('Erro ao atualizar veículo:', error);
+      console.error('Erro ao atualizar viatura:', error);
       toast({
         title: "Erro",
-        description: "Falha ao executar ação no veículo. Tente novamente.",
+        description: "Falha ao executar ação na viatura. Tente novamente.",
         variant: "destructive",
       });
     }
+  };
+
+  const handleVehicleDelete = async (vehicleId: string) => {
+    // Refresh vehicles list after deletion
+    loadVehicles();
   };
 
   // Group vehicles by category (subgrupamentos) and then by sub-station
@@ -234,44 +216,32 @@ export const FleetDashboard = () => {
     return acc;
   }, {} as Record<string, Record<string, Vehicle[]>>);
 
+  // Separate "Viaturas Baixadas" to show at the end
+  const orderedCategories = Object.keys(groupedData).sort((a, b) => {
+    if (a === 'Viaturas Baixadas') return 1;
+    if (b === 'Viaturas Baixadas') return -1;
+    return a.localeCompare(b);
+  });
+
   if (isLoading) {
     return <div className="text-center py-8">Carregando dados da frota...</div>;
   }
 
+  if (!selectedStation) {
+    return <div className="text-center py-8">Selecione um grupamento para visualizar as viaturas</div>;
+  }
+
   return (
     <div className="space-y-6">
-      {/* Station Selector */}
-      <Card className="border-red-200">
-        <CardHeader className="bg-red-50 border-b border-red-200">
-          <CardTitle className="text-red-800">Grupamento de Bombeiros</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4">
-          {stations.length > 0 && (
-            <Select value={selectedStation} onValueChange={setSelectedStation}>
-              <SelectTrigger className="w-64">
-                <SelectValue placeholder="Selecione um grupamento" />
-              </SelectTrigger>
-              <SelectContent>
-                {stations.map((station) => (
-                  <SelectItem key={station.id} value={station.id}>
-                    {station.name} - {station.address}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </CardContent>
-      </Card>
-
       {/* Categories (Subgrupamentos) with Stations and Vehicles */}
-      {Object.entries(groupedData).map(([category, stationGroups]) => (
+      {orderedCategories.map((category) => (
         <Card key={category} className="border-red-200 shadow-lg">
           <CardHeader className="bg-red-50 border-b border-red-200">
             <CardTitle className="text-red-800">{category}</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <div className="space-y-4">
-              {Object.entries(stationGroups).map(([subStationId, vehicles]) => {
+              {Object.entries(groupedData[category]).map(([subStationId, vehicles]) => {
                 const subStation = subStations.find(s => s.id === subStationId);
                 const stationName = subStation ? subStation.name : 'Estação Não Atribuída';
                 
@@ -297,6 +267,7 @@ export const FleetDashboard = () => {
           vehicle={selectedVehicle}
           onClose={() => setSelectedVehicle(null)}
           onVehicleAction={handleVehicleAction}
+          onVehicleDelete={handleVehicleDelete}
         />
       )}
     </div>

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Truck } from 'lucide-react';
+import { Truck, AlertCircle } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Vehicle = Tables<'vehicles'>;
@@ -34,11 +34,11 @@ const statusToDbMap: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  'Disponível': 'bg-green-500',
-  'A Caminho': 'bg-blue-500',
-  'No Local': 'bg-yellow-500',
-  'A Caminho do Hospital': 'bg-purple-500',
-  'Retornando à Base': 'bg-orange-500',
+  'Disponível': 'bg-green-600',
+  'A Caminho': 'bg-blue-600',
+  'No Local': 'bg-yellow-600',
+  'A Caminho do Hospital': 'bg-purple-600',
+  'Retornando à Base': 'bg-orange-600',
 };
 
 const statusSequence = [
@@ -91,16 +91,21 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
   return (
     <TooltipProvider>
       <div className="flex flex-col items-center space-y-2 p-3 border rounded-lg bg-white shadow-sm">
-        {/* Vehicle Icon with prefix */}
+        {/* Vehicle Icon with prefix and observation indicator */}
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="relative cursor-pointer" onClick={() => onVehicleClick(vehicle)}>
-              <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-red-700 rounded-full flex items-center justify-center">
                 <Truck className="w-6 h-6 text-white" />
               </div>
-              <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 bg-white px-1 rounded text-xs font-bold text-red-800 border">
+              <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 px-2 py-1 rounded text-xs font-bold text-red-800 whitespace-nowrap">
                 {vehicle.prefix}
               </div>
+              {vehicleObservation && (
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center">
+                  <AlertCircle className="w-3 h-3 text-white" />
+                </div>
+              )}
             </div>
           </TooltipTrigger>
           <TooltipContent>
@@ -120,9 +125,9 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
         <Button
           onClick={handleStatusClick}
           size="sm"
-          className="text-xs bg-red-600 hover:bg-red-700 text-white"
+          className="text-xs bg-red-700 hover:bg-red-800 text-white"
         >
-          Alterar Status
+          Status
         </Button>
       </div>
     </TooltipProvider>
