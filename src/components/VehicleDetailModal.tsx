@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Truck, Users, Phone, Clock, FileText, Save, Download, Calendar, Play, Trash2, X } from 'lucide-react';
+import { Truck, Users, Phone, Clock, FileText, Save, Download, Calendar, Play, Trash2, X, Edit } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Tables } from '@/integrations/supabase/types';
@@ -18,6 +18,7 @@ interface VehicleDetailModalProps {
   onClose: () => void;
   onVehicleAction?: (vehicleId: string, action: 'baixar' | 'reserva' | 'levantar') => void;
   onVehicleDelete?: (vehicleId: string) => void;
+  onEditVehicle?: (vehicle: Vehicle) => void;
 }
 
 // Map English database values to Portuguese display
@@ -26,10 +27,12 @@ const dbToStatusMap: Record<string, string> = {
   'En Route': 'A Caminho',
   'On Scene': 'No Local',
   'En Route to Hospital': 'A Caminho do Hospital',
-  'Returning to Base': 'Retornando à Base'
+  'Returning to Base': 'Retornando à Base',
+  'Down': 'Baixada',
+  'Reserve': 'Reserva'
 };
 
-export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction, onVehicleDelete }: VehicleDetailModalProps) => {
+export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction, onVehicleDelete, onEditVehicle }: VehicleDetailModalProps) => {
   const [crewAssignments, setCrewAssignments] = useState<any[]>([]);
   const [observations, setObservations] = useState<VehicleObservation[]>([]);
   const [newObservation, setNewObservation] = useState('');
@@ -168,9 +171,14 @@ export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction, onVehicl
     'No Local': 'bg-yellow-600',
     'A Caminho do Hospital': 'bg-purple-600',
     'Retornando à Base': 'bg-orange-600',
+    'Baixada': 'bg-red-600',
+    'Reserva': 'bg-gray-600',
   };
 
   const currentStatus = dbToStatusMap[vehicle.status as string] || vehicle.status || 'Disponível';
+
+  const showActions = currentStatus !== 'Baixada' && currentStatus !== 'Reserva';
+  const showLevantarButton = currentStatus === 'Baixada' || currentStatus === 'Reserva';
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -198,7 +206,7 @@ export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction, onVehicl
                 <span>{vehicle.category}</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-semibold">Tipo:</span>
+                <span className="font-semibold">Modalidade:</span>
                 <span>{vehicle.vehicle_type}</span>
               </div>
               <div className="flex justify-between items-center">
@@ -222,39 +230,56 @@ export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction, onVehicl
                 <div className="mt-4 space-y-2">
                   <h4 className="font-semibold text-red-800">Ações</h4>
                   <div className="flex gap-2 flex-wrap">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => onVehicleAction(vehicle.id, 'baixar')}
-                      className="border-red-500 text-red-600 hover:bg-red-50"
-                    >
-                      <Download className="w-4 h-4 mr-1" />
-                      Baixar
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => onVehicleAction(vehicle.id, 'reserva')}
-                      className="border-gray-500 text-gray-600 hover:bg-gray-50"
-                    >
-                      <Calendar className="w-4 h-4 mr-1" />
-                      Reserva
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => onVehicleAction(vehicle.id, 'levantar')}
-                      className="border-green-500 text-green-600 hover:bg-green-50"
-                    >
-                      <Play className="w-4 h-4 mr-1" />
-                      Levantar
-                    </Button>
+                    {showActions && (
+                      <>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => onVehicleAction(vehicle.id, 'baixar')}
+                          className="border-red-500 text-red-600 hover:bg-red-50"
+                        >
+                          <Download className="w-4 h-4 mr-1" />
+                          Baixar
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => onVehicleAction(vehicle.id, 'reserva')}
+                          className="border-gray-500 text-gray-600 hover:bg-gray-50"
+                        >
+                          <Calendar className="w-4 h-4 mr-1" />
+                          Reserva
+                        </Button>
+                      </>
+                    )}
+                    {showLevantarButton && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => onVehicleAction(vehicle.id, 'levantar')}
+                        className="border-green-500 text-green-600 hover:bg-green-50"
+                      >
+                        <Play className="w-4 h-4 mr-1" />
+                        Levantar
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* Delete Vehicle Button */}
-              <div className="mt-6 pt-4 border-t border-red-200">
+              {/* Edit and Delete Buttons */}
+              <div className="mt-6 pt-4 border-t border-red-200 flex gap-2">
+                {onEditVehicle && (
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onEditVehicle(vehicle)}
+                    className="border-blue-500 text-blue-600 hover:bg-blue-50"
+                  >
+                    <Edit className="w-4 h-4 mr-1" />
+                    Editar Viatura
+                  </Button>
+                )}
                 <Button 
                   variant="destructive"
                   size="sm"

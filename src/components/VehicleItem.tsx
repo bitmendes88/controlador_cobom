@@ -21,7 +21,9 @@ const dbToStatusMap: Record<string, string> = {
   'En Route': 'A Caminho',
   'On Scene': 'No Local',
   'En Route to Hospital': 'A Caminho do Hospital',
-  'Returning to Base': 'Retornando à Base'
+  'Returning to Base': 'Retornando à Base',
+  'Down': 'Baixada',
+  'Reserve': 'Reserva'
 };
 
 // Map Portuguese status to English database values
@@ -30,7 +32,9 @@ const statusToDbMap: Record<string, string> = {
   'A Caminho': 'En Route',
   'No Local': 'On Scene',
   'A Caminho do Hospital': 'En Route to Hospital',
-  'Retornando à Base': 'Returning to Base'
+  'Retornando à Base': 'Returning to Base',
+  'Baixada': 'Down',
+  'Reserva': 'Reserve'
 };
 
 const statusColors: Record<string, string> = {
@@ -39,6 +43,8 @@ const statusColors: Record<string, string> = {
   'No Local': 'bg-yellow-600',
   'A Caminho do Hospital': 'bg-purple-600',
   'Retornando à Base': 'bg-orange-600',
+  'Baixada': 'bg-red-600',
+  'Reserva': 'bg-gray-600',
 };
 
 const statusSequence = [
@@ -80,6 +86,9 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
   const currentStatus = dbToStatusMap[vehicle.status as string] || vehicle.status || 'Disponível';
 
   const handleStatusClick = () => {
+    // Only allow status cycling for normal operational statuses
+    if (currentStatus === 'Baixada' || currentStatus === 'Reserva') return;
+    
     const currentIndex = statusSequence.indexOf(currentStatus);
     const nextIndex = (currentIndex + 1) % statusSequence.length;
     const nextStatus = statusSequence[nextIndex];
@@ -88,9 +97,30 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
     onStatusUpdate(vehicle.id, nextDbStatus);
   };
 
+  // Get time color based on duration
+  const getTimeColor = () => {
+    if (vehicle.status_changed_at) {
+      const now = new Date();
+      const statusTime = new Date(vehicle.status_changed_at);
+      const diffInMinutes = Math.floor((now.getTime() - statusTime.getTime()) / 60000);
+      
+      if (diffInMinutes <= 15) return 'text-green-600';
+      if (diffInMinutes <= 30) return 'text-yellow-600';
+      return 'text-red-600';
+    }
+    return 'text-gray-500';
+  };
+
+  // Get background color based on status
+  const getBackgroundColor = () => {
+    if (currentStatus === 'Baixada') return 'bg-red-100';
+    if (currentStatus === 'Reserva') return 'bg-gray-100';
+    return 'bg-white';
+  };
+
   return (
     <TooltipProvider>
-      <div className="flex flex-col items-center space-y-2 p-3 border rounded-lg bg-white shadow-sm">
+      <div className={`flex flex-col items-center space-y-2 p-3 border rounded-lg shadow-sm ${getBackgroundColor()}`}>
         {/* Vehicle Icon with prefix and observation indicator */}
         <Tooltip>
           <TooltipTrigger asChild>
@@ -112,7 +142,7 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
                 {/* Prefix with larger font and shadow */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div 
-                    className="text-red-800 font-bold text-lg whitespace-nowrap pointer-events-none"
+                    className="text-red-800 font-bold text-xl whitespace-nowrap pointer-events-none"
                     style={{
                       textShadow: '1px 1px 2px rgba(255,255,255,0.8), -1px -1px 2px rgba(255,255,255,0.8), 1px -1px 2px rgba(255,255,255,0.8), -1px 1px 2px rgba(255,255,255,0.8)'
                     }}
@@ -139,17 +169,19 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
           <Badge className={`${statusColors[currentStatus]} text-white text-xs`}>
             {currentStatus}
           </Badge>
-          <div className="text-xs text-gray-500">{timeInStatus}</div>
+          <div className={`text-xs font-semibold ${getTimeColor()}`}>{timeInStatus}</div>
         </div>
 
-        {/* Status Change Button */}
-        <Button
-          onClick={handleStatusClick}
-          size="sm"
-          className="text-xs bg-red-800 hover:bg-red-900 text-white"
-        >
-          Status
-        </Button>
+        {/* Status Change Button - only show for operational statuses */}
+        {currentStatus !== 'Baixada' && currentStatus !== 'Reserva' && (
+          <Button
+            onClick={handleStatusClick}
+            size="sm"
+            className="text-xs bg-red-800 hover:bg-red-900 text-white h-6 px-2"
+          >
+            Status
+          </Button>
+        )}
       </div>
     </TooltipProvider>
   );

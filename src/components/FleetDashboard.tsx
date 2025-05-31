@@ -134,7 +134,9 @@ export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
         'En Route': 'A Caminho',
         'On Scene': 'No Local',
         'En Route to Hospital': 'A Caminho do Hospital',
-        'Returning to Base': 'Retornando à Base'
+        'Returning to Base': 'Retornando à Base',
+        'Down': 'Baixada',
+        'Reserve': 'Reserva'
       };
       
       toast({
@@ -162,8 +164,10 @@ export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
 
       switch (action) {
         case 'baixar':
+          updateData.status = 'Down';
+          break;
         case 'reserva':
-          updateData.status = 'Available';
+          updateData.status = 'Reserve';
           break;
         case 'levantar':
           updateData.status = 'Available';
@@ -229,6 +233,16 @@ export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
     return a.localeCompare(b);
   });
 
+  // Sort vehicles within each station: operational first, then Down/Reserve
+  const sortVehiclesByStatus = (vehicles: Vehicle[]) => {
+    return vehicles.sort((a, b) => {
+      const statusOrder = { 'Down': 2, 'Reserve': 1 };
+      const aOrder = statusOrder[a.status as keyof typeof statusOrder] || 0;
+      const bOrder = statusOrder[b.status as keyof typeof statusOrder] || 0;
+      return aOrder - bOrder;
+    });
+  };
+
   if (isLoading) {
     return <div className="text-center py-8">Carregando dados da frota...</div>;
   }
@@ -238,28 +252,33 @@ export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Categories (Subgrupamentos) with Stations and Vehicles */}
       {orderedCategories.map((category) => (
         <Card key={category} className="border-red-200 shadow-lg">
-          <CardHeader className="bg-red-50 border-b border-red-200">
-            <CardTitle className="text-red-800">{category}</CardTitle>
+          <CardHeader className="bg-red-50 border-b border-red-200 py-3">
+            <CardTitle className="text-red-800 text-base">{category}</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="space-y-4">
+            <div className="space-y-3">
               {Object.entries(groupedData[category]).map(([subStationId, vehicles]) => {
                 const subStation = subStations.find(s => s.id === subStationId);
                 const stationName = subStation ? subStation.name : 'Estação Não Atribuída';
+                const sortedVehicles = sortVehiclesByStatus(vehicles);
                 
                 return (
-                  <StationVehiclesRow
-                    key={subStationId}
-                    station={{ id: subStationId, name: stationName } as FireSubStation}
-                    vehicles={vehicles}
-                    onVehicleClick={handleVehicleClick}
-                    onStatusUpdate={handleStatusUpdate}
-                    vehicleObservations={vehicleObservations}
-                  />
+                  <div key={subStationId}>
+                    <StationVehiclesRow
+                      station={{ id: subStationId, name: stationName } as FireSubStation}
+                      vehicles={sortedVehicles}
+                      onVehicleClick={handleVehicleClick}
+                      onStatusUpdate={handleStatusUpdate}
+                      vehicleObservations={vehicleObservations}
+                    />
+                    {Object.keys(groupedData[category]).indexOf(subStationId) < Object.keys(groupedData[category]).length - 1 && (
+                      <hr className="border-gray-200 my-3" />
+                    )}
+                  </div>
                 );
               })}
             </div>

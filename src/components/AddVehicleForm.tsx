@@ -40,6 +40,9 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
   useEffect(() => {
     if (formData.station_id) {
       loadSubStations(formData.station_id);
+    } else {
+      setSubStations([]);
+      setFormData(prev => ({ ...prev, sub_station_id: '' }));
     }
   }, [formData.station_id]);
 
@@ -158,7 +161,7 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
           </div>
 
           <div>
-            <Label htmlFor="vehicle_type">Tipo de Viatura *</Label>
+            <Label htmlFor="vehicle_type">Modalidade de Viatura *</Label>
             <Input
               id="vehicle_type"
               placeholder="ex: Autobomba, Escada Mecânica, Resgate Pesado"
@@ -169,45 +172,43 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="station_id">Grupamento *</Label>
-              <Select 
-                value={formData.station_id} 
-                onValueChange={(value) => setFormData({ ...formData, station_id: value, sub_station_id: '' })}
-              >
-                <SelectTrigger className="border-red-300 focus:border-red-500">
-                  <SelectValue placeholder="Selecione o grupamento" />
-                </SelectTrigger>
-                <SelectContent>
-                  {stations.map((station) => (
-                    <SelectItem key={station.id} value={station.id}>
-                      {station.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div>
+            <Label htmlFor="station_id">Grupamento *</Label>
+            <Select 
+              value={formData.station_id} 
+              onValueChange={(value) => setFormData({ ...formData, station_id: value, sub_station_id: '' })}
+            >
+              <SelectTrigger className="border-red-300 focus:border-red-500">
+                <SelectValue placeholder="Selecione o grupamento" />
+              </SelectTrigger>
+              <SelectContent>
+                {stations.map((station) => (
+                  <SelectItem key={station.id} value={station.id}>
+                    {station.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-            <div>
-              <Label htmlFor="sub_station_id">Estação</Label>
-              <Select 
-                value={formData.sub_station_id} 
-                onValueChange={(value) => setFormData({ ...formData, sub_station_id: value })}
-                disabled={!formData.station_id}
-              >
-                <SelectTrigger className="border-red-300 focus:border-red-500">
-                  <SelectValue placeholder="Selecione a estação" />
-                </SelectTrigger>
-                <SelectContent>
-                  {subStations.map((subStation) => (
-                    <SelectItem key={subStation.id} value={subStation.id}>
-                      {subStation.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div>
+            <Label htmlFor="sub_station_id">Estação</Label>
+            <Select 
+              value={formData.sub_station_id} 
+              onValueChange={(value) => setFormData({ ...formData, sub_station_id: value })}
+              disabled={!formData.station_id}
+            >
+              <SelectTrigger className="border-red-300 focus:border-red-500">
+                <SelectValue placeholder="Selecione a estação" />
+              </SelectTrigger>
+              <SelectContent>
+                {subStations.map((subStation) => (
+                  <SelectItem key={subStation.id} value={subStation.id}>
+                    {subStation.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>

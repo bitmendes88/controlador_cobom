@@ -86,7 +86,7 @@ export const DailyServiceNotes = () => {
             placeholder="Digite as anotações de serviço diário, eventos importantes, mudanças de turno, status de equipamentos, etc..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="min-h-[120px] resize-none border-gray-300 focus:border-red-500 focus:ring-red-500"
+            className="min-h-[160px] resize-none border-gray-300 focus:border-red-500 focus:ring-red-500"
           />
           <div className="text-xs text-gray-500">
             As anotações são salvas automaticamente
