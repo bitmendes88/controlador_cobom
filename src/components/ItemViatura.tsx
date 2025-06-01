@@ -24,21 +24,21 @@ interface ItemViaturaProps {
 }
 
 const coresStatus: Record<string, string> = {
-  'Disponível': 'bg-green-600',
-  'A Caminho': 'bg-blue-600',
-  'No Local': 'bg-yellow-600',
-  'A Caminho do Hospital': 'bg-purple-600',
-  'Retornando à Base': 'bg-orange-600',
-  'Baixada': 'bg-red-600',
-  'Reserva': 'bg-gray-600',
+  'DISPONÍVEL': 'bg-green-600',
+  'QTI': 'bg-blue-600',
+  'LOCAL': 'bg-yellow-600',
+  'QTI PS': 'bg-purple-600',
+  'REGRESSO': 'bg-orange-600',
+  'BAIXADO': 'bg-red-600',
+  'RESERVA': 'bg-gray-600',
 };
 
 const sequenciaStatus = [
-  'Disponível',
-  'A Caminho',
-  'No Local',
-  'A Caminho do Hospital',
-  'Retornando à Base'
+  'DISPONÍVEL',
+  'QTI',
+  'LOCAL',
+  'QTI PS',
+  'REGRESSO'
 ];
 
 export const ItemViatura = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleObservation }: ItemViaturaProps) => {
@@ -93,8 +93,8 @@ export const ItemViatura = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
   };
 
   const obterCorFundo = () => {
-    if (vehicle.status === 'Baixada') return 'bg-red-100';
-    if (vehicle.status === 'Reserva') return 'bg-gray-100';
+    if (vehicle.status === 'BAIXADO') return 'bg-red-100';
+    if (vehicle.status === 'RESERVA') return 'bg-gray-100';
     return 'bg-white';
   };
 
