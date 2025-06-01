@@ -9,10 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Vehicle = Tables<'vehicles'>;
-type FireStation = Tables<'fire_stations'>;
 type FireSubStation = Tables<'fire_sub_stations'>;
 
-// Map English database values to Portuguese display
 const dbToCategoryMap: Record<string, string> = {
   'Engine': 'Autobomba',
   'Ladder': 'Escada',
@@ -24,9 +22,10 @@ const dbToCategoryMap: Record<string, string> = {
 
 interface FleetDashboardProps {
   selectedStation: string;
+  selectedController?: string;
 }
 
-export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
+export const FleetDashboard = ({ selectedStation, selectedController }: FleetDashboardProps) => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [subStations, setSubStations] = useState<FireSubStation[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
@@ -108,6 +107,23 @@ export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
     }
   };
 
+  const logActivity = async (action: string, details?: string) => {
+    if (!selectedController || !selectedStation) return;
+
+    try {
+      await supabase
+        .from('activity_logs')
+        .insert({
+          controller_id: selectedController,
+          station_id: selectedStation,
+          action,
+          details
+        });
+    } catch (error) {
+      console.error('Erro ao registrar log:', error);
+    }
+  };
+
   const handleVehicleClick = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
   };
@@ -122,13 +138,13 @@ export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
         .from('vehicles')
         .update({ 
           status: newStatus as any,
+          status_changed_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
         .eq('id', vehicleId);
 
       if (error) throw error;
       
-      // Map back to Portuguese for display
       const statusMap: Record<string, string> = {
         'Available': 'Disponível',
         'En Route': 'A Caminho',
@@ -139,12 +155,14 @@ export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
         'Reserve': 'Reserva'
       };
       
+      const vehicle = vehicles.find(v => v.id === vehicleId);
+      await logActivity('Status alterado', `Viatura ${vehicle?.prefix} - ${statusMap[newStatus] || newStatus}`);
+      
       toast({
         title: "Status Atualizado",
         description: `Status da viatura alterado para ${statusMap[newStatus] || newStatus}`,
       });
       
-      // Refresh vehicles
       loadVehicles();
     } catch (error) {
       console.error('Erro ao atualizar status da viatura:', error);
@@ -159,6 +177,7 @@ export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
   const handleVehicleAction = async (vehicleId: string, action: 'baixar' | 'reserva' | 'levantar') => {
     try {
       let updateData: any = {
+        status_changed_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
 
@@ -187,12 +206,14 @@ export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
         'levantar': 'Viatura levantada e disponibilizada'
       };
 
+      const vehicle = vehicles.find(v => v.id === vehicleId);
+      await logActivity(actionMessages[action], `Viatura ${vehicle?.prefix}`);
+
       toast({
         title: "Ação Realizada",
         description: actionMessages[action],
       });
       
-      // Close modal and refresh vehicles
       setSelectedVehicle(null);
       loadVehicles();
     } catch (error) {
@@ -206,11 +227,10 @@ export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
   };
 
   const handleVehicleDelete = async (vehicleId: string) => {
-    // Refresh vehicles list after deletion
     loadVehicles();
   };
 
-  // Group vehicles by category (subgrupamentos) and then by sub-station
+  // Group vehicles by category and then by sub-station, with Down/Reserve at the end
   const groupedData = vehicles.reduce((acc, vehicle) => {
     const category = dbToCategoryMap[vehicle.category] || vehicle.category;
     if (!acc[category]) {
@@ -226,14 +246,12 @@ export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
     return acc;
   }, {} as Record<string, Record<string, Vehicle[]>>);
 
-  // Ensure "Viaturas Baixadas" appears at the end
   const orderedCategories = Object.keys(groupedData).sort((a, b) => {
     if (a === 'Viaturas Baixadas') return 1;
     if (b === 'Viaturas Baixadas') return -1;
     return a.localeCompare(b);
   });
 
-  // Sort vehicles within each station: operational first, then Down/Reserve
   const sortVehiclesByStatus = (vehicles: Vehicle[]) => {
     return vehicles.sort((a, b) => {
       const statusOrder = { 'Down': 2, 'Reserve': 1 };
@@ -244,24 +262,23 @@ export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
   };
 
   if (isLoading) {
-    return <div className="text-center py-8">Carregando dados da frota...</div>;
+    return <div className="text-center py-4">Carregando dados da frota...</div>;
   }
 
   if (!selectedStation) {
-    return <div className="text-center py-8">Selecione um grupamento para visualizar as viaturas</div>;
+    return <div className="text-center py-4">Selecione um grupamento para visualizar as viaturas</div>;
   }
 
   return (
-    <div className="space-y-4">
-      {/* Categories (Subgrupamentos) with Stations and Vehicles */}
+    <div className="space-y-3">
       {orderedCategories.map((category) => (
         <Card key={category} className="border-red-200 shadow-lg">
-          <CardHeader className="bg-red-50 border-b border-red-200 py-3">
-            <CardTitle className="text-red-800 text-base">{category}</CardTitle>
+          <CardHeader className="bg-red-50 border-b border-red-200 py-2">
+            <CardTitle className="text-red-800 text-sm">{category}</CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
-            <div className="space-y-3">
-              {Object.entries(groupedData[category]).map(([subStationId, vehicles]) => {
+          <CardContent className="p-3">
+            <div className="space-y-1">
+              {Object.entries(groupedData[category]).map(([subStationId, vehicles], index) => {
                 const subStation = subStations.find(s => s.id === subStationId);
                 const stationName = subStation ? subStation.name : 'Estação Não Atribuída';
                 const sortedVehicles = sortVehiclesByStatus(vehicles);
@@ -275,8 +292,8 @@ export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
                       onStatusUpdate={handleStatusUpdate}
                       vehicleObservations={vehicleObservations}
                     />
-                    {Object.keys(groupedData[category]).indexOf(subStationId) < Object.keys(groupedData[category]).length - 1 && (
-                      <hr className="border-gray-200 my-3" />
+                    {index < Object.keys(groupedData[category]).length - 1 && (
+                      <hr className="border-gray-200 my-1" />
                     )}
                   </div>
                 );
@@ -286,7 +303,6 @@ export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
         </Card>
       ))}
 
-      {/* Vehicle Detail Modal */}
       {selectedVehicle && (
         <VehicleDetailModal
           vehicle={selectedVehicle}
@@ -297,7 +313,6 @@ export const FleetDashboard = ({ selectedStation }: FleetDashboardProps) => {
         />
       )}
 
-      {/* Edit Vehicle Modal */}
       {editingVehicle && (
         <EditVehicleForm
           vehicle={editingVehicle}

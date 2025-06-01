@@ -21,17 +21,15 @@ export const StationVehiclesRow = ({
   vehicleObservations 
 }: StationVehiclesRowProps) => {
   return (
-    <div className="border-b border-gray-200 py-4">
-      <div className="flex items-start space-x-6">
-        {/* Station Name */}
-        <div className="min-w-[200px] pt-3">
-          <h3 className="font-semibold text-red-800 text-lg">{station.name}</h3>
+    <div className="py-2">
+      <div className="flex items-start space-x-4">
+        <div className="min-w-[180px] pt-2">
+          <h3 className="font-semibold text-red-800 text-base">{station.name}</h3>
         </div>
 
-        {/* Vehicles Row */}
         <div className="flex-1">
           {vehicles.length > 0 ? (
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-2">
               {vehicles.map((vehicle) => (
                 <VehicleItem
                   key={vehicle.id}
@@ -43,7 +41,7 @@ export const StationVehiclesRow = ({
               ))}
             </div>
           ) : (
-            <div className="text-gray-500 italic pt-6">Nenhuma viatura atribuída</div>
+            <div className="text-gray-500 italic pt-4 text-sm">Nenhuma viatura atribuída</div>
           )}
         </div>
       </div>

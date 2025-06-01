@@ -15,7 +15,6 @@ interface VehicleItemProps {
   vehicleObservation?: string;
 }
 
-// Map English database values to Portuguese display
 const dbToStatusMap: Record<string, string> = {
   'Available': 'Disponível',
   'En Route': 'A Caminho',
@@ -26,7 +25,6 @@ const dbToStatusMap: Record<string, string> = {
   'Reserve': 'Reserva'
 };
 
-// Map Portuguese status to English database values
 const statusToDbMap: Record<string, string> = {
   'Disponível': 'Available',
   'A Caminho': 'En Route',
@@ -78,7 +76,7 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
     };
 
     updateTimer();
-    const interval = setInterval(updateTimer, 60000); // Update every minute
+    const interval = setInterval(updateTimer, 60000);
 
     return () => clearInterval(interval);
   }, [vehicle.status_changed_at]);
@@ -86,7 +84,6 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
   const currentStatus = dbToStatusMap[vehicle.status as string] || vehicle.status || 'Disponível';
 
   const handleStatusClick = () => {
-    // Only allow status cycling for normal operational statuses
     if (currentStatus === 'Baixada' || currentStatus === 'Reserva') return;
     
     const currentIndex = statusSequence.indexOf(currentStatus);
@@ -97,7 +94,6 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
     onStatusUpdate(vehicle.id, nextDbStatus);
   };
 
-  // Get time color based on duration
   const getTimeColor = () => {
     if (vehicle.status_changed_at) {
       const now = new Date();
@@ -111,7 +107,6 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
     return 'text-gray-500';
   };
 
-  // Get background color based on status
   const getBackgroundColor = () => {
     if (currentStatus === 'Baixada') return 'bg-red-100';
     if (currentStatus === 'Reserva') return 'bg-gray-100';
@@ -120,31 +115,28 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
 
   return (
     <TooltipProvider>
-      <div className={`flex flex-col items-center space-y-2 p-3 border rounded-lg shadow-sm ${getBackgroundColor()}`}>
-        {/* Vehicle Icon with prefix and observation indicator */}
+      <div className={`flex flex-col items-center space-y-1 p-2 border rounded-lg shadow-sm ${getBackgroundColor()}`}>
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="relative cursor-pointer" onClick={() => onVehicleClick(vehicle)}>
-              <div className="relative w-16 h-16 flex items-center justify-center">
-                {/* Vehicle image or default placeholder */}
+              <div className="relative w-14 h-14 flex items-center justify-center">
                 {vehicle.image_url ? (
                   <img 
                     src={vehicle.image_url} 
                     alt={`Viatura ${vehicle.prefix}`}
-                    className="w-12 h-12 object-contain"
+                    className="w-10 h-10 object-contain"
                   />
                 ) : (
-                  <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center">
                     <span className="text-gray-500 text-xs">IMG</span>
                   </div>
                 )}
                 
-                {/* Prefix with larger font and shadow */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div 
-                    className="text-red-800 font-bold text-xl whitespace-nowrap pointer-events-none"
+                    className="text-red-800 font-bold text-lg whitespace-nowrap pointer-events-none"
                     style={{
-                      textShadow: '1px 1px 2px rgba(255,255,255,0.8), -1px -1px 2px rgba(255,255,255,0.8), 1px -1px 2px rgba(255,255,255,0.8), -1px 1px 2px rgba(255,255,255,0.8)'
+                      textShadow: '1px 1px 2px rgba(255,255,255,0.9), -1px -1px 2px rgba(255,255,255,0.9), 1px -1px 2px rgba(255,255,255,0.9), -1px 1px 2px rgba(255,255,255,0.9)'
                     }}
                   >
                     {vehicle.prefix}
@@ -153,8 +145,8 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
               </div>
               
               {vehicleObservation && (
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center">
-                  <AlertCircle className="w-3 h-3 text-white" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full flex items-center justify-center">
+                  <AlertCircle className="w-2 h-2 text-white" />
                 </div>
               )}
             </div>
@@ -164,20 +156,18 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
           </TooltipContent>
         </Tooltip>
 
-        {/* Status and Time */}
         <div className="text-center space-y-1">
-          <Badge className={`${statusColors[currentStatus]} text-white text-xs`}>
+          <Badge className={`${statusColors[currentStatus]} text-white text-xs px-1 py-0`}>
             {currentStatus}
           </Badge>
           <div className={`text-xs font-semibold ${getTimeColor()}`}>{timeInStatus}</div>
         </div>
 
-        {/* Status Change Button - only show for operational statuses */}
         {currentStatus !== 'Baixada' && currentStatus !== 'Reserva' && (
           <Button
             onClick={handleStatusClick}
             size="sm"
-            className="text-xs bg-red-800 hover:bg-red-900 text-white h-6 px-2"
+            className="text-xs bg-red-800 hover:bg-red-900 text-white h-5 px-2 py-0"
           >
             Status
           </Button>

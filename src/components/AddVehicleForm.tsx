@@ -1,13 +1,12 @@
 
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Plus } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
 type FireStation = Tables<'fire_stations'>;
@@ -17,34 +16,48 @@ interface AddVehicleFormProps {
   onClose: () => void;
 }
 
+const categoryOptions = [
+  { value: 'Engine', label: 'Autobomba' },
+  { value: 'Ladder', label: 'Escada' },
+  { value: 'Rescue', label: 'Resgate' },
+  { value: 'Ambulance', label: 'Ambulância' },
+  { value: 'Chief', label: 'Comando' },
+  { value: 'Utility', label: 'Utilitário' }
+];
+
 export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
   const [formData, setFormData] = useState({
     prefix: '',
+    vehicleType: '',
     category: '',
-    vehicle_type: '',
-    station_id: '',
-    sub_station_id: '',
-    image_url: ''
+    stationId: '',
+    subStationId: '',
+    imageUrl: ''
   });
   const [stations, setStations] = useState<FireStation[]>([]);
   const [subStations, setSubStations] = useState<FireSubStation[]>([]);
+  const [filteredSubStations, setFilteredSubStations] = useState<FireSubStation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const categories = ['Autobomba', 'Escada', 'Resgate', 'Ambulância', 'Comando', 'Utilitário'];
-
   useEffect(() => {
     loadStations();
+    loadSubStations();
   }, []);
 
   useEffect(() => {
-    if (formData.station_id) {
-      loadSubStations(formData.station_id);
+    if (formData.stationId) {
+      const filtered = subStations.filter(sub => sub.station_id === formData.stationId);
+      setFilteredSubStations(filtered);
+      // Reset sub-station selection when station changes
+      if (formData.subStationId && !filtered.find(sub => sub.id === formData.subStationId)) {
+        setFormData(prev => ({ ...prev, subStationId: '' }));
+      }
     } else {
-      setSubStations([]);
-      setFormData(prev => ({ ...prev, sub_station_id: '' }));
+      setFilteredSubStations([]);
+      setFormData(prev => ({ ...prev, subStationId: '' }));
     }
-  }, [formData.station_id]);
+  }, [formData.stationId, subStations]);
 
   const loadStations = async () => {
     try {
@@ -60,24 +73,23 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
     }
   };
 
-  const loadSubStations = async (stationId: string) => {
+  const loadSubStations = async () => {
     try {
       const { data, error } = await supabase
         .from('fire_sub_stations')
         .select('*')
-        .eq('station_id', stationId)
         .order('name');
 
       if (error) throw error;
       setSubStations(data || []);
     } catch (error) {
-      console.error('Erro ao carregar estações:', error);
+      console.error('Erro ao carregar subgrupamentos:', error);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.prefix || !formData.category || !formData.vehicle_type || !formData.station_id) {
+    if (!formData.prefix || !formData.vehicleType || !formData.category || !formData.stationId) {
       toast({
         title: "Erro",
         description: "Por favor, preencha todos os campos obrigatórios.",
@@ -92,26 +104,27 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
         .from('vehicles')
         .insert({
           prefix: formData.prefix,
+          vehicle_type: formData.vehicleType,
           category: formData.category as any,
-          vehicle_type: formData.vehicle_type,
-          station_id: formData.station_id,
-          sub_station_id: formData.sub_station_id || null,
-          image_url: formData.image_url || null
+          station_id: formData.stationId,
+          sub_station_id: formData.subStationId || null,
+          image_url: formData.imageUrl || null,
+          status: 'Available'
         });
 
       if (error) throw error;
 
       toast({
         title: "Viatura Adicionada",
-        description: `${formData.prefix} foi adicionada à frota com sucesso.`,
+        description: `Viatura ${formData.prefix} foi adicionada com sucesso.`,
       });
       
       onClose();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Erro ao adicionar viatura:', error);
       toast({
         title: "Erro",
-        description: error.message || "Falha ao adicionar viatura. Tente novamente.",
+        description: "Falha ao adicionar viatura. Verifique se o prefixo não está duplicado.",
         variant: "destructive",
       });
     } finally {
@@ -121,64 +134,54 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-red-800">
-            <Plus className="w-5 h-5" />
-            Adicionar Nova Viatura
-          </DialogTitle>
+          <DialogTitle>Adicionar Nova Viatura</DialogTitle>
         </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="prefix">Prefixo da Unidade *</Label>
+              <Label htmlFor="prefix">Prefixo *</Label>
               <Input
                 id="prefix"
-                placeholder="ex: AB-2, AE-3, UR-1"
                 value={formData.prefix}
-                onChange={(e) => setFormData({ ...formData, prefix: e.target.value })}
-                className="border-red-300 focus:border-red-500"
+                onChange={(e) => setFormData(prev => ({ ...prev, prefix: e.target.value }))}
+                placeholder="Ex: AB-01"
                 required
               />
             </div>
-
             <div>
-              <Label htmlFor="category">Subgrupamento *</Label>
-              <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-                <SelectTrigger className="border-red-300 focus:border-red-500">
-                  <SelectValue placeholder="Selecione o subgrupamento" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="vehicleType">Modalidade de Viatura *</Label>
+              <Input
+                id="vehicleType"
+                value={formData.vehicleType}
+                onChange={(e) => setFormData(prev => ({ ...prev, vehicleType: e.target.value }))}
+                placeholder="Ex: Scania, Mercedes"
+                required
+              />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="vehicle_type">Modalidade de Viatura *</Label>
-            <Input
-              id="vehicle_type"
-              placeholder="ex: Autobomba, Escada Mecânica, Resgate Pesado"
-              value={formData.vehicle_type}
-              onChange={(e) => setFormData({ ...formData, vehicle_type: e.target.value })}
-              className="border-red-300 focus:border-red-500"
-              required
-            />
+            <Label htmlFor="category">Subgrupamento *</Label>
+            <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o subgrupamento" />
+              </SelectTrigger>
+              <SelectContent>
+                {categoryOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
-            <Label htmlFor="station_id">Grupamento *</Label>
-            <Select 
-              value={formData.station_id} 
-              onValueChange={(value) => setFormData({ ...formData, station_id: value, sub_station_id: '' })}
-            >
-              <SelectTrigger className="border-red-300 focus:border-red-500">
+            <Label htmlFor="stationId">Grupamento *</Label>
+            <Select value={formData.stationId} onValueChange={(value) => setFormData(prev => ({ ...prev, stationId: value }))}>
+              <SelectTrigger>
                 <SelectValue placeholder="Selecione o grupamento" />
               </SelectTrigger>
               <SelectContent>
@@ -192,17 +195,17 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
           </div>
 
           <div>
-            <Label htmlFor="sub_station_id">Estação</Label>
+            <Label htmlFor="subStationId">Estação</Label>
             <Select 
-              value={formData.sub_station_id} 
-              onValueChange={(value) => setFormData({ ...formData, sub_station_id: value })}
-              disabled={!formData.station_id}
+              value={formData.subStationId} 
+              onValueChange={(value) => setFormData(prev => ({ ...prev, subStationId: value }))}
+              disabled={!formData.stationId}
             >
-              <SelectTrigger className="border-red-300 focus:border-red-500">
-                <SelectValue placeholder="Selecione a estação" />
+              <SelectTrigger>
+                <SelectValue placeholder={formData.stationId ? "Selecione a estação" : "Selecione primeiro o grupamento"} />
               </SelectTrigger>
               <SelectContent>
-                {subStations.map((subStation) => (
+                {filteredSubStations.map((subStation) => (
                   <SelectItem key={subStation.id} value={subStation.id}>
                     {subStation.name}
                   </SelectItem>
@@ -212,25 +215,21 @@ export const AddVehicleForm = ({ onClose }: AddVehicleFormProps) => {
           </div>
 
           <div>
-            <Label htmlFor="image_url">Ícone da Viatura (URL da Imagem PNG)</Label>
+            <Label htmlFor="imageUrl">URL do Ícone</Label>
             <Input
-              id="image_url"
-              placeholder="https://exemplo.com/icone-viatura.png"
-              value={formData.image_url}
-              onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-              className="border-red-300 focus:border-red-500"
+              id="imageUrl"
+              type="url"
+              value={formData.imageUrl}
+              onChange={(e) => setFormData(prev => ({ ...prev, imageUrl: e.target.value }))}
+              placeholder="https://exemplo.com/icone.png"
             />
           </div>
 
-          <div className="flex gap-2 justify-end">
+          <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>
-            <Button 
-              type="submit" 
-              disabled={isLoading}
-              className="bg-red-800 hover:bg-red-900 text-white"
-            >
+            <Button type="submit" disabled={isLoading}>
               {isLoading ? 'Adicionando...' : 'Adicionar Viatura'}
             </Button>
           </div>

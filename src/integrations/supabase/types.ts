@@ -9,6 +9,77 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          action: string
+          controller_id: string | null
+          created_at: string | null
+          details: string | null
+          id: string
+          station_id: string | null
+        }
+        Insert: {
+          action: string
+          controller_id?: string | null
+          created_at?: string | null
+          details?: string | null
+          id?: string
+          station_id?: string | null
+        }
+        Update: {
+          action?: string
+          controller_id?: string | null
+          created_at?: string | null
+          details?: string | null
+          id?: string
+          station_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_controller_id_fkey"
+            columns: ["controller_id"]
+            isOneToOne: false
+            referencedRelation: "controllers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_logs_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "fire_stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      controllers: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          station_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          station_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          station_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "controllers_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "fire_stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crew_members: {
         Row: {
           created_at: string | null
@@ -77,6 +148,7 @@ export type Database = {
       }
       daily_service_notes: {
         Row: {
+          controller_id: string | null
           created_at: string | null
           created_by: string | null
           date: string | null
@@ -86,6 +158,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          controller_id?: string | null
           created_at?: string | null
           created_by?: string | null
           date?: string | null
@@ -95,6 +168,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          controller_id?: string | null
           created_at?: string | null
           created_by?: string | null
           date?: string | null
@@ -104,6 +178,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "daily_service_notes_controller_id_fkey"
+            columns: ["controller_id"]
+            isOneToOne: false
+            referencedRelation: "controllers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "daily_service_notes_station_id_fkey"
             columns: ["station_id"]
@@ -320,7 +401,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      clean_old_activity_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       vehicle_category:

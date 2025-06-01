@@ -15,6 +15,7 @@ const Index = () => {
   const [showAddVehicle, setShowAddVehicle] = useState(false);
   const [stations, setStations] = useState<FireStation[]>([]);
   const [selectedStation, setSelectedStation] = useState<string>('');
+  const [selectedController, setSelectedController] = useState<string>('');
 
   useEffect(() => {
     loadStations();
@@ -30,7 +31,6 @@ const Index = () => {
       if (stationsError) throw stationsError;
       setStations(stationsData || []);
 
-      // Set first station as default
       if (stationsData && stationsData.length > 0) {
         setSelectedStation(stationsData[0].id);
       }
@@ -41,20 +41,18 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-red-700 text-white shadow-lg">
-        <div className="container mx-auto px-4 py-6">
+        <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold">Sistema de Gestão da Frota - Corpo de Bombeiros</h1>
-              <p className="text-red-100 mt-1">Sistema de Controle e Status de Viaturas de Emergência</p>
+              <h1 className="text-2xl font-bold">Sistema de Gestão da Frota - Corpo de Bombeiros</h1>
+              <p className="text-red-100 mt-1 text-sm">Sistema de Controle e Status de Viaturas de Emergência</p>
             </div>
-            <div className="flex items-center gap-4">
-              {/* Station Selector */}
+            <div className="flex items-center gap-3">
               {stations.length > 0 && (
                 <div className="bg-white rounded-lg p-2">
                   <Select value={selectedStation} onValueChange={setSelectedStation}>
-                    <SelectTrigger className="w-64 text-gray-900">
+                    <SelectTrigger className="w-60 text-gray-900 h-8">
                       <SelectValue placeholder="Selecione um grupamento" />
                     </SelectTrigger>
                     <SelectContent>
@@ -70,9 +68,9 @@ const Index = () => {
               
               <Button 
                 onClick={() => setShowAddVehicle(true)}
-                className="bg-white text-red-700 hover:bg-gray-100 font-semibold"
+                className="bg-white text-red-700 hover:bg-gray-100 font-semibold h-8 px-3"
               >
-                <Plus className="w-5 h-5 mr-2" />
+                <Plus className="w-4 h-4 mr-1" />
                 Adicionar Viatura
               </Button>
             </div>
@@ -80,15 +78,11 @@ const Index = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Daily Service Notes - Whiteboard */}
-        <DailyServiceNotes />
-        
-        {/* Fleet Dashboard */}
-        <FleetDashboard selectedStation={selectedStation} />
+      <div className="container mx-auto px-4 py-4 space-y-4">
+        <DailyServiceNotes selectedStation={selectedStation} />
+        <FleetDashboard selectedStation={selectedStation} selectedController={selectedController} />
       </div>
 
-      {/* Add Vehicle Modal */}
       {showAddVehicle && (
         <AddVehicleForm onClose={() => setShowAddVehicle(false)} />
       )}
