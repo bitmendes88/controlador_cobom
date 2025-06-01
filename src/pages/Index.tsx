@@ -49,8 +49,8 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold">Sistema de Gestão da Frota - Corpo de Bombeiros</h1>
-              <p className="text-red-100 mt-1 text-sm">Sistema de Controle e Status de Viaturas de Emergência</p>
+              <h1 className="text-2xl font-bold">COMANDO DE BOMBEIROS DO INTERIOR 1</h1>
+              <p className="text-red-100 mt-1 text-sm">Controlador COBOM | Gestão de Unidades de Serviços</p>
             </div>
             <div className="flex items-center gap-3">
               {grupamentos.length > 0 && (
