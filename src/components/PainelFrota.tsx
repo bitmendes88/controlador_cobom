@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LinhaViaturaEstacao } from '@/components/LinhaViaturaEstacao';
 import { VehicleDetailModal } from '@/components/VehicleDetailModal';
-import { EditVehicleForm } from '@/components/EditVehicleForm';
+import { FormularioEditarViatura } from '@/components/FormularioEditarViatura';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -147,22 +147,12 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: P
 
       if (error) throw error;
       
-      const mapStatusPt: Record<string, string> = {
-        'Disponível': 'Disponível',
-        'A Caminho': 'A Caminho',
-        'No Local': 'No Local',
-        'A Caminho do Hospital': 'A Caminho do Hospital',
-        'Retornando à Base': 'Retornando à Base',
-        'Baixada': 'Baixada',
-        'Reserva': 'Reserva'
-      };
-      
       const viatura = viaturas.find(v => v.id === viaturaId);
-      await registrarLog('Status alterado', `Viatura ${viatura?.prefixo} - ${mapStatusPt[novoStatus] || novoStatus}`);
+      await registrarLog('Status alterado', `Viatura ${viatura?.prefixo} - ${novoStatus}`);
       
       toast({
         title: "Status Atualizado",
-        description: `Status da viatura alterado para ${mapStatusPt[novoStatus] || novoStatus}`,
+        description: `Status da viatura alterado para ${novoStatus}`,
       });
       
       carregarViaturas();
@@ -315,7 +305,7 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: P
       )}
 
       {viaturaEditando && (
-        <EditVehicleForm
+        <FormularioEditarViatura
           vehicle={viaturaEditando}
           onClose={() => setViaturaEditando(null)}
           onVehicleUpdated={carregarViaturas}

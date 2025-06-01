@@ -100,7 +100,7 @@ const Index = () => {
       </div>
 
       {mostrarAdicionarViatura && (
-        <FormularioAdicionarViatura onClose={() => setMostrarAdicionarViatura(false)} />
+        <FormularioAdicionarViatura aoFechar={() => setMostrarAdicionarViatura(false)} />
       )}
     </div>
   );

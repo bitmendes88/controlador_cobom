@@ -1,5 +1,5 @@
 
-import { ItemViatura } from './VehicleItem';
+import { ItemViatura } from './ItemViatura';
 
 interface Viatura {
   id: string;

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +7,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+
+interface Viatura {
+  id: string;
+  prefixo: string;
+  modalidade: {
+    id: string;
+    nome: string;
+  };
+  estacao: {
+    id: string;
+    nome: string;
+    subgrupamento: {
+      id: string;
+      nome: string;
+      grupamento_id: string;
+    };
+  };
+}
 
 interface Grupamento {
   id: string;
@@ -27,20 +46,21 @@ interface Estacao {
 interface Modalidade {
   id: string;
   nome: string;
-  icone_url: string;
 }
 
-interface FormularioAdicionarViaturaProps {
-  aoFechar: () => void;
+interface FormularioEditarViaturaProps {
+  vehicle: Viatura;
+  onClose: () => void;
+  onVehicleUpdated: () => void;
 }
 
-export const FormularioAdicionarViatura = ({ aoFechar }: FormularioAdicionarViaturaProps) => {
+export const FormularioEditarViatura = ({ vehicle, onClose, onVehicleUpdated }: FormularioEditarViaturaProps) => {
   const [dadosFormulario, setDadosFormulario] = useState({
-    prefixo: '',
-    grupamentoId: '',
-    subgrupamentoId: '',
-    estacaoId: '',
-    modalidadeId: ''
+    prefixo: vehicle.prefixo,
+    grupamentoId: vehicle.estacao.subgrupamento.grupamento_id,
+    subgrupamentoId: vehicle.estacao.subgrupamento.id,
+    estacaoId: vehicle.estacao.id,
+    modalidadeId: vehicle.modalidade.id
   });
   
   const [grupamentos, setGrupamentos] = useState<Grupamento[]>([]);
@@ -60,10 +80,8 @@ export const FormularioAdicionarViatura = ({ aoFechar }: FormularioAdicionarViat
     if (dadosFormulario.grupamentoId) {
       const filtrados = subgrupamentos.filter(sub => sub.grupamento_id === dadosFormulario.grupamentoId);
       setSubgrupamentosFiltrados(filtrados);
-      setDadosFormulario(prev => ({ ...prev, subgrupamentoId: '', estacaoId: '' }));
     } else {
       setSubgrupamentosFiltrados([]);
-      setDadosFormulario(prev => ({ ...prev, subgrupamentoId: '', estacaoId: '' }));
     }
   }, [dadosFormulario.grupamentoId, subgrupamentos]);
 
@@ -71,10 +89,8 @@ export const FormularioAdicionarViatura = ({ aoFechar }: FormularioAdicionarViat
     if (dadosFormulario.subgrupamentoId) {
       const filtradas = estacoes.filter(est => est.subgrupamento_id === dadosFormulario.subgrupamentoId);
       setEstacoesFiltradas(filtradas);
-      setDadosFormulario(prev => ({ ...prev, estacaoId: '' }));
     } else {
       setEstacoesFiltradas([]);
-      setDadosFormulario(prev => ({ ...prev, estacaoId: '' }));
     }
   }, [dadosFormulario.subgrupamentoId, estacoes]);
 
@@ -116,26 +132,28 @@ export const FormularioAdicionarViatura = ({ aoFechar }: FormularioAdicionarViat
     try {
       const { error } = await supabase
         .from('viaturas')
-        .insert({
+        .update({
           prefixo: dadosFormulario.prefixo,
           modalidade_id: dadosFormulario.modalidadeId,
           estacao_id: dadosFormulario.estacaoId,
-          status: 'Disponível'
-        });
+          atualizado_em: new Date().toISOString()
+        })
+        .eq('id', vehicle.id);
 
       if (error) throw error;
 
       toast({
-        title: "Viatura Adicionada",
-        description: `Viatura ${dadosFormulario.prefixo} foi adicionada com sucesso.`,
+        title: "Viatura Atualizada",
+        description: `Viatura ${dadosFormulario.prefixo} foi atualizada com sucesso.`,
       });
       
-      aoFechar();
+      onVehicleUpdated();
+      onClose();
     } catch (error) {
-      console.error('Erro ao adicionar viatura:', error);
+      console.error('Erro ao atualizar viatura:', error);
       toast({
         title: "Erro",
-        description: "Falha ao adicionar viatura. Verifique se o prefixo não está duplicado.",
+        description: "Falha ao atualizar viatura. Verifique se o prefixo não está duplicado.",
         variant: "destructive",
       });
     } finally {
@@ -144,10 +162,10 @@ export const FormularioAdicionarViatura = ({ aoFechar }: FormularioAdicionarViat
   };
 
   return (
-    <Dialog open={true} onOpenChange={aoFechar}>
+    <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Adicionar Nova Viatura</DialogTitle>
+          <DialogTitle>Editar Viatura</DialogTitle>
         </DialogHeader>
         <form onSubmit={aoSubmeter} className="space-y-3">
           <div>
@@ -234,11 +252,11 @@ export const FormularioAdicionarViatura = ({ aoFechar }: FormularioAdicionarViat
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={aoFechar}>
+            <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>
             <Button type="submit" disabled={estaCarregando}>
-              {estaCarregando ? 'Adicionando...' : 'Adicionar Viatura'}
+              {estaCarregando ? 'Atualizando...' : 'Atualizar Viatura'}
             </Button>
           </div>
         </form>
