@@ -13,45 +13,45 @@ interface VehicleTableProps {
   vehicles: Vehicle[];
   onVehicleClick: (vehicle: Vehicle) => void;
   onStatusUpdate: (vehicleId: string, status: string) => void;
-  onVehicleAction: (vehicleId: string, action: 'baixar' | 'reserva' | 'levantar') => void;
+  onVehicleAction: (vehicleId: string, action: 'baixar' | 'RESERVA' | 'levantar') => void;
 }
 
 // Map Portuguese status to English database values
 const statusToDbMap: Record<string, string> = {
-  'Disponível': 'Available',
-  'A Caminho': 'En Route',
-  'No Local': 'On Scene',
-  'A Caminho do Hospital': 'En Route to Hospital',
-  'Retornando à Base': 'Returning to Base',
-  'Indisponível': 'Available', // We'll handle this differently
-  'Reserva': 'Available' // We'll handle this differently
+  'DISPONÍVEL': 'Available',
+  'QTI': 'En Route',
+  'LOCAL': 'On Scene',
+  'QTI PS': 'En Route to Hospital',
+  'REGRESSO': 'Returning to Base',
+  'BAIXADO': 'Available', // We'll handle this differently
+  'RESERVA': 'Available' // We'll handle this differently
 };
 
 // Map English database values to Portuguese display
 const dbToStatusMap: Record<string, string> = {
-  'Available': 'Disponível',
-  'En Route': 'A Caminho',
-  'On Scene': 'No Local',
-  'En Route to Hospital': 'A Caminho do Hospital',
-  'Returning to Base': 'Retornando à Base'
+  'Available': 'DISPONÍVEL',
+  'En Route': 'QTI',
+  'On Scene': 'LOCAL',
+  'En Route to Hospital': 'QTI PS',
+  'Returning to Base': 'REGRESSO'
 };
 
 const statusColors: Record<string, string> = {
-  'Disponível': 'bg-green-500',
-  'A Caminho': 'bg-blue-500',
-  'No Local': 'bg-yellow-500',
-  'A Caminho do Hospital': 'bg-purple-500',
-  'Retornando à Base': 'bg-orange-500',
-  'Indisponível': 'bg-red-500',
-  'Reserva': 'bg-gray-500',
+  'DISPONÍVEL': 'bg-green-500',
+  'QTI': 'bg-blue-500',
+  'LOCAL': 'bg-yellow-500',
+  'QTI PS': 'bg-purple-500',
+  'REGRESSO': 'bg-orange-500',
+  'BAIXADO': 'bg-red-500',
+  'RESERVA': 'bg-gray-500',
 };
 
 const statusOptions = [
-  'Disponível',
-  'A Caminho',
-  'No Local',
-  'A Caminho do Hospital',
-  'Retornando à Base'
+  'DISPONÍVEL',
+  'QTI',
+  'LOCAL',
+  'QTI PS',
+  'REGRESSO'
 ];
 
 export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate, onVehicleAction }: VehicleTableProps) => {
@@ -90,7 +90,7 @@ export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate, onVehic
     // Check for special statuses first
     if (vehicle.category === 'Utility' && vehicle.status === 'Available') {
       // This could be a "baixado" vehicle, check if it's in "Veículos Baixados" category
-      return 'Indisponível';
+      return 'BAIXADO';
     }
     
     // For vehicles marked as reserve (we'll need a custom field for this)
@@ -130,7 +130,7 @@ export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate, onVehic
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>{vehicleObservations[vehicle.id] || 'Nenhuma observação disponível'}</p>
+                          <p>{vehicleObservations[vehicle.id] || 'Nenhuma observação DISPONÍVEL'}</p>
                         </TooltipContent>
                       </Tooltip>
                       <span className="font-bold text-lg text-red-800">{vehicle.prefix}</span>
@@ -156,7 +156,7 @@ export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate, onVehic
                               : 'border-red-300 text-red-600 hover:bg-red-50'
                           }`}
                         >
-                          {status === 'A Caminho do Hospital' ? 'Para Hospital' : status}
+                          {status === 'QTI PS' ? 'Para Hospital' : status}
                         </Button>
                       ))}
                     </div>
@@ -168,7 +168,7 @@ export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate, onVehic
                         size="sm"
                         onClick={() => onVehicleAction(vehicle.id, 'baixar')}
                         className="border-red-500 text-red-600 hover:bg-red-50"
-                        disabled={displayStatus === 'Indisponível'}
+                        disabled={displayStatus === 'BAIXADO'}
                       >
                         <Download className="w-4 h-4 mr-1" />
                         Baixar
@@ -176,19 +176,19 @@ export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate, onVehic
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => onVehicleAction(vehicle.id, 'reserva')}
+                        onClick={() => onVehicleAction(vehicle.id, 'RESERVA')}
                         className="border-gray-500 text-gray-600 hover:bg-gray-50"
-                        disabled={displayStatus === 'Reserva'}
+                        disabled={displayStatus === 'RESERVA'}
                       >
                         <Calendar className="w-4 h-4 mr-1" />
-                        Reserva
+                        RESERVA
                       </Button>
                       <Button 
                         variant="outline" 
                         size="sm"
                         onClick={() => onVehicleAction(vehicle.id, 'levantar')}
                         className="border-green-500 text-green-600 hover:bg-green-50"
-                        disabled={displayStatus === 'Disponível'}
+                        disabled={displayStatus === 'DISPONÍVEL'}
                       >
                         <Play className="w-4 h-4 mr-1" />
                         Levantar

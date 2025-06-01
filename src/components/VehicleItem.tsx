@@ -16,41 +16,41 @@ interface VehicleItemProps {
 }
 
 const dbToStatusMap: Record<string, string> = {
-  'Available': 'Disponível',
-  'En Route': 'A Caminho',
-  'On Scene': 'No Local',
-  'En Route to Hospital': 'A Caminho do Hospital',
-  'Returning to Base': 'Retornando à Base',
-  'Down': 'Baixada',
-  'Reserve': 'Reserva'
+  'Available': 'DISPONÍVEL',
+  'En Route': 'QTI',
+  'On Scene': 'LOCAL',
+  'En Route to Hospital': 'QTI PS',
+  'Returning to Base': 'REGRESSO',
+  'Down': 'BAIXADO',
+  'Reserve': 'RESERVA'
 };
 
 const statusToDbMap: Record<string, string> = {
-  'Disponível': 'Available',
-  'A Caminho': 'En Route',
-  'No Local': 'On Scene',
-  'A Caminho do Hospital': 'En Route to Hospital',
-  'Retornando à Base': 'Returning to Base',
-  'Baixada': 'Down',
-  'Reserva': 'Reserve'
+  'DISPONÍVEL': 'Available',
+  'QTI': 'En Route',
+  'LOCAL': 'On Scene',
+  'QTI PS': 'En Route to Hospital',
+  'REGRESSO': 'Returning to Base',
+  'BAIXADO': 'Down',
+  'RESERVA': 'Reserve'
 };
 
 const statusColors: Record<string, string> = {
-  'Disponível': 'bg-green-600',
-  'A Caminho': 'bg-blue-600',
-  'No Local': 'bg-yellow-600',
-  'A Caminho do Hospital': 'bg-purple-600',
-  'Retornando à Base': 'bg-orange-600',
-  'Baixada': 'bg-red-600',
-  'Reserva': 'bg-gray-600',
+  'DISPONÍVEL': 'bg-green-600',
+  'QTI': 'bg-blue-600',
+  'LOCAL': 'bg-yellow-600',
+  'QTI PS': 'bg-purple-600',
+  'REGRESSO': 'bg-orange-600',
+  'BAIXADO': 'bg-red-600',
+  'RESERVA': 'bg-gray-600',
 };
 
 const statusSequence = [
-  'Disponível',
-  'A Caminho',
-  'No Local',
-  'A Caminho do Hospital',
-  'Retornando à Base'
+  'DISPONÍVEL',
+  'QTI',
+  'LOCAL',
+  'QTI PS',
+  'REGRESSO'
 ];
 
 export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleObservation }: VehicleItemProps) => {
@@ -81,10 +81,10 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
     return () => clearInterval(interval);
   }, [vehicle.status_changed_at]);
 
-  const currentStatus = dbToStatusMap[vehicle.status as string] || vehicle.status || 'Disponível';
+  const currentStatus = dbToStatusMap[vehicle.status as string] || vehicle.status || 'DISPONÍVEL';
 
   const handleStatusClick = () => {
-    if (currentStatus === 'Baixada' || currentStatus === 'Reserva') return;
+    if (currentStatus === 'BAIXADO' || currentStatus === 'RESERVA') return;
     
     const currentIndex = statusSequence.indexOf(currentStatus);
     const nextIndex = (currentIndex + 1) % statusSequence.length;
@@ -108,8 +108,8 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
   };
 
   const getBackgroundColor = () => {
-    if (currentStatus === 'Baixada') return 'bg-red-100';
-    if (currentStatus === 'Reserva') return 'bg-gray-100';
+    if (currentStatus === 'BAIXADO') return 'bg-red-100';
+    if (currentStatus === 'RESERVA') return 'bg-gray-100';
     return 'bg-white';
   };
 
@@ -152,7 +152,7 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{vehicleObservation || 'Nenhuma observação disponível'}</p>
+            <p>{vehicleObservation || 'Nenhuma observação DISPONÍVEL'}</p>
           </TooltipContent>
         </Tooltip>
 
@@ -163,7 +163,7 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
           <div className={`text-xs font-semibold ${getTimeColor()}`}>{timeInStatus}</div>
         </div>
 
-        {currentStatus !== 'Baixada' && currentStatus !== 'Reserva' && (
+        {currentStatus !== 'BAIXADO' && currentStatus !== 'RESERVA' && (
           <Button
             onClick={handleStatusClick}
             size="sm"

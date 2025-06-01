@@ -16,20 +16,20 @@ type VehicleObservation = Tables<'vehicle_observations'>;
 interface VehicleDetailModalProps {
   vehicle: Vehicle;
   onClose: () => void;
-  onVehicleAction?: (vehicleId: string, action: 'baixar' | 'reserva' | 'levantar') => void;
+  onVehicleAction?: (vehicleId: string, action: 'BAIXAR' | 'RESERVA' | 'LEVANTAR') => void;
   onVehicleDelete?: (vehicleId: string) => void;
   onEditVehicle?: (vehicle: Vehicle) => void;
 }
 
 // Map English database values to Portuguese display
 const dbToStatusMap: Record<string, string> = {
-  'Available': 'Disponível',
-  'En Route': 'A Caminho',
-  'On Scene': 'No Local',
-  'En Route to Hospital': 'A Caminho do Hospital',
-  'Returning to Base': 'Retornando à Base',
-  'Down': 'Baixada',
-  'Reserve': 'Reserva'
+  'Available': 'DISPONÍVEL',
+  'En Route': 'QTI',
+  'On Scene': 'LOCAL',
+  'En Route to Hospital': 'QTI PS',
+  'Returning to Base': 'REGRESSO',
+  'Down': 'BAIXADO',
+  'Reserve': 'RESERVA'
 };
 
 export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction, onVehicleDelete, onEditVehicle }: VehicleDetailModalProps) => {
@@ -166,19 +166,19 @@ export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction, onVehicl
   };
 
   const statusColors: Record<string, string> = {
-    'Disponível': 'bg-green-600',
-    'A Caminho': 'bg-blue-600',
-    'No Local': 'bg-yellow-600',
-    'A Caminho do Hospital': 'bg-purple-600',
-    'Retornando à Base': 'bg-orange-600',
-    'Baixada': 'bg-red-600',
-    'Reserva': 'bg-gray-600',
+    'DISPONÍVEL': 'bg-green-600',
+    'QTI': 'bg-blue-600',
+    'LOCAL': 'bg-yellow-600',
+    'QTI PS': 'bg-purple-600',
+    'REGRESSO': 'bg-orange-600',
+    'BAIXADO': 'bg-red-600',
+    'RESERVA': 'bg-gray-600',
   };
 
-  const currentStatus = dbToStatusMap[vehicle.status as string] || vehicle.status || 'Disponível';
+  const currentStatus = dbToStatusMap[vehicle.status as string] || vehicle.status || 'DISPONÍVEL';
 
-  const showActions = currentStatus !== 'Baixada' && currentStatus !== 'Reserva';
-  const showLevantarButton = currentStatus === 'Baixada' || currentStatus === 'Reserva';
+  const showActions = currentStatus !== 'BAIXADO' && currentStatus !== 'RESERVA';
+  const showLevantarButton = currentStatus === 'BAIXADO' || currentStatus === 'RESERVA';
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -244,11 +244,11 @@ export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction, onVehicl
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => onVehicleAction(vehicle.id, 'reserva')}
+                          onClick={() => onVehicleAction(vehicle.id, 'RESERVA')}
                           className="border-gray-500 text-gray-600 hover:bg-gray-50"
                         >
                           <Calendar className="w-4 h-4 mr-1" />
-                          Reserva
+                          RESERVA
                         </Button>
                       </>
                     )}
