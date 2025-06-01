@@ -5,58 +5,61 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import type { Tables } from '@/integrations/supabase/types';
 
-type ActivityLog = Tables<'activity_logs'> & {
-  controllers?: { name: string } | null;
-};
-
-interface ActivityLogsModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  selectedStation: string;
+interface LogAtividade {
+  id: string;
+  acao: string;
+  detalhes: string | null;
+  criado_em: string | null;
+  controladores?: { nome: string } | null;
 }
 
-export const ActivityLogsModal = ({ isOpen, onClose, selectedStation }: ActivityLogsModalProps) => {
-  const [logs, setLogs] = useState<ActivityLog[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+interface ModalLogsAtividadeProps {
+  estaAberto: boolean;
+  aoFechar: () => void;
+  grupamentoSelecionado: string;
+}
+
+export const ModalLogsAtividade = ({ estaAberto, aoFechar, grupamentoSelecionado }: ModalLogsAtividadeProps) => {
+  const [logs, setLogs] = useState<LogAtividade[]>([]);
+  const [estaCarregando, setEstaCarregando] = useState(false);
 
   useEffect(() => {
-    if (isOpen && selectedStation) {
-      loadLogs();
+    if (estaAberto && grupamentoSelecionado) {
+      carregarLogs();
     }
-  }, [isOpen, selectedStation]);
+  }, [estaAberto, grupamentoSelecionado]);
 
-  const loadLogs = async () => {
-    setIsLoading(true);
+  const carregarLogs = async () => {
+    setEstaCarregando(true);
     try {
       const { data, error } = await supabase
-        .from('activity_logs')
+        .from('logs_atividade')
         .select(`
           *,
-          controllers:controller_id (name)
+          controladores:controlador_id (nome)
         `)
-        .eq('station_id', selectedStation)
-        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-        .order('created_at', { ascending: false });
+        .eq('grupamento_id', grupamentoSelecionado)
+        .gte('criado_em', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .order('criado_em', { ascending: false });
 
       if (error) throw error;
       setLogs(data || []);
     } catch (error) {
       console.error('Erro ao carregar logs:', error);
     } finally {
-      setIsLoading(false);
+      setEstaCarregando(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={estaAberto} onOpenChange={aoFechar}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Log de Atividades (Últimas 24h)</DialogTitle>
         </DialogHeader>
         <ScrollArea className="max-h-96 w-full">
-          {isLoading ? (
+          {estaCarregando ? (
             <div className="text-center py-4">Carregando...</div>
           ) : logs.length === 0 ? (
             <div className="text-center py-4 text-gray-500">Nenhuma atividade registrada</div>
@@ -66,14 +69,14 @@ export const ActivityLogsModal = ({ isOpen, onClose, selectedStation }: Activity
                 <div key={log.id} className="border-b pb-2 last:border-b-0">
                   <div className="flex justify-between items-start text-sm">
                     <div>
-                      <div className="font-medium">{log.action}</div>
-                      {log.details && <div className="text-gray-600">{log.details}</div>}
+                      <div className="font-medium">{log.acao}</div>
+                      {log.detalhes && <div className="text-gray-600">{log.detalhes}</div>}
                       <div className="text-xs text-gray-500">
-                        {log.controllers?.name || 'Usuário desconhecido'}
+                        {log.controladores?.nome || 'Usuário desconhecido'}
                       </div>
                     </div>
                     <div className="text-xs text-gray-500">
-                      {formatDistanceToNow(new Date(log.created_at || ''), { 
+                      {formatDistanceToNow(new Date(log.criado_em || ''), { 
                         addSuffix: true, 
                         locale: ptBR 
                       })}

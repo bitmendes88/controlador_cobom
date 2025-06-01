@@ -51,6 +51,83 @@ export type Database = {
           },
         ]
       }
+      anotacoes_servico: {
+        Row: {
+          anotacoes: string
+          atualizado_em: string | null
+          controlador_id: string | null
+          criado_em: string | null
+          criado_por: string | null
+          data: string | null
+          grupamento_id: string
+          id: string
+        }
+        Insert: {
+          anotacoes: string
+          atualizado_em?: string | null
+          controlador_id?: string | null
+          criado_em?: string | null
+          criado_por?: string | null
+          data?: string | null
+          grupamento_id: string
+          id?: string
+        }
+        Update: {
+          anotacoes?: string
+          atualizado_em?: string | null
+          controlador_id?: string | null
+          criado_em?: string | null
+          criado_por?: string | null
+          data?: string | null
+          grupamento_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anotacoes_servico_controlador_id_fkey"
+            columns: ["controlador_id"]
+            isOneToOne: false
+            referencedRelation: "controladores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anotacoes_servico_grupamento_id_fkey"
+            columns: ["grupamento_id"]
+            isOneToOne: false
+            referencedRelation: "grupamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      controladores: {
+        Row: {
+          criado_em: string | null
+          grupamento_id: string | null
+          id: string
+          nome: string
+        }
+        Insert: {
+          criado_em?: string | null
+          grupamento_id?: string | null
+          id?: string
+          nome: string
+        }
+        Update: {
+          criado_em?: string | null
+          grupamento_id?: string | null
+          id?: string
+          nome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "controladores_grupamento_id_fkey"
+            columns: ["grupamento_id"]
+            isOneToOne: false
+            referencedRelation: "grupamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       controllers: {
         Row: {
           created_at: string | null
@@ -194,6 +271,35 @@ export type Database = {
           },
         ]
       }
+      estacoes: {
+        Row: {
+          criado_em: string | null
+          id: string
+          nome: string
+          subgrupamento_id: string
+        }
+        Insert: {
+          criado_em?: string | null
+          id?: string
+          nome: string
+          subgrupamento_id: string
+        }
+        Update: {
+          criado_em?: string | null
+          id?: string
+          nome?: string
+          subgrupamento_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estacoes_subgrupamento_id_fkey"
+            columns: ["subgrupamento_id"]
+            isOneToOne: false
+            referencedRelation: "subgrupamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fire_stations: {
         Row: {
           address: string | null
@@ -240,6 +346,151 @@ export type Database = {
             columns: ["station_id"]
             isOneToOne: false
             referencedRelation: "fire_stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      grupamentos: {
+        Row: {
+          criado_em: string | null
+          endereco: string | null
+          id: string
+          nome: string
+        }
+        Insert: {
+          criado_em?: string | null
+          endereco?: string | null
+          id?: string
+          nome: string
+        }
+        Update: {
+          criado_em?: string | null
+          endereco?: string | null
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      logs_atividade: {
+        Row: {
+          acao: string
+          controlador_id: string | null
+          criado_em: string | null
+          detalhes: string | null
+          grupamento_id: string | null
+          id: string
+        }
+        Insert: {
+          acao: string
+          controlador_id?: string | null
+          criado_em?: string | null
+          detalhes?: string | null
+          grupamento_id?: string | null
+          id?: string
+        }
+        Update: {
+          acao?: string
+          controlador_id?: string | null
+          criado_em?: string | null
+          detalhes?: string | null
+          grupamento_id?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "logs_atividade_controlador_id_fkey"
+            columns: ["controlador_id"]
+            isOneToOne: false
+            referencedRelation: "controladores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "logs_atividade_grupamento_id_fkey"
+            columns: ["grupamento_id"]
+            isOneToOne: false
+            referencedRelation: "grupamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      modalidades_viatura: {
+        Row: {
+          criado_em: string | null
+          icone_url: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          criado_em?: string | null
+          icone_url: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          criado_em?: string | null
+          icone_url?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      observacoes_viatura: {
+        Row: {
+          criado_em: string | null
+          criado_por: string | null
+          id: string
+          observacao: string
+          viatura_id: string
+        }
+        Insert: {
+          criado_em?: string | null
+          criado_por?: string | null
+          id?: string
+          observacao: string
+          viatura_id: string
+        }
+        Update: {
+          criado_em?: string | null
+          criado_por?: string | null
+          id?: string
+          observacao?: string
+          viatura_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "observacoes_viatura_viatura_id_fkey"
+            columns: ["viatura_id"]
+            isOneToOne: false
+            referencedRelation: "viaturas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subgrupamentos: {
+        Row: {
+          criado_em: string | null
+          grupamento_id: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          criado_em?: string | null
+          grupamento_id: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          criado_em?: string | null
+          grupamento_id?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subgrupamentos_grupamento_id_fkey"
+            columns: ["grupamento_id"]
+            isOneToOne: false
+            referencedRelation: "grupamentos"
             referencedColumns: ["id"]
           },
         ]
@@ -396,12 +647,64 @@ export type Database = {
           },
         ]
       }
+      viaturas: {
+        Row: {
+          atualizado_em: string | null
+          criado_em: string | null
+          estacao_id: string
+          id: string
+          modalidade_id: string
+          prefixo: string
+          status: string | null
+          status_alterado_em: string | null
+        }
+        Insert: {
+          atualizado_em?: string | null
+          criado_em?: string | null
+          estacao_id: string
+          id?: string
+          modalidade_id: string
+          prefixo: string
+          status?: string | null
+          status_alterado_em?: string | null
+        }
+        Update: {
+          atualizado_em?: string | null
+          criado_em?: string | null
+          estacao_id?: string
+          id?: string
+          modalidade_id?: string
+          prefixo?: string
+          status?: string | null
+          status_alterado_em?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "viaturas_estacao_id_fkey"
+            columns: ["estacao_id"]
+            isOneToOne: false
+            referencedRelation: "estacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viaturas_modalidade_id_fkey"
+            columns: ["modalidade_id"]
+            isOneToOne: false
+            referencedRelation: "modalidades_viatura"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       clean_old_activity_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      limpar_logs_antigos: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }

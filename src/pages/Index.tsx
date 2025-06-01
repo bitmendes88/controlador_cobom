@@ -1,41 +1,45 @@
 
 import { useState, useEffect } from 'react';
-import { FleetDashboard } from '@/components/FleetDashboard';
-import { DailyServiceNotes } from '@/components/DailyServiceNotes';
-import { AddVehicleForm } from '@/components/AddVehicleForm';
+import { PainelFrota } from '@/components/PainelFrota';
+import { AnotacoesServicoDaily } from '@/components/AnotacoesServicoDaily';
+import { FormularioAdicionarViatura } from '@/components/FormularioAdicionarViatura';
+import { SeletorControlador } from '@/components/SeletorControlador';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import type { Tables } from '@/integrations/supabase/types';
 
-type FireStation = Tables<'fire_stations'>;
+interface Grupamento {
+  id: string;
+  nome: string;
+  endereco: string | null;
+}
 
 const Index = () => {
-  const [showAddVehicle, setShowAddVehicle] = useState(false);
-  const [stations, setStations] = useState<FireStation[]>([]);
-  const [selectedStation, setSelectedStation] = useState<string>('');
-  const [selectedController, setSelectedController] = useState<string>('');
+  const [mostrarAdicionarViatura, setMostrarAdicionarViatura] = useState(false);
+  const [grupamentos, setGrupamentos] = useState<Grupamento[]>([]);
+  const [grupamentoSelecionado, setGrupamentoSelecionado] = useState<string>('');
+  const [controladorSelecionado, setControladorSelecionado] = useState<string>('');
 
   useEffect(() => {
-    loadStations();
+    carregarGrupamentos();
   }, []);
 
-  const loadStations = async () => {
+  const carregarGrupamentos = async () => {
     try {
-      const { data: stationsData, error: stationsError } = await supabase
-        .from('fire_stations')
+      const { data: dadosGrupamentos, error: erroGrupamentos } = await supabase
+        .from('grupamentos')
         .select('*')
-        .order('name');
+        .order('nome');
 
-      if (stationsError) throw stationsError;
-      setStations(stationsData || []);
+      if (erroGrupamentos) throw erroGrupamentos;
+      setGrupamentos(dadosGrupamentos || []);
 
-      if (stationsData && stationsData.length > 0) {
-        setSelectedStation(stationsData[0].id);
+      if (dadosGrupamentos && dadosGrupamentos.length > 0) {
+        setGrupamentoSelecionado(dadosGrupamentos[0].id);
       }
     } catch (error) {
-      console.error('Erro ao carregar estações:', error);
+      console.error('Erro ao carregar grupamentos:', error);
     }
   };
 
@@ -49,25 +53,31 @@ const Index = () => {
               <p className="text-red-100 mt-1 text-sm">Sistema de Controle e Status de Viaturas de Emergência</p>
             </div>
             <div className="flex items-center gap-3">
-              {stations.length > 0 && (
+              {grupamentos.length > 0 && (
                 <div className="bg-white rounded-lg p-2">
-                  <Select value={selectedStation} onValueChange={setSelectedStation}>
+                  <Select value={grupamentoSelecionado} onValueChange={setGrupamentoSelecionado}>
                     <SelectTrigger className="w-60 text-gray-900 h-8">
                       <SelectValue placeholder="Selecione um grupamento" />
                     </SelectTrigger>
                     <SelectContent>
-                      {stations.map((station) => (
-                        <SelectItem key={station.id} value={station.id}>
-                          {station.name} - {station.address}
+                      {grupamentos.map((grupamento) => (
+                        <SelectItem key={grupamento.id} value={grupamento.id}>
+                          {grupamento.nome} - {grupamento.endereco}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
               )}
+
+              <SeletorControlador
+                grupamentoSelecionado={grupamentoSelecionado}
+                controladorSelecionado={controladorSelecionado}
+                aoMudarControlador={setControladorSelecionado}
+              />
               
               <Button 
-                onClick={() => setShowAddVehicle(true)}
+                onClick={() => setMostrarAdicionarViatura(true)}
                 className="bg-white text-red-700 hover:bg-gray-100 font-semibold h-8 px-3"
               >
                 <Plus className="w-4 h-4 mr-1" />
@@ -79,12 +89,18 @@ const Index = () => {
       </div>
 
       <div className="container mx-auto px-4 py-4 space-y-4">
-        <DailyServiceNotes selectedStation={selectedStation} />
-        <FleetDashboard selectedStation={selectedStation} selectedController={selectedController} />
+        <AnotacoesServicoDaily 
+          grupamentoSelecionado={grupamentoSelecionado} 
+          controladorSelecionado={controladorSelecionado}
+        />
+        <PainelFrota 
+          grupamentoSelecionado={grupamentoSelecionado} 
+          controladorSelecionado={controladorSelecionado} 
+        />
       </div>
 
-      {showAddVehicle && (
-        <AddVehicleForm onClose={() => setShowAddVehicle(false)} />
+      {mostrarAdicionarViatura && (
+        <FormularioAdicionarViatura onClose={() => setMostrarAdicionarViatura(false)} />
       )}
     </div>
   );
