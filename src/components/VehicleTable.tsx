@@ -7,34 +7,19 @@ import { Truck, Download, Calendar, Play } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 
-type Vehicle = Tables<'vehicles'>;
+type Viatura = Tables<'viaturas'>;
 
 interface VehicleTableProps {
-  vehicles: Vehicle[];
-  onVehicleClick: (vehicle: Vehicle) => void;
+  vehicles: (Viatura & {
+    modalidade: {
+      nome: string;
+      icone_url: string;
+    };
+  })[];
+  onVehicleClick: (vehicle: Viatura) => void;
   onStatusUpdate: (vehicleId: string, status: string) => void;
   onVehicleAction: (vehicleId: string, action: 'baixar' | 'RESERVA' | 'levantar') => void;
 }
-
-// Map Portuguese status to English database values
-const statusToDbMap: Record<string, string> = {
-  'DISPONÍVEL': 'Available',
-  'QTI': 'En Route',
-  'LOCAL': 'On Scene',
-  'QTI PS': 'En Route to Hospital',
-  'REGRESSO': 'Returning to Base',
-  'BAIXADO': 'Available', // We'll handle this differently
-  'RESERVA': 'Available' // We'll handle this differently
-};
-
-// Map English database values to Portuguese display
-const dbToStatusMap: Record<string, string> = {
-  'Available': 'DISPONÍVEL',
-  'En Route': 'QTI',
-  'On Scene': 'LOCAL',
-  'En Route to Hospital': 'QTI PS',
-  'Returning to Base': 'REGRESSO'
-};
 
 const statusColors: Record<string, string> = {
   'DISPONÍVEL': 'bg-green-500',
@@ -67,17 +52,17 @@ export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate, onVehic
       if (vehicleIds.length === 0) return;
 
       const { data, error } = await supabase
-        .from('vehicle_observations')
-        .select('vehicle_id, observation')
-        .in('vehicle_id', vehicleIds)
-        .order('created_at', { ascending: false });
+        .from('observacoes_viatura')
+        .select('viatura_id, observacao')
+        .in('viatura_id', vehicleIds)
+        .order('criado_em', { ascending: false });
 
       if (error) throw error;
 
       const obsMap: Record<string, string> = {};
       data?.forEach(obs => {
-        if (!obsMap[obs.vehicle_id]) {
-          obsMap[obs.vehicle_id] = obs.observation;
+        if (!obsMap[obs.viatura_id]) {
+          obsMap[obs.viatura_id] = obs.observacao;
         }
       });
       setVehicleObservations(obsMap);
@@ -86,16 +71,8 @@ export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate, onVehic
     }
   };
 
-  const getDisplayStatus = (vehicle: Vehicle) => {
-    // Check for special statuses first
-    if (vehicle.category === 'Utility' && vehicle.status === 'Available') {
-      // This could be a "baixado" vehicle, check if it's in "Veículos Baixados" category
-      return 'BAIXADO';
-    }
-    
-    // For vehicles marked as reserve (we'll need a custom field for this)
-    // For now, we'll use the database status
-    return dbToStatusMap[vehicle.status as string] || vehicle.status;
+  const getDisplayStatus = (vehicle: Viatura & { modalidade: { nome: string; icone_url: string; } }) => {
+    return vehicle.status || 'DISPONÍVEL';
   };
 
   return (
@@ -130,13 +107,13 @@ export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate, onVehic
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>{vehicleObservations[vehicle.id] || 'Nenhuma observação DISPONÍVEL'}</p>
+                          <p>{vehicleObservations[vehicle.id] || 'Nenhuma observação disponível'}</p>
                         </TooltipContent>
                       </Tooltip>
-                      <span className="font-bold text-lg text-red-800">{vehicle.prefix}</span>
+                      <span className="font-bold text-lg text-red-800">{vehicle.prefixo}</span>
                     </div>
                   </td>
-                  <td className="p-4 text-gray-700">{vehicle.vehicle_type}</td>
+                  <td className="p-4 text-gray-700">{vehicle.modalidade.nome}</td>
                   <td className="p-4">
                     <Badge className={`${statusColors[displayStatus]} text-white`}>
                       {displayStatus}
@@ -149,7 +126,7 @@ export const VehicleTable = ({ vehicles, onVehicleClick, onStatusUpdate, onVehic
                           key={status}
                           variant={displayStatus === status ? "default" : "outline"}
                           size="sm"
-                          onClick={() => onStatusUpdate(vehicle.id, statusToDbMap[status])}
+                          onClick={() => onStatusUpdate(vehicle.id, status)}
                           className={`text-xs ${
                             displayStatus === status 
                               ? 'bg-red-600 hover:bg-red-700 text-white' 

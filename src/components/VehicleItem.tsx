@@ -6,34 +6,19 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { AlertCircle } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
-type Vehicle = Tables<'vehicles'>;
+type Viatura = Tables<'viaturas'>;
 
 interface VehicleItemProps {
-  vehicle: Vehicle;
-  onVehicleClick: (vehicle: Vehicle) => void;
+  vehicle: Viatura & {
+    modalidade: {
+      nome: string;
+      icone_url: string;
+    };
+  };
+  onVehicleClick: (vehicle: Viatura) => void;
   onStatusUpdate: (vehicleId: string, status: string) => void;
   vehicleObservation?: string;
 }
-
-const dbToStatusMap: Record<string, string> = {
-  'Available': 'DISPONÍVEL',
-  'En Route': 'QTI',
-  'On Scene': 'LOCAL',
-  'En Route to Hospital': 'QTI PS',
-  'Returning to Base': 'REGRESSO',
-  'Down': 'BAIXADO',
-  'Reserve': 'RESERVA'
-};
-
-const statusToDbMap: Record<string, string> = {
-  'DISPONÍVEL': 'Available',
-  'QTI': 'En Route',
-  'LOCAL': 'On Scene',
-  'QTI PS': 'En Route to Hospital',
-  'REGRESSO': 'Returning to Base',
-  'BAIXADO': 'Down',
-  'RESERVA': 'Reserve'
-};
 
 const statusColors: Record<string, string> = {
   'DISPONÍVEL': 'bg-green-600',
@@ -58,9 +43,9 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
 
   useEffect(() => {
     const updateTimer = () => {
-      if (vehicle.status_changed_at) {
+      if (vehicle.status_alterado_em) {
         const now = new Date();
-        const statusTime = new Date(vehicle.status_changed_at);
+        const statusTime = new Date(vehicle.status_alterado_em);
         const diffInMinutes = Math.floor((now.getTime() - statusTime.getTime()) / 60000);
         
         if (diffInMinutes < 60) {
@@ -79,9 +64,9 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
     const interval = setInterval(updateTimer, 60000);
 
     return () => clearInterval(interval);
-  }, [vehicle.status_changed_at]);
+  }, [vehicle.status_alterado_em]);
 
-  const currentStatus = dbToStatusMap[vehicle.status as string] || vehicle.status || 'DISPONÍVEL';
+  const currentStatus = vehicle.status || 'DISPONÍVEL';
 
   const handleStatusClick = () => {
     if (currentStatus === 'BAIXADO' || currentStatus === 'RESERVA') return;
@@ -89,15 +74,14 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
     const currentIndex = statusSequence.indexOf(currentStatus);
     const nextIndex = (currentIndex + 1) % statusSequence.length;
     const nextStatus = statusSequence[nextIndex];
-    const nextDbStatus = statusToDbMap[nextStatus];
     
-    onStatusUpdate(vehicle.id, nextDbStatus);
+    onStatusUpdate(vehicle.id, nextStatus);
   };
 
   const getTimeColor = () => {
-    if (vehicle.status_changed_at) {
+    if (vehicle.status_alterado_em) {
       const now = new Date();
-      const statusTime = new Date(vehicle.status_changed_at);
+      const statusTime = new Date(vehicle.status_alterado_em);
       const diffInMinutes = Math.floor((now.getTime() - statusTime.getTime()) / 60000);
       
       if (diffInMinutes <= 15) return 'text-green-600';
@@ -120,10 +104,10 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
           <TooltipTrigger asChild>
             <div className="relative cursor-pointer" onClick={() => onVehicleClick(vehicle)}>
               <div className="relative w-14 h-14 flex items-center justify-center">
-                {vehicle.image_url ? (
+                {vehicle.modalidade?.icone_url ? (
                   <img 
-                    src={vehicle.image_url} 
-                    alt={`Viatura ${vehicle.prefix}`}
+                    src={vehicle.modalidade.icone_url} 
+                    alt={`Viatura ${vehicle.prefixo}`}
                     className="w-10 h-10 object-contain"
                   />
                 ) : (
@@ -139,7 +123,7 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
                       textShadow: '1px 1px 2px rgba(255,255,255,0.9), -1px -1px 2px rgba(255,255,255,0.9), 1px -1px 2px rgba(255,255,255,0.9), -1px 1px 2px rgba(255,255,255,0.9)'
                     }}
                   >
-                    {vehicle.prefix}
+                    {vehicle.prefixo}
                   </div>
                 </div>
               </div>
@@ -152,7 +136,7 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{vehicleObservation || 'Nenhuma observação DISPONÍVEL'}</p>
+            <p>{vehicleObservation || 'Nenhuma observação disponível'}</p>
           </TooltipContent>
         </Tooltip>
 
