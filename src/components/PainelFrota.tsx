@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LinhaViaturaEstacao } from '@/components/LinhaViaturaEstacao';
@@ -76,8 +77,7 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: P
           )
         `)
         .eq('estacao.subgrupamento.grupamento_id', grupamentoSelecionado)
-        .order('status')
-        .order('prefixo');
+        .order('prefixo'); // Ordem fixa por prefixo
 
       if (error) throw error;
       setViaturas(data || []);
@@ -263,58 +263,79 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: P
     return acc;
   }, {} as Record<string, { nome: string; estacoes: Record<string, { dados: any; viaturas: Viatura[] }> }>);
 
+  // Subgrupamentos em ordem crescente
   const subgrupamentosOrdenados = Object.keys(dadosAgrupados).sort((a, b) => {
     return dadosAgrupados[a].nome.localeCompare(dadosAgrupados[b].nome);
   });
 
-  const ordenarViaturasPorStatus = (viaturas: Viatura[]) => {
-    return viaturas.sort((a, b) => {
-      const ordemStatus = { 'BAIXADO': 2, 'RESERVA': 1 };
-      const ordemA = ordemStatus[a.status as keyof typeof ordemStatus] || 0;
-      const ordemB = ordemStatus[b.status as keyof typeof ordemStatus] || 0;
-      return ordemA - ordemB;
+  // Função para ordenar estações por nome (ordem fixa)
+  const ordenarEstacoesPorNome = (estacoes: Record<string, { dados: any; viaturas: Viatura[] }>) => {
+    return Object.entries(estacoes).sort(([, a], [, b]) => {
+      return a.dados.nome.localeCompare(b.dados.nome);
     });
   };
 
+  // Função para manter ordem fixa das viaturas por prefixo
+  const ordenarViaturasPorPrefixo = (viaturas: Viatura[]) => {
+    return [...viaturas].sort((a, b) => a.prefixo.localeCompare(b.prefixo));
+  };
+
   if (estaCarregando) {
-    return <div className="text-center py-4">Carregando dados da frota...</div>;
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto mb-2"></div>
+          <p className="text-gray-600">Carregando dados da frota...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!grupamentoSelecionado) {
-    return <div className="text-center py-4">Selecione um grupamento para visualizar as viaturas</div>;
+    return (
+      <div className="text-center py-8 text-gray-600">
+        Selecione um grupamento para visualizar as viaturas
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-3">
-      {subgrupamentosOrdenados.map((subgrupamentoId) => (
-        <Card key={subgrupamentoId} className="border-red-200 shadow-lg">
-          <CardHeader className="bg-red-50 border-b border-red-200 py-2">
-            <CardTitle className="text-red-800 text-sm">{dadosAgrupados[subgrupamentoId].nome}</CardTitle>
-          </CardHeader>
-          <CardContent className="p-3">
-            <div className="space-y-1">
-              {Object.entries(dadosAgrupados[subgrupamentoId].estacoes).map(([estacaoId, { dados, viaturas }], index) => {
-                const viatturasOrdenadas = ordenarViaturasPorStatus(viaturas);
-                
-                return (
-                  <div key={estacaoId}>
-                    <LinhaViaturaEstacao
-                      estacao={{ id: estacaoId, nome: dados.nome } as Estacao}
-                      viaturas={viatturasOrdenadas}
-                      aoClicarViatura={aoClicarViatura}
-                      aoAtualizarStatus={aoAtualizarStatus}
-                      observacoesViaturas={observacoesViaturas}
-                    />
-                    {index < Object.keys(dadosAgrupados[subgrupamentoId].estacoes).length - 1 && (
-                      <hr className="border-gray-200 my-1" />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+    <div className="space-y-4">
+      {subgrupamentosOrdenados.map((subgrupamentoId) => {
+        const estacoesOrdenadas = ordenarEstacoesPorNome(dadosAgrupados[subgrupamentoId].estacoes);
+        
+        return (
+          <Card key={subgrupamentoId} className="border-red-200 shadow-md hover:shadow-lg transition-shadow duration-200">
+            <CardHeader className="bg-gradient-to-r from-red-50 to-red-100 border-b border-red-200 py-3">
+              <CardTitle className="text-red-800 text-base font-semibold">
+                {dadosAgrupados[subgrupamentoId].nome}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <div className="space-y-3">
+                {estacoesOrdenadas.map(([estacaoId, { dados, viaturas }], index) => {
+                  const viaturasOrdenadas = ordenarViaturasPorPrefixo(viaturas);
+                  
+                  return (
+                    <div key={estacaoId}>
+                      <LinhaViaturaEstacao
+                        estacao={{ id: estacaoId, nome: dados.nome } as Estacao}
+                        viaturas={viaturasOrdenadas}
+                        aoClicarViatura={aoClicarViatura}
+                        aoAtualizarStatus={aoAtualizarStatus}
+                        observacoesViaturas={observacoesViaturas}
+                      />
+                      {index < estacoesOrdenadas.length - 1 && (
+                        <hr className="border-gray-200 my-3" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
 
       {viaturaSelecionada && viaturaSelecionada.estacao && (
         <VehicleDetailModal
