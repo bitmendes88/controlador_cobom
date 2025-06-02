@@ -1,130 +1,116 @@
 
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Truck, Users, Phone, Clock, FileText, Save, Download, Calendar, Play, Trash2, X, Edit } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Trash2, Edit, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import type { Tables } from '@/integrations/supabase/types';
 
-type Vehicle = Tables<'vehicles'>;
-type VehicleObservation = Tables<'vehicle_observations'>;
+interface Vehicle {
+  id: string;
+  prefix: string;
+  status: string;
+  category: string;
+  station_id: string;
+  sub_station_id: string;
+  vehicle_type: string;
+  image_url: string;
+  created_at: string;
+  updated_at: string;
+  status_changed_at: string;
+}
 
 interface VehicleDetailModalProps {
   vehicle: Vehicle;
   onClose: () => void;
-  onVehicleAction?: (vehicleId: string, action: 'BAIXAR' | 'RESERVA' | 'LEVANTAR') => void;
-  onVehicleDelete?: (vehicleId: string) => void;
-  onEditVehicle?: (vehicle: Vehicle) => void;
+  onVehicleAction: (vehicleId: string, action: 'RESERVA' | 'BAIXAR' | 'LEVANTAR') => void;
+  onVehicleDelete: (vehicleId: string) => void;
+  onEditVehicle: (vehicle: any) => void;
 }
 
-// Map English database values to Portuguese display
-const dbToStatusMap: Record<string, string> = {
-  'Available': 'DISPONÍVEL',
-  'En Route': 'QTI',
-  'On Scene': 'LOCAL',
-  'En Route to Hospital': 'QTI PS',
-  'Returning to Base': 'REGRESSO',
-  'Down': 'BAIXADO',
-  'Reserve': 'RESERVA'
-};
-
-export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction, onVehicleDelete, onEditVehicle }: VehicleDetailModalProps) => {
-  const [crewAssignments, setCrewAssignments] = useState<any[]>([]);
-  const [observations, setObservations] = useState<VehicleObservation[]>([]);
-  const [newObservation, setNewObservation] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+export const VehicleDetailModal = ({ 
+  vehicle, 
+  onClose, 
+  onVehicleAction, 
+  onVehicleDelete,
+  onEditVehicle 
+}: VehicleDetailModalProps) => {
+  const [observacoes, setObservacoes] = useState<any[]>([]);
+  const [novaObservacao, setNovaObservacao] = useState('');
+  const [estaCarregando, setEstaCarregando] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    loadVehicleDetails();
+    carregarObservacoes();
   }, [vehicle.id]);
 
-  const loadVehicleDetails = async () => {
+  const carregarObservacoes = async () => {
     try {
-      // Load crew assignments with crew member details
-      const { data: crewData, error: crewError } = await supabase
-        .from('vehicle_crew_assignments')
-        .select(`
-          *,
-          crew_members (
-            id,
-            name,
-            phone,
-            position
-          )
-        `)
-        .eq('vehicle_id', vehicle.id);
-
-      if (crewError) throw crewError;
-      setCrewAssignments(crewData || []);
-
-      // Load observations
-      const { data: obsData, error: obsError } = await supabase
-        .from('vehicle_observations')
+      const { data, error } = await supabase
+        .from('observacoes_viatura')
         .select('*')
-        .eq('vehicle_id', vehicle.id)
-        .order('created_at', { ascending: false });
+        .eq('viatura_id', vehicle.id)
+        .order('criado_em', { ascending: false });
 
-      if (obsError) throw obsError;
-      setObservations(obsData || []);
-
+      if (error) throw error;
+      setObservacoes(data || []);
     } catch (error) {
-      console.error('Erro ao carregar detalhes da viatura:', error);
-    } finally {
-      setIsLoading(false);
+      console.error('Erro ao carregar observações:', error);
     }
   };
 
-  const addObservation = async () => {
-    if (!newObservation.trim()) return;
+  const adicionarObservacao = async () => {
+    if (!novaObservacao.trim()) return;
 
+    setEstaCarregando(true);
     try {
       const { error } = await supabase
-        .from('vehicle_observations')
+        .from('observacoes_viatura')
         .insert({
-          vehicle_id: vehicle.id,
-          observation: newObservation,
-          created_by: 'Usuário Atual'
+          viatura_id: vehicle.id,
+          observacao: novaObservacao,
+          criado_por: 'Sistema'
         });
 
       if (error) throw error;
 
-      setNewObservation('');
-      loadVehicleDetails();
-      
       toast({
         title: "Observação Adicionada",
-        description: "A observação da viatura foi registrada com sucesso.",
+        description: "Nova observação foi salva com sucesso.",
       });
+      
+      setNovaObservacao('');
+      carregarObservacoes();
     } catch (error) {
       console.error('Erro ao adicionar observação:', error);
       toast({
         title: "Erro",
-        description: "Falha ao adicionar observação. Tente novamente.",
+        description: "Falha ao salvar observação. Tente novamente.",
         variant: "destructive",
       });
+    } finally {
+      setEstaCarregando(false);
     }
   };
 
-  const deleteObservation = async (observationId: string) => {
+  const excluirObservacao = async (observacaoId: string) => {
     try {
       const { error } = await supabase
-        .from('vehicle_observations')
+        .from('observacoes_viatura')
         .delete()
-        .eq('id', observationId);
+        .eq('id', observacaoId);
 
       if (error) throw error;
 
-      loadVehicleDetails();
-      
       toast({
-        title: "Observação Excluída",
-        description: "A observação foi removida com sucesso.",
+        title: "Observação Removida",
+        description: "Observação foi excluída com sucesso.",
       });
+      
+      carregarObservacoes();
     } catch (error) {
       console.error('Erro ao excluir observação:', error);
       toast({
@@ -135,258 +121,169 @@ export const VehicleDetailModal = ({ vehicle, onClose, onVehicleAction, onVehicl
     }
   };
 
-  const handleDeleteVehicle = async () => {
-    if (window.confirm('Tem certeza que deseja excluir esta viatura? Esta ação não pode ser desfeita.')) {
-      try {
-        const { error } = await supabase
-          .from('vehicles')
-          .delete()
-          .eq('id', vehicle.id);
+  const excluirViatura = async () => {
+    if (!confirm('Tem certeza que deseja excluir esta viatura? Esta ação não pode ser desfeita.')) {
+      return;
+    }
 
-        if (error) throw error;
+    try {
+      const { error } = await supabase
+        .from('viaturas')
+        .delete()
+        .eq('id', vehicle.id);
 
-        toast({
-          title: "Viatura Excluída",
-          description: "A viatura foi removida do sistema.",
-        });
+      if (error) throw error;
 
-        if (onVehicleDelete) {
-          onVehicleDelete(vehicle.id);
-        }
-        onClose();
-      } catch (error) {
-        console.error('Erro ao excluir viatura:', error);
-        toast({
-          title: "Erro",
-          description: "Falha ao excluir viatura. Tente novamente.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Viatura Excluída",
+        description: `Viatura ${vehicle.prefix} foi excluída com sucesso.`,
+      });
+      
+      onVehicleDelete(vehicle.id);
+      onClose();
+    } catch (error) {
+      console.error('Erro ao excluir viatura:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao excluir viatura. Tente novamente.",
+        variant: "destructive",
+      });
     }
   };
 
-  const statusColors: Record<string, string> = {
-    'DISPONÍVEL': 'bg-green-600',
-    'QTI': 'bg-blue-600',
-    'LOCAL': 'bg-yellow-600',
-    'QTI PS': 'bg-purple-600',
-    'REGRESSO': 'bg-orange-600',
-    'BAIXADO': 'bg-red-600',
-    'RESERVA': 'bg-gray-600',
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'DISPONÍVEL': return 'bg-green-500';
+      case 'QTI': return 'bg-yellow-500';
+      case 'LOCAL': return 'bg-blue-500';
+      case 'QTI PS': return 'bg-orange-500';
+      case 'REGRESSO': return 'bg-purple-500';
+      default: return 'bg-gray-500';
+    }
   };
-
-  const currentStatus = dbToStatusMap[vehicle.status as string] || vehicle.status || 'DISPONÍVEL';
-
-  const showActions = currentStatus !== 'BAIXADO' && currentStatus !== 'RESERVA';
-  const showLevantarButton = currentStatus === 'BAIXADO' || currentStatus === 'RESERVA';
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-2xl text-red-800">
-            <Truck className="w-6 h-6" />
-            {vehicle.prefix} - {vehicle.vehicle_type}
+          <DialogTitle className="flex items-center justify-between">
+            <span>Viatura {vehicle.prefix}</span>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onEditVehicle(vehicle)}
+              >
+                <Edit className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={excluirViatura}
+                className="text-red-600 hover:text-red-700"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Vehicle Info */}
-          <Card className="border-red-200">
-            <CardHeader className="bg-red-50">
-              <CardTitle className="text-red-800">Detalhes da Viatura</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 space-y-3">
-              <div className="flex justify-between">
-                <span className="font-semibold">Unidade:</span>
-                <span className="font-bold text-red-800">{vehicle.prefix}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-semibold">Categoria:</span>
-                <span>{vehicle.category}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-semibold">Modalidade:</span>
-                <span>{vehicle.vehicle_type}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="font-semibold">Status:</span>
-                <Badge className={`${statusColors[currentStatus]} text-white`}>
-                  {currentStatus}
-                </Badge>
-              </div>
-              {vehicle.image_url && (
-                <div className="mt-4">
-                  <img 
-                    src={vehicle.image_url} 
-                    alt={`Viatura ${vehicle.prefix}`}
-                    className="w-full h-48 object-cover rounded-lg border-2 border-red-200"
-                  />
-                </div>
-              )}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="font-medium">Status:</span>
+            <Badge className={`${getStatusColor(vehicle.status)} text-white`}>
+              {vehicle.status}
+            </Badge>
+          </div>
 
-              {/* Action Buttons */}
-              {onVehicleAction && (
-                <div className="mt-4 space-y-2">
-                  <h4 className="font-semibold text-red-800">Ações</h4>
-                  <div className="flex gap-2 flex-wrap">
-                    {showActions && (
-                      <>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => onVehicleAction(vehicle.id, 'baixar')}
-                          className="border-red-500 text-red-600 hover:bg-red-50"
-                        >
-                          <Download className="w-4 h-4 mr-1" />
-                          Baixar
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => onVehicleAction(vehicle.id, 'RESERVA')}
-                          className="border-gray-500 text-gray-600 hover:bg-gray-50"
-                        >
-                          <Calendar className="w-4 h-4 mr-1" />
-                          RESERVA
-                        </Button>
-                      </>
-                    )}
-                    {showLevantarButton && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => onVehicleAction(vehicle.id, 'levantar')}
-                        className="border-green-500 text-green-600 hover:bg-green-50"
-                      >
-                        <Play className="w-4 h-4 mr-1" />
-                        Levantar
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              )}
+          <div className="flex items-center justify-between">
+            <span className="font-medium">Modalidade:</span>
+            <span>{vehicle.vehicle_type}</span>
+          </div>
 
-              {/* Edit and Delete Buttons */}
-              <div className="mt-6 pt-4 border-t border-red-200 flex gap-2">
-                {onEditVehicle && (
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEditVehicle(vehicle)}
-                    className="border-blue-500 text-blue-600 hover:bg-blue-50"
-                  >
-                    <Edit className="w-4 h-4 mr-1" />
-                    Editar Viatura
-                  </Button>
-                )}
-                <Button 
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleDeleteVehicle}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  <Trash2 className="w-4 h-4 mr-1" />
-                  Excluir Viatura
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <Separator />
 
-          {/* Crew Information */}
-          <Card className="border-red-200">
-            <CardHeader className="bg-red-50">
-              <CardTitle className="flex items-center gap-2 text-red-800">
-                <Users className="w-5 h-5" />
-                Guarnição Atual
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
-              {isLoading ? (
-                <p>Carregando informações da guarnição...</p>
-              ) : crewAssignments.length > 0 ? (
-                <div className="space-y-3">
-                  {crewAssignments.map((assignment) => (
-                    <div key={assignment.id} className="border-l-4 border-red-500 pl-3">
-                      <div className="font-semibold">{assignment.crew_members.name}</div>
-                      <div className="text-sm text-gray-600">{assignment.crew_members.position}</div>
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <Phone className="w-4 h-4" />
-                        {assignment.crew_members.phone}
-                      </div>
-                      {assignment.duty_start && (
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <Clock className="w-4 h-4" />
-                          {new Date(assignment.duty_start).toLocaleString('pt-BR')} - 
-                          {assignment.duty_end ? new Date(assignment.duty_end).toLocaleString('pt-BR') : 'Em Serviço'}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500">Nenhuma guarnição atribuída no momento</p>
-              )}
-            </CardContent>
-          </Card>
+          <div className="space-y-2">
+            <h4 className="font-medium">Ações Rápidas</h4>
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onVehicleAction(vehicle.id, 'RESERVA')}
+                className="text-xs"
+              >
+                Reserva
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onVehicleAction(vehicle.id, 'BAIXAR')}
+                className="text-xs"
+              >
+                Baixar
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onVehicleAction(vehicle.id, 'LEVANTAR')}
+                className="text-xs"
+              >
+                Levantar
+              </Button>
+            </div>
+          </div>
 
-          {/* Observations */}
-          <Card className="border-red-200 md:col-span-2">
-            <CardHeader className="bg-red-50">
-              <CardTitle className="flex items-center gap-2 text-red-800">
-                <FileText className="w-5 h-5" />
-                Observações da Viatura
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 space-y-4">
-              {/* Add new observation */}
-              <div className="space-y-2">
-                <Textarea
-                  placeholder="Adicione uma nova observação sobre esta viatura..."
-                  value={newObservation}
-                  onChange={(e) => setNewObservation(e.target.value)}
-                  className="border-red-300 focus:border-red-500"
-                />
-                <Button 
-                  onClick={addObservation}
-                  className="bg-red-700 hover:bg-red-800 text-white"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Adicionar Observação
-                </Button>
-              </div>
+          <Separator />
 
-              {/* Existing observations */}
-              <div className="space-y-3 max-h-48 overflow-y-auto">
-                {observations.length > 0 ? (
-                  observations.map((obs) => (
-                    <div key={obs.id} className="bg-gray-50 p-3 rounded border-l-4 border-red-500 relative">
+          <div className="space-y-3">
+            <h4 className="font-medium">Observações</h4>
+            
+            <div className="space-y-2">
+              <Textarea
+                placeholder="Digite uma observação..."
+                value={novaObservacao}
+                onChange={(e) => setNovaObservacao(e.target.value)}
+                className="min-h-[60px]"
+              />
+              <Button
+                onClick={adicionarObservacao}
+                disabled={estaCarregando || !novaObservacao.trim()}
+                size="sm"
+                className="w-full"
+              >
+                {estaCarregando ? 'Salvando...' : 'Adicionar Observação'}
+              </Button>
+            </div>
+
+            {observacoes.length > 0 && (
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {observacoes.map((obs) => (
+                  <div key={obs.id} className="bg-gray-50 p-2 rounded text-sm">
+                    <div className="flex justify-between items-start">
+                      <p className="flex-1">{obs.observacao}</p>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => deleteObservation(obs.id)}
-                        className="absolute top-2 right-2 p-1 h-6 w-6 text-red-600 hover:bg-red-100"
+                        onClick={() => excluirObservacao(obs.id)}
+                        className="text-red-500 hover:text-red-700 p-1 h-auto"
                       >
-                        <X className="w-3 h-3" />
+                        <Trash2 className="w-3 h-3" />
                       </Button>
-                      <p className="text-sm pr-8">{obs.observation}</p>
-                      <div className="text-xs text-gray-500 mt-2">
-                        Por {obs.created_by} em {new Date(obs.created_at || '').toLocaleString('pt-BR')}
-                      </div>
                     </div>
-                  ))
-                ) : (
-                  <p className="text-gray-500">Nenhuma observação registrada ainda</p>
-                )}
+                    <p className="text-xs text-gray-500 mt-1">
+                      {new Date(obs.criado_em).toLocaleString('pt-BR')}
+                    </p>
+                  </div>
+                ))}
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            )}
 
-        <div className="flex justify-end">
-          <Button onClick={onClose} variant="outline">
-            Fechar
-          </Button>
+            {observacoes.length === 0 && (
+              <p className="text-sm text-gray-500 text-center py-4">
+                Nenhuma observação registrada
+              </p>
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

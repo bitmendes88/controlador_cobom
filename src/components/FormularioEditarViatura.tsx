@@ -55,12 +55,13 @@ interface FormularioEditarViaturaProps {
 }
 
 export const FormularioEditarViatura = ({ vehicle, onClose, onVehicleUpdated }: FormularioEditarViaturaProps) => {
+  // Add safety checks for nested properties
   const [dadosFormulario, setDadosFormulario] = useState({
-    prefixo: vehicle.prefixo,
-    grupamentoId: vehicle.estacao.subgrupamento.grupamento_id,
-    subgrupamentoId: vehicle.estacao.subgrupamento.id,
-    estacaoId: vehicle.estacao.id,
-    modalidadeId: vehicle.modalidade.id
+    prefixo: vehicle?.prefixo || '',
+    grupamentoId: vehicle?.estacao?.subgrupamento?.grupamento_id || '',
+    subgrupamentoId: vehicle?.estacao?.subgrupamento?.id || '',
+    estacaoId: vehicle?.estacao?.id || '',
+    modalidadeId: vehicle?.modalidade?.id || ''
   });
   
   const [grupamentos, setGrupamentos] = useState<Grupamento[]>([]);
@@ -160,6 +161,23 @@ export const FormularioEditarViatura = ({ vehicle, onClose, onVehicleUpdated }: 
       setEstaCarregando(false);
     }
   };
+
+  // Add safety check before rendering
+  if (!vehicle || !vehicle.estacao || !vehicle.estacao.subgrupamento || !vehicle.modalidade) {
+    return (
+      <Dialog open={true} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Erro</DialogTitle>
+          </DialogHeader>
+          <div className="text-center py-4">
+            <p>Dados da viatura incompletos. Não é possível editar.</p>
+            <Button onClick={onClose} className="mt-4">Fechar</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={true} onOpenChange={onClose}>

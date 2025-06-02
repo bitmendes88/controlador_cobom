@@ -320,7 +320,15 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: P
             status_changed_at: viaturaSelecionada.status_alterado_em || new Date().toISOString()
           }}
           onClose={() => setViaturaSelecionada(null)}
-          onVehicleAction={aoAcaoViatura}
+          onVehicleAction={(vehicleId: string, action: 'RESERVA' | 'BAIXAR' | 'LEVANTAR') => {
+            // Convert English actions to Portuguese
+            const actionMap = {
+              'RESERVA': 'reserva',
+              'BAIXAR': 'baixar', 
+              'LEVANTAR': 'levantar'
+            };
+            aoAcaoViatura(vehicleId, actionMap[action] as 'baixar' | 'reserva' | 'levantar');
+          }}
           onVehicleDelete={aoExcluirViatura}
           onEditVehicle={aoEditarViatura}
         />
