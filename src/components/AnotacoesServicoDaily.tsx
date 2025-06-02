@@ -1,12 +1,9 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar, Save, History } from 'lucide-react';
-import { ModalLogsAtividade } from './ModalLogsAtividade';
 
 interface AnotacoesServicoProps {
   grupamentoSelecionado: string;
@@ -15,11 +12,71 @@ interface AnotacoesServicoProps {
 
 export const AnotacoesServicoDaily = ({ grupamentoSelecionado, controladorSelecionado }: AnotacoesServicoProps) => {
   const [anotacoes, setAnotacoes] = useState('');
-  const [estaSalvando, setEstaSalvando] = useState(false);
-  const [mostrarLogs, setMostrarLogs] = useState(false);
+  const [estaCarregando, setEstaCarregando] = useState(true);
+  const [registroId, setRegistroId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const hoje = new Date().toLocaleDateString('pt-BR');
+  const dataHoje = new Date().toLocaleDateString('pt-BR');
+
+  // Função debounced para salvamento automático
+  const salvarAnotacoes = useCallback(
+    async (novasAnotacoes: string) => {
+      if (!grupamentoSelecionado) return;
+
+      try {
+        const dadosAnotacao = {
+          grupamento_id: grupamentoSelecionado,
+          controlador_id: controladorSelecionado || null,
+          anotacoes: novasAnotacoes,
+          data: new Date().toISOString().split('T')[0],
+          criado_por: controladorSelecionado ? 'Sistema' : 'Anônimo',
+          atualizado_em: new Date().toISOString()
+        };
+
+        if (registroId) {
+          // Atualizar registro existente
+          const { error } = await supabase
+            .from('anotacoes_servico')
+            .update(dadosAnotacao)
+            .eq('id', registroId);
+
+          if (error) throw error;
+        } else {
+          // Criar novo registro
+          const { data, error } = await supabase
+            .from('anotacoes_servico')
+            .insert(dadosAnotacao)
+            .select()
+            .single();
+
+          if (error) throw error;
+          setRegistroId(data.id);
+        }
+
+        // Não mostrar toast a cada salvamento automático
+        console.log('Anotações salvas automaticamente');
+      } catch (error) {
+        console.error('Erro ao salvar anotações:', error);
+        toast({
+          title: "Erro",
+          description: "Falha ao salvar anotações automaticamente.",
+          variant: "destructive",
+        });
+      }
+    },
+    [grupamentoSelecionado, controladorSelecionado, registroId, toast]
+  );
+
+  // Debounce para salvamento automático após 2 segundos de inatividade
+  useEffect(() => {
+    if (!anotacoes.trim()) return;
+
+    const timeoutId = setTimeout(() => {
+      salvarAnotacoes(anotacoes);
+    }, 2000);
+
+    return () => clearTimeout(timeoutId);
+  }, [anotacoes, salvarAnotacoes]);
 
   useEffect(() => {
     if (grupamentoSelecionado) {
@@ -31,78 +88,43 @@ export const AnotacoesServicoDaily = ({ grupamentoSelecionado, controladorSeleci
     if (!grupamentoSelecionado) return;
 
     try {
+      const dataHoje = new Date().toISOString().split('T')[0];
+      
       const { data, error } = await supabase
         .from('anotacoes_servico')
-        .select('anotacoes')
+        .select('*')
         .eq('grupamento_id', grupamentoSelecionado)
-        .eq('data', new Date().toISOString().split('T')[0])
-        .single();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      setAnotacoes(data?.anotacoes || '');
-    } catch (error) {
-      console.error('Erro ao carregar anotações:', error);
-    }
-  };
-
-  const salvarAnotacoes = async () => {
-    if (!grupamentoSelecionado || !anotacoes.trim()) {
-      toast({
-        title: "Erro",
-        description: "Digite uma anotação antes de salvar.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setEstaSalvando(true);
-    try {
-      const dataHoje = new Date().toISOString().split('T')[0];
-
-      const { error } = await supabase
-        .from('anotacoes_servico')
-        .upsert({
-          grupamento_id: grupamentoSelecionado,
-          controlador_id: controladorSelecionado || null,
-          anotacoes: anotacoes.trim(),
-          data: dataHoje,
-          atualizado_em: new Date().toISOString()
-        }, {
-          onConflict: 'grupamento_id,data'
-        });
+        .eq('data', dataHoje)
+        .order('atualizado_em', { ascending: false })
+        .limit(1);
 
       if (error) throw error;
 
-      if (controladorSelecionado) {
-        await supabase
-          .from('logs_atividade')
-          .insert({
-            controlador_id: controladorSelecionado,
-            grupamento_id: grupamentoSelecionado,
-            acao: 'Anotação de serviço atualizada',
-            detalhes: `Data: ${hoje}`
-          });
+      if (data && data.length > 0) {
+        setAnotacoes(data[0].anotacoes);
+        setRegistroId(data[0].id);
+      } else {
+        setAnotacoes('');
+        setRegistroId(null);
       }
-
-      toast({
-        title: "Sucesso",
-        description: "Anotações salvas com sucesso!",
-      });
     } catch (error) {
-      console.error('Erro ao salvar anotações:', error);
+      console.error('Erro ao carregar anotações:', error);
       toast({
         title: "Erro",
-        description: "Falha ao salvar anotações. Tente novamente.",
+        description: "Falha ao carregar anotações do dia.",
         variant: "destructive",
       });
     } finally {
-      setEstaSalvando(false);
+      setEstaCarregando(false);
     }
   };
 
   if (!grupamentoSelecionado) {
     return (
-      <Card className="border-red-200">
+      <Card className="border-red-200 shadow-lg">
+        <CardHeader className="bg-red-50 border-b border-red-200 py-2">
+          <CardTitle className="text-red-800 text-sm">Anotações do Serviço - {dataHoje}</CardTitle>
+        </CardHeader>
         <CardContent className="p-4">
           <div className="text-center text-gray-500">
             Selecione um grupamento para visualizar as anotações
@@ -112,52 +134,37 @@ export const AnotacoesServicoDaily = ({ grupamentoSelecionado, controladorSeleci
     );
   }
 
-  return (
-    <>
+  if (estaCarregando) {
+    return (
       <Card className="border-red-200 shadow-lg">
-        <CardHeader className="bg-red-50 border-b border-red-200 py-3">
-          <CardTitle className="text-red-800 text-base flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            Anotações do Serviço - {hoje}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setMostrarLogs(true)}
-              className="ml-auto text-red-700 border-red-300 hover:bg-red-50"
-            >
-              <History className="w-4 h-4 mr-1" />
-              Ver Logs
-            </Button>
-          </CardTitle>
+        <CardHeader className="bg-red-50 border-b border-red-200 py-2">
+          <CardTitle className="text-red-800 text-sm">Anotações do Serviço - {dataHoje}</CardTitle>
         </CardHeader>
         <CardContent className="p-4">
-          <div className="space-y-3">
-            <Textarea
-              value={anotacoes}
-              onChange={(e) => setAnotacoes(e.target.value)}
-              placeholder="Digite as observações, ocorrências e informações importantes do serviço de hoje..."
-              className="min-h-24 border-red-300 focus:border-red-500 resize-none"
-              rows={4}
-            />
-            <div className="flex justify-end">
-              <Button 
-                onClick={salvarAnotacoes}
-                disabled={estaSalvando || !anotacoes.trim()}
-                className="bg-red-800 hover:bg-red-900 text-white"
-              >
-                <Save className="w-4 h-4 mr-1" />
-                {estaSalvando ? 'Salvando...' : 'Salvar Anotações'}
-              </Button>
-            </div>
-          </div>
+          <div className="text-center">Carregando anotações...</div>
         </CardContent>
       </Card>
+    );
+  }
 
-      <ModalLogsAtividade
-        estaAberto={mostrarLogs}
-        aoFechar={() => setMostrarLogs(false)}
-        grupamentoSelecionado={grupamentoSelecionado}
-      />
-    </>
+  return (
+    <Card className="border-red-200 shadow-lg">
+      <CardHeader className="bg-red-50 border-b border-red-200 py-2">
+        <CardTitle className="text-red-800 text-sm">
+          Anotações do Serviço - {dataHoje}
+          <span className="text-xs text-gray-600 ml-2 font-normal">
+            (Salvamento automático ativado)
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-4">
+        <Textarea
+          value={anotacoes}
+          onChange={(e) => setAnotacoes(e.target.value)}
+          placeholder="Digite as anotações do serviço do dia..."
+          className="min-h-32 resize-none border-red-200 focus:border-red-500"
+        />
+      </CardContent>
+    </Card>
   );
 };

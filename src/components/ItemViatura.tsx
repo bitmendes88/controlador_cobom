@@ -70,7 +70,7 @@ export const ItemViatura = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
   }, [vehicle.status_alterado_em]);
 
   const handleClickStatus = () => {
-    if (vehicle.status === 'Baixada' || vehicle.status === 'Reserva') return;
+    if (vehicle.status === 'BAIXADO' || vehicle.status === 'RESERVA') return;
     
     const indiceAtual = sequenciaStatus.indexOf(vehicle.status);
     const proximoIndice = (indiceAtual + 1) % sequenciaStatus.length;
@@ -148,7 +148,7 @@ export const ItemViatura = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
           <div className={`text-xs font-semibold ${obterCorTempo()}`}>{tempoNoStatus}</div>
         </div>
 
-        {vehicle.status !== 'Baixada' && vehicle.status !== 'Reserva' && (
+        {vehicle.status !== 'BAIXADO' && vehicle.status !== 'RESERVA' && (
           <Button
             onClick={handleClickStatus}
             size="sm"

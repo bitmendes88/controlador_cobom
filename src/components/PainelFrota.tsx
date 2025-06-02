@@ -11,6 +11,7 @@ interface Viatura {
   id: string;
   prefixo: string;
   status: string;
+  status_alterado_em?: string;
   modalidade: {
     id: string;
     nome: string;
@@ -30,6 +31,10 @@ interface Viatura {
 interface Estacao {
   id: string;
   nome: string;
+  subgrupamento: {
+    id: string;
+    nome: string;
+  };
 }
 
 interface PainelFrotaProps {
@@ -175,13 +180,13 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: P
 
       switch (acao) {
         case 'baixar':
-          dadosAtualizacao.status = 'Baixada';
+          dadosAtualizacao.status = 'BAIXADO';
           break;
         case 'reserva':
-          dadosAtualizacao.status = 'Reserva';
+          dadosAtualizacao.status = 'RESERVA';
           break;
         case 'levantar':
-          dadosAtualizacao.status = 'Disponível';
+          dadosAtualizacao.status = 'DISPONÍVEL';
           break;
       }
 
@@ -222,31 +227,37 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: P
     carregarViaturas();
   };
 
-  // Agrupar viaturas por modalidade e depois por estação
+  // Agrupar viaturas por subgrupamento e depois por estação
   const dadosAgrupados = viaturas.reduce((acc, viatura) => {
-    const modalidade = viatura.modalidade.nome;
-    if (!acc[modalidade]) {
-      acc[modalidade] = {};
+    const subgrupamentoId = viatura.estacao.subgrupamento.id;
+    const subgrupamentoNome = viatura.estacao.subgrupamento.nome;
+    
+    if (!acc[subgrupamentoId]) {
+      acc[subgrupamentoId] = {
+        nome: subgrupamentoNome,
+        estacoes: {}
+      };
     }
 
     const estacaoId = viatura.estacao.id;
-    if (!acc[modalidade][estacaoId]) {
-      acc[modalidade][estacaoId] = [];
+    if (!acc[subgrupamentoId].estacoes[estacaoId]) {
+      acc[subgrupamentoId].estacoes[estacaoId] = {
+        dados: viatura.estacao,
+        viaturas: []
+      };
     }
 
-    acc[modalidade][estacaoId].push(viatura);
+    acc[subgrupamentoId].estacoes[estacaoId].viaturas.push(viatura);
     return acc;
-  }, {} as Record<string, Record<string, Viatura[]>>);
+  }, {} as Record<string, { nome: string; estacoes: Record<string, { dados: any; viaturas: Viatura[] }> }>);
 
-  const modalidadesOrdenadas = Object.keys(dadosAgrupados).sort((a, b) => {
-    if (a === 'Viaturas Baixadas') return 1;
-    if (b === 'Viaturas Baixadas') return -1;
-    return a.localeCompare(b);
+  const subgrupamentosOrdenados = Object.keys(dadosAgrupados).sort((a, b) => {
+    return dadosAgrupados[a].nome.localeCompare(dadosAgrupados[b].nome);
   });
 
   const ordenarViaturasPorStatus = (viaturas: Viatura[]) => {
     return viaturas.sort((a, b) => {
-      const ordemStatus = { 'Baixada': 2, 'Reserva': 1 };
+      const ordemStatus = { 'BAIXADO': 2, 'RESERVA': 1 };
       const ordemA = ordemStatus[a.status as keyof typeof ordemStatus] || 0;
       const ordemB = ordemStatus[b.status as keyof typeof ordemStatus] || 0;
       return ordemA - ordemB;
@@ -263,27 +274,26 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: P
 
   return (
     <div className="space-y-3">
-      {modalidadesOrdenadas.map((modalidade) => (
-        <Card key={modalidade} className="border-red-200 shadow-lg">
+      {subgrupamentosOrdenados.map((subgrupamentoId) => (
+        <Card key={subgrupamentoId} className="border-red-200 shadow-lg">
           <CardHeader className="bg-red-50 border-b border-red-200 py-2">
-            <CardTitle className="text-red-800 text-sm">{modalidade}</CardTitle>
+            <CardTitle className="text-red-800 text-sm">{dadosAgrupados[subgrupamentoId].nome}</CardTitle>
           </CardHeader>
           <CardContent className="p-3">
             <div className="space-y-1">
-              {Object.entries(dadosAgrupados[modalidade]).map(([estacaoId, viaturas], index) => {
-                const estacao = viaturas[0]?.estacao;
+              {Object.entries(dadosAgrupados[subgrupamentoId].estacoes).map(([estacaoId, { dados, viaturas }], index) => {
                 const viatturasOrdenadas = ordenarViaturasPorStatus(viaturas);
                 
                 return (
                   <div key={estacaoId}>
                     <LinhaViaturaEstacao
-                      estacao={{ id: estacaoId, nome: estacao?.nome || 'Estação Não Atribuída' } as Estacao}
+                      estacao={{ id: estacaoId, nome: dados.nome } as Estacao}
                       viaturas={viatturasOrdenadas}
                       aoClicarViatura={aoClicarViatura}
                       aoAtualizarStatus={aoAtualizarStatus}
                       observacoesViaturas={observacoesViaturas}
                     />
-                    {index < Object.keys(dadosAgrupados[modalidade]).length - 1 && (
+                    {index < Object.keys(dadosAgrupados[subgrupamentoId].estacoes).length - 1 && (
                       <hr className="border-gray-200 my-1" />
                     )}
                   </div>
@@ -296,7 +306,19 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: P
 
       {viaturaSelecionada && (
         <VehicleDetailModal
-          vehicle={viaturaSelecionada}
+          vehicle={{
+            id: viaturaSelecionada.id,
+            prefix: viaturaSelecionada.prefixo,
+            status: viaturaSelecionada.status,
+            category: 'Engine',
+            station_id: viaturaSelecionada.estacao.id,
+            sub_station_id: viaturaSelecionada.estacao.subgrupamento.id,
+            vehicle_type: viaturaSelecionada.modalidade.nome,
+            image_url: viaturaSelecionada.modalidade.icone_url,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            status_changed_at: viaturaSelecionada.status_alterado_em || new Date().toISOString()
+          }}
           onClose={() => setViaturaSelecionada(null)}
           onVehicleAction={aoAcaoViatura}
           onVehicleDelete={aoExcluirViatura}
