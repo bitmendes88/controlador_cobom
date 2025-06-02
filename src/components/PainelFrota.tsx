@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LinhaViaturaEstacao } from '@/components/LinhaViaturaEstacao';
@@ -25,7 +24,7 @@ interface Viatura {
       nome: string;
       grupamento_id: string;
     };
-  };
+  } | null;
 }
 
 interface Estacao {
@@ -227,8 +226,21 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: P
     carregarViaturas();
   };
 
+  // Filter vehicles that have valid station and subgrupamento data
+  const viaturasValidas = viaturas.filter(viatura => 
+    viatura.estacao && 
+    viatura.estacao.subgrupamento && 
+    viatura.estacao.subgrupamento.id &&
+    viatura.estacao.id
+  );
+
   // Agrupar viaturas por subgrupamento e depois por estação
-  const dadosAgrupados = viaturas.reduce((acc, viatura) => {
+  const dadosAgrupados = viaturasValidas.reduce((acc, viatura) => {
+    // Add safety checks since we've already filtered above, but keeping for extra safety
+    if (!viatura.estacao || !viatura.estacao.subgrupamento) {
+      return acc;
+    }
+
     const subgrupamentoId = viatura.estacao.subgrupamento.id;
     const subgrupamentoNome = viatura.estacao.subgrupamento.nome;
     
@@ -304,7 +316,7 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: P
         </Card>
       ))}
 
-      {viaturaSelecionada && (
+      {viaturaSelecionada && viaturaSelecionada.estacao && (
         <VehicleDetailModal
           vehicle={{
             id: viaturaSelecionada.id,
@@ -312,7 +324,7 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: P
             status: viaturaSelecionada.status,
             category: 'Engine',
             station_id: viaturaSelecionada.estacao.id,
-            sub_station_id: viaturaSelecionada.estacao.subgrupamento.id,
+            sub_station_id: viaturaSelecionada.estacao.subgrupamento?.id || '',
             vehicle_type: viaturaSelecionada.modalidade.nome,
             image_url: viaturaSelecionada.modalidade.icone_url,
             created_at: new Date().toISOString(),
