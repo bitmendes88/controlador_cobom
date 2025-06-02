@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { AlertTriangle, Users, Phone, GraduationCap } from 'lucide-react';
+import { Info, Users, Phone, GraduationCap } from 'lucide-react';
 
 interface Viatura {
   id: string;
@@ -37,6 +37,16 @@ const coresStatus: Record<string, string> = {
   'REGRESSO': 'bg-orange-600 hover:bg-orange-700',
   'BAIXADO': 'bg-red-600',
   'RESERVA': 'bg-gray-600',
+};
+
+const coresQuadroStatus: Record<string, string> = {
+  'DISPONÍVEL': 'from-green-50 to-green-100 border-green-200',
+  'QTI': 'from-blue-50 to-blue-100 border-blue-200',
+  'LOCAL': 'from-yellow-50 to-yellow-100 border-yellow-200',
+  'QTI PS': 'from-purple-50 to-purple-100 border-purple-200',
+  'REGRESSO': 'from-orange-50 to-orange-100 border-orange-200',
+  'BAIXADO': 'from-red-100 to-red-200 border-red-300',
+  'RESERVA': 'from-gray-100 to-gray-200 border-gray-300',
 };
 
 const sequenciaStatus = [
@@ -106,85 +116,55 @@ export const ItemViatura = ({
   };
 
   const obterCorFundo = () => {
-    if (vehicle.status === 'BAIXADO') return 'bg-red-50 border-red-300';
-    if (vehicle.status === 'RESERVA') return 'bg-gray-50 border-gray-300';
-    return 'bg-white border-gray-300';
+    return coresQuadroStatus[vehicle.status] || 'from-white to-gray-50 border-gray-300';
   };
 
   const statusClicavel = vehicle.status !== 'BAIXADO' && vehicle.status !== 'RESERVA';
+
+  const temInformacoes = vehicleObservation || integrantesEquipe.length > 0;
 
   return (
     <TooltipProvider>
       <div className={`
         relative flex flex-col p-2 border-2 rounded-xl transition-all duration-300 
-        ${obterCorFundo()} 
+        bg-gradient-to-br ${obterCorFundo()}
         shadow-[0_8px_16px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.7)] 
         hover:shadow-[0_12px_24px_rgba(0,0,0,0.2),0_4px_8px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.7)] 
         transform hover:-translate-y-1
-        bg-gradient-to-br from-white to-gray-50
-        min-w-[140px] w-[140px] min-h-[100px]
+        min-w-[160px] w-[160px] min-h-[90px]
       `}>
         
-        {/* Indicadores no topo */}
-        <div className="absolute -top-1 left-0 right-0 flex justify-between px-1">
-          {vehicleObservation && (
-            <div className="w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center shadow-md border border-white">
-              <AlertTriangle className="w-2.5 h-2.5 text-white" />
-            </div>
-          )}
-          
-          {integrantesEquipe.length > 0 && (
+        {/* Indicador de informações no topo direito */}
+        {temInformacoes && (
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center shadow-md border border-white">
+            <Info className="w-2.5 h-2.5 text-white" />
+          </div>
+        )}
+
+        {/* Área da viatura - Imagem e prefixo alinhados no topo */}
+        <div className="relative flex-1 flex flex-col justify-start">
+          <div className="relative w-full h-10 flex items-center justify-center mb-1">
+            {vehicle.modalidade?.icone_url ? (
+              <img 
+                src={vehicle.modalidade.icone_url} 
+                alt={`Viatura ${vehicle.prefixo}`}
+                className="w-8 h-8 object-contain opacity-30"
+              />
+            ) : (
+              <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center opacity-30">
+                <span className="text-gray-400 text-xs">IMG</span>
+              </div>
+            )}
+            
+            {/* Prefixo com tooltip */}
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center shadow-md border border-white cursor-help">
-                  <Users className="w-2.5 h-2.5 text-white" />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs p-3" side="top">
-                <div className="space-y-2">
-                  <p className="font-semibold text-blue-600 flex items-center gap-1 text-sm">
-                    <Users className="w-3 h-3" />
-                    Equipe:
-                  </p>
-                  {integrantesEquipe.map((integrante, index) => (
-                    <div key={index} className="text-xs border-l-2 border-blue-300 pl-2 ml-1 space-y-1">
-                      <p className="font-medium text-gray-800">{integrante.nome}</p>
-                      <p className="flex items-center gap-1 text-gray-600">
-                        <Phone className="w-2.5 h-2.5" />
-                        {integrante.telefone}
-                      </p>
-                      <p className="flex items-center gap-1 text-gray-600">
-                        <GraduationCap className="w-2.5 h-2.5" />
-                        {integrante.cursos.join(', ')}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          )}
-        </div>
-
-        {/* Área da viatura clicável - Imagem e prefixo alinhados no topo */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="relative cursor-pointer flex-1 flex flex-col justify-start mt-2" onClick={() => onVehicleClick(vehicle)}>
-              <div className="relative w-full h-12 flex items-center justify-center mb-1">
-                {vehicle.modalidade?.icone_url ? (
-                  <img 
-                    src={vehicle.modalidade.icone_url} 
-                    alt={`Viatura ${vehicle.prefixo}`}
-                    className="w-10 h-10 object-contain opacity-30"
-                  />
-                ) : (
-                  <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center opacity-30">
-                    <span className="text-gray-400 text-xs">IMG</span>
-                  </div>
-                )}
-                
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div 
+                  className="absolute inset-0 flex items-center justify-center cursor-pointer"
+                  onClick={() => onVehicleClick(vehicle)}
+                >
                   <div 
-                    className="text-red-800 font-black text-xl whitespace-nowrap pointer-events-none tracking-wider"
+                    className="text-red-800 font-black text-2xl whitespace-nowrap pointer-events-none tracking-wider"
                     style={{
                       textShadow: '2px 2px 4px rgba(255,255,255,0.9), -2px -2px 4px rgba(255,255,255,0.9), 2px -2px 4px rgba(255,255,255,0.9), -2px 2px 4px rgba(255,255,255,0.9)',
                       filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
@@ -193,26 +173,56 @@ export const ItemViatura = ({
                     {vehicle.prefixo}
                   </div>
                 </div>
-              </div>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-xs">
-            <div className="space-y-2">
-              {vehicleObservation && (
-                <div>
-                  <p className="font-semibold text-amber-600">Observação:</p>
-                  <p className="text-sm">{vehicleObservation}</p>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-sm p-3" side="top">
+                <div className="space-y-3">
+                  {vehicleObservation && (
+                    <div>
+                      <p className="font-semibold text-blue-600 flex items-center gap-1 text-sm mb-1">
+                        <Info className="w-3 h-3" />
+                        Observação:
+                      </p>
+                      <p className="text-sm text-gray-700 bg-blue-50 p-2 rounded border-l-2 border-blue-300">
+                        {vehicleObservation}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {integrantesEquipe.length > 0 && (
+                    <div>
+                      <p className="font-semibold text-green-600 flex items-center gap-1 text-sm mb-2">
+                        <Users className="w-3 h-3" />
+                        Equipe:
+                      </p>
+                      <div className="space-y-2">
+                        {integrantesEquipe.map((integrante, index) => (
+                          <div key={index} className="text-xs bg-green-50 p-2 rounded border-l-2 border-green-300">
+                            <p className="font-medium text-gray-800 mb-1">{integrante.nome}</p>
+                            <p className="flex items-center gap-1 text-gray-600 mb-1">
+                              <Phone className="w-2.5 h-2.5" />
+                              {integrante.telefone}
+                            </p>
+                            <p className="flex items-center gap-1 text-gray-600">
+                              <GraduationCap className="w-2.5 h-2.5" />
+                              {integrante.cursos.join(', ')}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {!vehicleObservation && integrantesEquipe.length === 0 && (
+                    <p className="text-sm text-gray-600">Clique para ver detalhes da viatura</p>
+                  )}
                 </div>
-              )}
-              {!vehicleObservation && (
-                <p>Clique para ver detalhes da viatura</p>
-              )}
-            </div>
-          </TooltipContent>
-        </Tooltip>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
 
         {/* Status e tempo - compactados na parte inferior */}
-        <div className="flex flex-col items-center space-y-1 mt-auto">
+        <div className="flex flex-col items-center space-y-1">
           <Tooltip>
             <TooltipTrigger asChild>
               <Badge 

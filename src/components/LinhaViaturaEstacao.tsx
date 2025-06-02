@@ -55,8 +55,8 @@ export const LinhaViaturaEstacao = ({
   };
 
   return (
-    <div className="flex items-start space-x-4 py-1">
-      <div className="min-w-[180px] w-[180px] flex items-center">
+    <div className="flex items-center space-x-4 py-1">
+      <div className="min-w-[180px] w-[180px] flex items-center justify-start">
         <h3 
           className="font-bold text-red-800 text-lg leading-tight break-words"
           style={{
@@ -70,7 +70,7 @@ export const LinhaViaturaEstacao = ({
 
       <div className="flex-1">
         {viaturas.length > 0 ? (
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2">
             {viaturas.map((viatura) => (
               <ItemViatura
                 key={viatura.id}
@@ -84,7 +84,7 @@ export const LinhaViaturaEstacao = ({
           </div>
         ) : (
           <div 
-            className="text-gray-500 italic text-sm font-medium"
+            className="text-gray-500 italic text-sm font-medium flex items-center"
             style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}
           >
             Nenhuma viatura atribuída
