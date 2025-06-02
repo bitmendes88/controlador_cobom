@@ -55,10 +55,10 @@ export const LinhaViaturaEstacao = ({
   };
 
   return (
-    <div className="flex items-center space-x-6 py-2">
-      <div className="min-w-[200px] flex items-center">
+    <div className="flex items-start space-x-4 py-1">
+      <div className="min-w-[180px] w-[180px] flex items-center">
         <h3 
-          className="font-bold text-red-800 text-lg leading-tight"
+          className="font-bold text-red-800 text-lg leading-tight break-words"
           style={{
             textShadow: '2px 2px 4px rgba(0,0,0,0.1), 0 1px 2px rgba(255,255,255,0.8)',
             filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.2))'
@@ -70,7 +70,7 @@ export const LinhaViaturaEstacao = ({
 
       <div className="flex-1">
         {viaturas.length > 0 ? (
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-3">
             {viaturas.map((viatura) => (
               <ItemViatura
                 key={viatura.id}
