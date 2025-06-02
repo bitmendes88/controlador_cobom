@@ -31,17 +31,46 @@ export const LinhaViaturaEstacao = ({
   aoAtualizarStatus, 
   observacoesViaturas 
 }: LinhaViaturaEstacaoProps) => {
+  // Simular dados de equipe (em uma implementação real, viriam do banco de dados)
+  const obterEquipeViatura = (viaturaId: string) => {
+    // Dados mock para demonstração
+    const equipesDemo = {
+      // Exemplo de dados que poderiam vir do banco
+      'default': [
+        {
+          nome: 'João Silva',
+          telefone: '(11) 99999-1111',
+          cursos: ['Bombeiro Civil', 'Primeiros Socorros']
+        },
+        {
+          nome: 'Maria Santos',
+          telefone: '(11) 99999-2222',
+          cursos: ['Paramédico', 'Resgate']
+        }
+      ]
+    };
+    
+    // Retorna uma equipe demo ou array vazio
+    return Math.random() > 0.5 ? equipesDemo.default : [];
+  };
+
   return (
-    <div className="flex items-start space-x-4">
-      <div className="min-w-[180px] pt-2">
-        <h3 className="font-semibold text-red-800 text-base leading-tight">
+    <div className="flex items-center space-x-6 py-2">
+      <div className="min-w-[200px] flex items-center">
+        <h3 
+          className="font-bold text-red-800 text-lg leading-tight"
+          style={{
+            textShadow: '2px 2px 4px rgba(0,0,0,0.1), 0 1px 2px rgba(255,255,255,0.8)',
+            filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.2))'
+          }}
+        >
           {estacao.nome}
         </h3>
       </div>
 
       <div className="flex-1">
         {viaturas.length > 0 ? (
-          <div className="grid grid-cols-auto-fit gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))' }}>
+          <div className="flex flex-wrap gap-4">
             {viaturas.map((viatura) => (
               <ItemViatura
                 key={viatura.id}
@@ -49,11 +78,15 @@ export const LinhaViaturaEstacao = ({
                 onVehicleClick={aoClicarViatura}
                 onStatusUpdate={aoAtualizarStatus}
                 vehicleObservation={observacoesViaturas[viatura.id]}
+                integrantesEquipe={obterEquipeViatura(viatura.id)}
               />
             ))}
           </div>
         ) : (
-          <div className="text-gray-500 italic pt-2 text-sm">
+          <div 
+            className="text-gray-500 italic text-sm font-medium"
+            style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}
+          >
             Nenhuma viatura atribuída
           </div>
         )}

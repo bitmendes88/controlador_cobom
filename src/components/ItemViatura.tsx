@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { AlertCircle } from 'lucide-react';
+import { Info, User, Phone, GraduationCap } from 'lucide-react';
 
 interface Viatura {
   id: string;
@@ -15,11 +15,18 @@ interface Viatura {
   };
 }
 
+interface Integrante {
+  nome: string;
+  telefone: string;
+  cursos: string[];
+}
+
 interface ItemViaturaProps {
   vehicle: Viatura;
   onVehicleClick: (vehicle: Viatura) => void;
   onStatusUpdate: (vehicleId: string, status: string) => void;
   vehicleObservation?: string;
+  integrantesEquipe?: Integrante[];
 }
 
 const coresStatus: Record<string, string> = {
@@ -40,7 +47,13 @@ const sequenciaStatus = [
   'REGRESSO'
 ];
 
-export const ItemViatura = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleObservation }: ItemViaturaProps) => {
+export const ItemViatura = ({ 
+  vehicle, 
+  onVehicleClick, 
+  onStatusUpdate, 
+  vehicleObservation,
+  integrantesEquipe = []
+}: ItemViaturaProps) => {
   const [tempoNoStatus, setTempoNoStatus] = useState('');
 
   useEffect(() => {
@@ -93,20 +106,46 @@ export const ItemViatura = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
   };
 
   const obterCorFundo = () => {
-    if (vehicle.status === 'BAIXADO') return 'bg-red-50 border-red-200';
-    if (vehicle.status === 'RESERVA') return 'bg-gray-50 border-gray-200';
-    return 'bg-white border-gray-200 hover:bg-gray-50';
+    if (vehicle.status === 'BAIXADO') return 'bg-red-50 border-red-300';
+    if (vehicle.status === 'RESERVA') return 'bg-gray-50 border-gray-300';
+    return 'bg-white border-gray-300';
   };
 
   const statusClicavel = vehicle.status !== 'BAIXADO' && vehicle.status !== 'RESERVA';
 
+  const formatarEquipe = () => {
+    if (integrantesEquipe.length === 0) return 'Sem tripulação definida';
+    
+    return integrantesEquipe.map(integrante => (
+      `${integrante.nome} - ${integrante.telefone}\nCursos: ${integrante.cursos.join(', ')}`
+    )).join('\n\n');
+  };
+
   return (
     <TooltipProvider>
-      <div className={`relative flex flex-col items-center p-2 border rounded-lg shadow-sm transition-all duration-200 ${obterCorFundo()}`}>
+      <div className={`
+        relative flex flex-col items-center p-3 border-2 rounded-xl transition-all duration-300 
+        ${obterCorFundo()} 
+        shadow-lg hover:shadow-xl transform hover:-translate-y-1
+        bg-gradient-to-br from-white to-gray-50
+        min-w-[120px] w-[120px]
+      `} 
+      style={{
+        boxShadow: '0 8px 25px rgba(0,0,0,0.15), 0 4px 10px rgba(0,0,0,0.1)',
+        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+      }}>
+        
         {/* Indicador de observação */}
         {vehicleObservation && (
-          <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full flex items-center justify-center z-10">
-            <AlertCircle className="w-2 h-2 text-white" />
+          <div className="absolute -top-2 -right-2 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center z-10 shadow-md border-2 border-white">
+            <Info className="w-3 h-3 text-white" />
+          </div>
+        )}
+
+        {/* Indicador de equipe */}
+        {integrantesEquipe.length > 0 && (
+          <div className="absolute -top-2 -left-2 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center z-10 shadow-md border-2 border-white">
+            <User className="w-3 h-3 text-white" />
           </div>
         )}
 
@@ -114,24 +153,25 @@ export const ItemViatura = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="relative cursor-pointer" onClick={() => onVehicleClick(vehicle)}>
-              <div className="relative w-12 h-12 flex items-center justify-center">
+              <div className="relative w-16 h-16 flex items-center justify-center mb-2">
                 {vehicle.modalidade?.icone_url ? (
                   <img 
                     src={vehicle.modalidade.icone_url} 
                     alt={`Viatura ${vehicle.prefixo}`}
-                    className="w-8 h-8 object-contain"
+                    className="w-12 h-12 object-contain opacity-40"
                   />
                 ) : (
-                  <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center">
-                    <span className="text-gray-500 text-xs">IMG</span>
+                  <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center opacity-40">
+                    <span className="text-gray-400 text-xs">IMG</span>
                   </div>
                 )}
                 
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div 
-                    className="text-red-800 font-bold text-sm whitespace-nowrap pointer-events-none"
+                    className="text-red-800 font-black text-xl whitespace-nowrap pointer-events-none tracking-wider"
                     style={{
-                      textShadow: '1px 1px 2px rgba(255,255,255,0.9), -1px -1px 2px rgba(255,255,255,0.9), 1px -1px 2px rgba(255,255,255,0.9), -1px 1px 2px rgba(255,255,255,0.9)'
+                      textShadow: '2px 2px 4px rgba(255,255,255,0.9), -2px -2px 4px rgba(255,255,255,0.9), 2px -2px 4px rgba(255,255,255,0.9), -2px 2px 4px rgba(255,255,255,0.9)',
+                      filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
                     }}
                   >
                     {vehicle.prefixo}
@@ -140,20 +180,55 @@ export const ItemViatura = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
               </div>
             </div>
           </TooltipTrigger>
-          <TooltipContent>
-            <p>{vehicleObservation || 'Clique para ver detalhes da viatura'}</p>
+          <TooltipContent className="max-w-xs">
+            <div className="space-y-2">
+              {vehicleObservation && (
+                <div>
+                  <p className="font-semibold text-amber-600">Observação:</p>
+                  <p className="text-sm">{vehicleObservation}</p>
+                </div>
+              )}
+              {integrantesEquipe.length > 0 && (
+                <div>
+                  <p className="font-semibold text-blue-600 flex items-center gap-1">
+                    <User className="w-4 h-4" />
+                    Tripulação:
+                  </p>
+                  {integrantesEquipe.map((integrante, index) => (
+                    <div key={index} className="text-sm border-l-2 border-blue-300 pl-2 ml-2 mt-1">
+                      <p className="font-medium">{integrante.nome}</p>
+                      <p className="flex items-center gap-1 text-gray-600">
+                        <Phone className="w-3 h-3" />
+                        {integrante.telefone}
+                      </p>
+                      <p className="flex items-center gap-1 text-gray-600">
+                        <GraduationCap className="w-3 h-3" />
+                        {integrante.cursos.join(', ')}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {!vehicleObservation && integrantesEquipe.length === 0 && (
+                <p>Clique para ver detalhes da viatura</p>
+              )}
+            </div>
           </TooltipContent>
         </Tooltip>
 
         {/* Status clicável */}
-        <div className="flex flex-col items-center space-y-1 mt-1">
+        <div className="flex flex-col items-center space-y-1">
           <Tooltip>
             <TooltipTrigger asChild>
               <Badge 
-                className={`${coresStatus[vehicle.status]} text-white text-xs px-2 py-0.5 cursor-pointer transition-colors duration-200 ${
-                  statusClicavel ? 'hover:scale-105 transform' : 'cursor-default'
+                className={`${coresStatus[vehicle.status]} text-white text-xs px-3 py-1 cursor-pointer transition-all duration-200 font-semibold ${
+                  statusClicavel ? 'hover:scale-105 transform shadow-md' : 'cursor-default opacity-80'
                 }`}
                 onClick={statusClicavel ? handleClickStatus : undefined}
+                style={{
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                }}
               >
                 {vehicle.status}
               </Badge>
@@ -163,7 +238,8 @@ export const ItemViatura = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
             </TooltipContent>
           </Tooltip>
           
-          <div className={`text-xs font-medium ${obterCorTempo()}`}>
+          <div className={`text-xs font-bold ${obterCorTempo()}`}
+               style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
             {tempoNoStatus}
           </div>
         </div>

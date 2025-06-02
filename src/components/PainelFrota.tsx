@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LinhaViaturaEstacao } from '@/components/LinhaViaturaEstacao';
@@ -300,19 +299,35 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: P
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {subgrupamentosOrdenados.map((subgrupamentoId) => {
         const estacoesOrdenadas = ordenarEstacoesPorNome(dadosAgrupados[subgrupamentoId].estacoes);
         
         return (
-          <Card key={subgrupamentoId} className="border-red-200 shadow-md hover:shadow-lg transition-shadow duration-200">
-            <CardHeader className="bg-gradient-to-r from-red-50 to-red-100 border-b border-red-200 py-3">
-              <CardTitle className="text-red-800 text-base font-semibold">
+          <Card key={subgrupamentoId} className="border-red-200 shadow-xl hover:shadow-2xl transition-all duration-300"
+                style={{
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.15), 0 4px 15px rgba(0,0,0,0.1)',
+                  filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))'
+                }}>
+            <CardHeader className="bg-gradient-to-r from-red-50 via-red-100 to-red-50 border-b-2 border-red-200 py-4"
+                        style={{
+                          boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.5), 0 2px 8px rgba(0,0,0,0.1)'
+                        }}>
+              <CardTitle 
+                className="text-red-800 text-xl font-bold tracking-wide"
+                style={{
+                  textShadow: '2px 2px 6px rgba(0,0,0,0.15), 0 2px 4px rgba(255,255,255,0.8)',
+                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
+                }}
+              >
                 {dadosAgrupados[subgrupamentoId].nome}
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4">
-              <div className="space-y-3">
+            <CardContent className="p-6"
+                          style={{
+                            background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)'
+                          }}>
+              <div className="space-y-4">
                 {estacoesOrdenadas.map(([estacaoId, { dados, viaturas }], index) => {
                   const viaturasOrdenadas = ordenarViaturasPorPrefixo(viaturas);
                   
@@ -326,7 +341,11 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: P
                         observacoesViaturas={observacoesViaturas}
                       />
                       {index < estacoesOrdenadas.length - 1 && (
-                        <hr className="border-gray-200 my-3" />
+                        <hr className="border-gray-300 my-4 shadow-sm" 
+                            style={{ 
+                              borderTop: '1px solid #e5e7eb',
+                              boxShadow: '0 1px 2px rgba(0,0,0,0.05)' 
+                            }} />
                       )}
                     </div>
                   );
