@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Info, Users, Phone, GraduationCap } from 'lucide-react';
+import { AlertTriangle, Users, Phone, GraduationCap } from 'lucide-react';
 
 interface Viatura {
   id: string;
@@ -40,13 +40,13 @@ const coresStatus: Record<string, string> = {
 };
 
 const coresQuadroStatus: Record<string, string> = {
-  'DISPONÍVEL': 'from-green-50 to-green-100 border-green-200',
-  'QTI': 'from-blue-50 to-blue-100 border-blue-200',
-  'LOCAL': 'from-yellow-50 to-yellow-100 border-yellow-200',
-  'QTI PS': 'from-purple-50 to-purple-100 border-purple-200',
-  'REGRESSO': 'from-orange-50 to-orange-100 border-orange-200',
-  'BAIXADO': 'from-red-100 to-red-200 border-red-300',
-  'RESERVA': 'from-gray-100 to-gray-200 border-gray-300',
+  'DISPONÍVEL': 'from-green-100 to-green-200 border-green-300',
+  'QTI': 'from-blue-100 to-blue-200 border-blue-300',
+  'LOCAL': 'from-yellow-100 to-yellow-200 border-yellow-300',
+  'QTI PS': 'from-purple-100 to-purple-200 border-purple-300',
+  'REGRESSO': 'from-orange-100 to-orange-200 border-orange-300',
+  'BAIXADO': 'from-red-200 to-red-300 border-red-400',
+  'RESERVA': 'from-gray-200 to-gray-300 border-gray-400',
 };
 
 const sequenciaStatus = [
@@ -126,32 +126,35 @@ export const ItemViatura = ({
   return (
     <TooltipProvider>
       <div className={`
-        relative flex flex-col p-2 border-2 rounded-xl transition-all duration-300 
+        relative flex flex-col p-1.5 border-2 rounded-xl transition-all duration-300 
         bg-gradient-to-br ${obterCorFundo()}
-        shadow-[0_8px_16px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.7)] 
-        hover:shadow-[0_12px_24px_rgba(0,0,0,0.2),0_4px_8px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.7)] 
+        shadow-[0_6px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.7)] 
+        hover:shadow-[0_8px_16px_rgba(0,0,0,0.2),0_4px_8px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.7)] 
         transform hover:-translate-y-1
-        min-w-[160px] w-[160px] min-h-[90px]
+        min-w-[170px] w-[170px] min-h-[70px]
       `}>
         
         {/* Indicador de informações no topo direito */}
         {temInformacoes && (
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center shadow-md border border-white">
-            <Info className="w-2.5 h-2.5 text-white" />
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center shadow-md border border-white">
+            <AlertTriangle className="w-2.5 h-2.5 text-white" />
           </div>
         )}
 
         {/* Área da viatura - Imagem e prefixo alinhados no topo */}
         <div className="relative flex-1 flex flex-col justify-start">
-          <div className="relative w-full h-10 flex items-center justify-center mb-1">
+          <div className="relative w-full h-8 flex items-center justify-center mb-0.5">
             {vehicle.modalidade?.icone_url ? (
               <img 
                 src={vehicle.modalidade.icone_url} 
                 alt={`Viatura ${vehicle.prefixo}`}
-                className="w-8 h-8 object-contain opacity-30"
+                className="w-7 h-7 object-contain opacity-60 z-0"
+                style={{
+                  filter: 'brightness(1.2) contrast(1.1)',
+                }}
               />
             ) : (
-              <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center opacity-30">
+              <div className="w-7 h-7 bg-gray-200 rounded flex items-center justify-center opacity-60">
                 <span className="text-gray-400 text-xs">IMG</span>
               </div>
             )}
@@ -160,14 +163,14 @@ export const ItemViatura = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <div 
-                  className="absolute inset-0 flex items-center justify-center cursor-pointer"
+                  className="absolute inset-0 flex items-center justify-center cursor-pointer z-10"
                   onClick={() => onVehicleClick(vehicle)}
                 >
                   <div 
-                    className="text-red-800 font-black text-2xl whitespace-nowrap pointer-events-none tracking-wider"
+                    className="text-red-800 font-black text-xl whitespace-nowrap pointer-events-none tracking-wider"
                     style={{
-                      textShadow: '2px 2px 4px rgba(255,255,255,0.9), -2px -2px 4px rgba(255,255,255,0.9), 2px -2px 4px rgba(255,255,255,0.9), -2px 2px 4px rgba(255,255,255,0.9)',
-                      filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
+                      textShadow: '2px 2px 4px rgba(255,255,255,0.95), -2px -2px 4px rgba(255,255,255,0.95), 2px -2px 4px rgba(255,255,255,0.95), -2px 2px 4px rgba(255,255,255,0.95), 0 0 8px rgba(255,255,255,0.8)',
+                      filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))'
                     }}
                   >
                     {vehicle.prefixo}
@@ -179,7 +182,7 @@ export const ItemViatura = ({
                   {vehicleObservation && (
                     <div>
                       <p className="font-semibold text-blue-600 flex items-center gap-1 text-sm mb-1">
-                        <Info className="w-3 h-3" />
+                        <AlertTriangle className="w-3 h-3" />
                         Observação:
                       </p>
                       <p className="text-sm text-gray-700 bg-blue-50 p-2 rounded border-l-2 border-blue-300">
@@ -222,7 +225,7 @@ export const ItemViatura = ({
         </div>
 
         {/* Status e tempo - compactados na parte inferior */}
-        <div className="flex flex-col items-center space-y-1">
+        <div className="flex flex-col items-center space-y-0.5">
           <Tooltip>
             <TooltipTrigger asChild>
               <Badge 

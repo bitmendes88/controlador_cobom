@@ -225,6 +225,29 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: P
     carregarViaturas();
   };
 
+  // Cores diferentes para cada subgrupamento
+  const coresSubgrupamento = [
+    'from-red-50 via-red-100 to-red-50 border-red-200',
+    'from-blue-50 via-blue-100 to-blue-50 border-blue-200',
+    'from-green-50 via-green-100 to-green-50 border-green-200',
+    'from-purple-50 via-purple-100 to-purple-50 border-purple-200',
+    'from-orange-50 via-orange-100 to-orange-50 border-orange-200',
+    'from-indigo-50 via-indigo-100 to-indigo-50 border-indigo-200',
+    'from-teal-50 via-teal-100 to-teal-50 border-teal-200',
+    'from-pink-50 via-pink-100 to-pink-50 border-pink-200',
+  ];
+
+  const coresTituloSubgrupamento = [
+    'text-red-800',
+    'text-blue-800',
+    'text-green-800',
+    'text-purple-800',
+    'text-orange-800',
+    'text-indigo-800',
+    'text-teal-800',
+    'text-pink-800',
+  ];
+
   // Filter vehicles that have valid station and subgrupamento data
   const viaturasValidas = viaturas.filter(viatura => 
     viatura.estacao && 
@@ -299,35 +322,36 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: P
   }
 
   return (
-    <div className="space-y-6">
-      {subgrupamentosOrdenados.map((subgrupamentoId) => {
+    <div className="space-y-4">
+      {subgrupamentosOrdenados.map((subgrupamentoId, index) => {
         const estacoesOrdenadas = ordenarEstacoesPorNome(dadosAgrupados[subgrupamentoId].estacoes);
+        const corIndex = index % coresSubgrupamento.length;
         
         return (
-          <Card key={subgrupamentoId} className="border-red-200 shadow-xl hover:shadow-2xl transition-all duration-300"
+          <Card key={subgrupamentoId} className={`border-2 ${coresSubgrupamento[corIndex].split(' ')[2]} shadow-xl hover:shadow-2xl transition-all duration-300`}
                 style={{
-                  boxShadow: '0 10px 30px rgba(0,0,0,0.15), 0 4px 15px rgba(0,0,0,0.1)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.1)',
                   filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))'
                 }}>
-            <CardHeader className="bg-gradient-to-r from-red-50 via-red-100 to-red-50 border-b-2 border-red-200 py-4"
+            <CardHeader className={`bg-gradient-to-r ${coresSubgrupamento[corIndex]} border-b-2 py-3`}
                         style={{
                           boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.5), 0 2px 8px rgba(0,0,0,0.1)'
                         }}>
               <CardTitle 
-                className="text-red-800 text-xl font-bold tracking-wide"
+                className={`${coresTituloSubgrupamento[corIndex]} text-2xl font-bold tracking-wide`}
                 style={{
-                  textShadow: '2px 2px 6px rgba(0,0,0,0.15), 0 2px 4px rgba(255,255,255,0.8)',
+                  textShadow: '3px 3px 8px rgba(0,0,0,0.15), 0 2px 6px rgba(255,255,255,0.8)',
                   filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
                 }}
               >
                 {dadosAgrupados[subgrupamentoId].nome}
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6"
+            <CardContent className="p-4"
                           style={{
                             background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)'
                           }}>
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {estacoesOrdenadas.map(([estacaoId, { dados, viaturas }], index) => {
                   const viaturasOrdenadas = ordenarViaturasPorPrefixo(viaturas);
                   
@@ -341,7 +365,7 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: P
                         observacoesViaturas={observacoesViaturas}
                       />
                       {index < estacoesOrdenadas.length - 1 && (
-                        <hr className="border-gray-300 my-4 shadow-sm" 
+                        <hr className="border-gray-300 my-2 shadow-sm" 
                             style={{ 
                               borderTop: '1px solid #e5e7eb',
                               boxShadow: '0 1px 2px rgba(0,0,0,0.05)' 

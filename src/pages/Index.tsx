@@ -6,7 +6,7 @@ import { FormularioAdicionarViatura } from '@/components/FormularioAdicionarViat
 import { SeletorControlador } from '@/components/SeletorControlador';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus } from 'lucide-react';
+import { Plus, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Grupamento {
@@ -48,9 +48,20 @@ const Index = () => {
       <div className="bg-red-700 text-white shadow-lg">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold">COMANDO DE BOMBEIROS DO INTERIOR 1</h1>
-              <p className="text-red-100 mt-1 text-sm">Controlador COBOM | Gestão de Unidades de Serviços</p>
+            <div className="flex items-center gap-4">
+              <div className="bg-white rounded-full p-2 shadow-lg">
+                <Shield className="w-8 h-8 text-red-700" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold tracking-wide"
+                    style={{
+                      textShadow: '2px 2px 4px rgba(0,0,0,0.3), 0 1px 2px rgba(255,255,255,0.1)',
+                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
+                    }}>
+                  COMANDO DE BOMBEIROS DO INTERIOR 1
+                </h1>
+                <p className="text-red-100 mt-1 text-base font-medium">Controlador COBOM | Gestão de Unidades de Serviços</p>
+              </div>
             </div>
             <div className="flex items-center gap-3">
               {grupamentos.length > 0 && (
@@ -102,6 +113,14 @@ const Index = () => {
       {mostrarAdicionarViatura && (
         <FormularioAdicionarViatura aoFechar={() => setMostrarAdicionarViatura(false)} />
       )}
+
+      <style jsx>{`
+        @keyframes gradient {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+      `}</style>
     </div>
   );
 };

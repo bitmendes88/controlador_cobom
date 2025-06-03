@@ -55,22 +55,31 @@ export const LinhaViaturaEstacao = ({
   };
 
   return (
-    <div className="flex items-center space-x-4 py-1">
-      <div className="min-w-[180px] w-[180px] flex items-center justify-start">
-        <h3 
-          className="font-bold text-red-800 text-lg leading-tight break-words"
+    <div className="flex items-center space-x-3 py-0.5">
+      <div className="min-w-[180px] w-[180px] flex items-center justify-center">
+        <div 
+          className="relative text-center p-2 rounded-lg min-h-[50px] flex items-center justify-center"
           style={{
-            textShadow: '2px 2px 4px rgba(0,0,0,0.1), 0 1px 2px rgba(255,255,255,0.8)',
-            filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.2))'
+            backgroundImage: 'linear-gradient(135deg, rgba(185,28,28,0.1) 0%, rgba(220,38,38,0.15) 50%, rgba(153,27,27,0.1) 100%)',
+            backgroundSize: '200% 200%',
+            animation: 'gradient 3s ease infinite',
           }}
         >
-          {estacao.nome}
-        </h3>
+          <h3 
+            className="font-bold text-red-800 text-lg leading-tight break-words"
+            style={{
+              textShadow: '2px 2px 4px rgba(255,255,255,0.9), -1px -1px 2px rgba(255,255,255,0.7), 0 0 6px rgba(255,255,255,0.8)',
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
+            }}
+          >
+            {estacao.nome}
+          </h3>
+        </div>
       </div>
 
       <div className="flex-1">
         {viaturas.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {viaturas.map((viatura) => (
               <ItemViatura
                 key={viatura.id}
