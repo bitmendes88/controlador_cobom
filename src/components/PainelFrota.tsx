@@ -39,9 +39,10 @@ interface Estacao {
 interface PainelFrotaProps {
   grupamentoSelecionado: string;
   controladorSelecionado?: string;
+  termoPesquisa?: string;
 }
 
-export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: PainelFrotaProps) => {
+export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, termoPesquisa = '' }: PainelFrotaProps) => {
   const [viaturas, setViaturas] = useState<Viatura[]>([]);
   const [viaturaSelecionada, setViaturaSelecionada] = useState<Viatura | null>(null);
   const [viaturaEditando, setViaturaEditando] = useState<Viatura | null>(null);
@@ -225,6 +226,19 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: P
     carregarViaturas();
   };
 
+  // Função para filtrar viaturas baseado no termo de pesquisa
+  const filtrarViaturas = (viaturas: Viatura[]) => {
+    if (!termoPesquisa.trim()) return viaturas;
+    
+    const termo = termoPesquisa.toLowerCase();
+    return viaturas.filter(viatura => 
+      viatura.prefixo.toLowerCase().includes(termo) ||
+      viatura.modalidade?.nome.toLowerCase().includes(termo) ||
+      viatura.status.toLowerCase().includes(termo) ||
+      observacoesViaturas[viatura.id]?.toLowerCase().includes(termo)
+    );
+  };
+
   // Cores diferentes para cada subgrupamento
   const coresSubgrupamento = [
     'from-red-50 via-red-100 to-red-50 border-red-200',
@@ -256,8 +270,11 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado }: P
     viatura.estacao.id
   );
 
+  // Aplicar filtro de pesquisa nas viaturas válidas
+  const viaturasFiltradasPorPesquisa = filtrarViaturas(viaturasValidas);
+
   // Agrupar viaturas por subgrupamento e depois por estação
-  const dadosAgrupados = viaturasValidas.reduce((acc, viatura) => {
+  const dadosAgrupados = viaturasFiltradasPorPesquisa.reduce((acc, viatura) => {
     // Add safety checks since we've already filtered above, but keeping for extra safety
     if (!viatura.estacao || !viatura.estacao.subgrupamento) {
       return acc;

@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AlertTriangle, Users, Phone, GraduationCap } from 'lucide-react';
+import { DjIcon } from '@/components/DjIcon';
 
 interface Viatura {
   id: string;
@@ -65,6 +65,7 @@ export const ItemViatura = ({
   integrantesEquipe = []
 }: ItemViaturaProps) => {
   const [tempoNoStatus, setTempoNoStatus] = useState('');
+  const [isDEJEM, setIsDEJEM] = useState(false);
 
   useEffect(() => {
     const atualizarTimer = () => {
@@ -91,6 +92,11 @@ export const ItemViatura = ({
     return () => clearInterval(interval);
   }, [vehicle.status_alterado_em]);
 
+  useEffect(() => {
+    // Verificar se a viatura tem observação DEJEM
+    setIsDEJEM(vehicleObservation?.includes('DEJEM') || false);
+  }, [vehicle.status_alterado_em, vehicleObservation]);
+
   const handleClickStatus = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (vehicle.status === 'BAIXADO' || vehicle.status === 'RESERVA') return;
@@ -116,7 +122,16 @@ export const ItemViatura = ({
   };
 
   const obterCorFundo = () => {
-    return coresQuadroStatus[vehicle.status] || 'from-white to-gray-50 border-gray-300';
+    const coresQuadroStatusClaro: Record<string, string> = {
+      'DISPONÍVEL': 'from-green-50 to-green-100 border-green-200',
+      'QTI': 'from-blue-50 to-blue-100 border-blue-200',
+      'LOCAL': 'from-yellow-50 to-yellow-100 border-yellow-200',
+      'QTI PS': 'from-purple-50 to-purple-100 border-purple-200',
+      'REGRESSO': 'from-orange-50 to-orange-100 border-orange-200',
+      'BAIXADO': 'from-red-100 to-red-200 border-red-300',
+      'RESERVA': 'from-gray-100 to-gray-200 border-gray-300',
+    };
+    return coresQuadroStatusClaro[vehicle.status] || 'from-white to-gray-50 border-gray-300';
   };
 
   const statusClicavel = vehicle.status !== 'BAIXADO' && vehicle.status !== 'RESERVA';
@@ -126,12 +141,12 @@ export const ItemViatura = ({
   return (
     <TooltipProvider>
       <div className={`
-        relative flex flex-col p-1.5 border-2 rounded-xl transition-all duration-300 
+        relative flex flex-col p-1 border-2 rounded-xl transition-all duration-300 
         bg-gradient-to-br ${obterCorFundo()}
-        shadow-[0_6px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.7)] 
-        hover:shadow-[0_8px_16px_rgba(0,0,0,0.2),0_4px_8px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.7)] 
-        transform hover:-translate-y-1
-        min-w-[170px] w-[170px] min-h-[70px]
+        shadow-[0_4px_8px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.05)] 
+        hover:shadow-[0_6px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] 
+        transform hover:-translate-y-0.5
+        min-w-[170px] w-[170px] min-h-[60px]
       `}>
         
         {/* Indicador de informações no topo direito */}
@@ -143,19 +158,19 @@ export const ItemViatura = ({
 
         {/* Área da viatura - Imagem e prefixo alinhados no topo */}
         <div className="relative flex-1 flex flex-col justify-start">
-          <div className="relative w-full h-8 flex items-center justify-center mb-0.5">
+          <div className="relative w-full h-7 flex items-center justify-center mb-0.5">
             {vehicle.modalidade?.icone_url ? (
               <img 
                 src={vehicle.modalidade.icone_url} 
                 alt={`Viatura ${vehicle.prefixo}`}
-                className="w-7 h-7 object-contain opacity-60 z-0"
+                className="w-6 h-6 object-contain opacity-40 z-0"
                 style={{
-                  filter: 'brightness(1.2) contrast(1.1)',
+                  filter: 'brightness(1.1) contrast(1.05) saturate(0.8)',
                 }}
               />
             ) : (
-              <div className="w-7 h-7 bg-gray-200 rounded flex items-center justify-center opacity-60">
-                <span className="text-gray-400 text-xs">IMG</span>
+              <div className="w-6 h-6 bg-gray-100 rounded flex items-center justify-center opacity-40">
+                <span className="text-gray-300 text-xs">IMG</span>
               </div>
             )}
             
@@ -167,7 +182,7 @@ export const ItemViatura = ({
                   onClick={() => onVehicleClick(vehicle)}
                 >
                   <div 
-                    className="text-red-800 font-black text-xl whitespace-nowrap pointer-events-none tracking-wider"
+                    className="text-red-800 font-black text-lg whitespace-nowrap pointer-events-none tracking-wider"
                     style={{
                       textShadow: '2px 2px 4px rgba(255,255,255,0.95), -2px -2px 4px rgba(255,255,255,0.95), 2px -2px 4px rgba(255,255,255,0.95), -2px 2px 4px rgba(255,255,255,0.95), 0 0 8px rgba(255,255,255,0.8)',
                       filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))'
@@ -226,25 +241,30 @@ export const ItemViatura = ({
 
         {/* Status e tempo - compactados na parte inferior */}
         <div className="flex flex-col items-center space-y-0.5">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Badge 
-                className={`${coresStatus[vehicle.status]} text-white text-xs px-2 py-0.5 cursor-pointer transition-all duration-200 font-semibold ${
-                  statusClicavel ? 'hover:scale-105 transform shadow-md' : 'cursor-default opacity-80'
-                }`}
-                onClick={statusClicavel ? handleClickStatus : undefined}
-                style={{
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-                  textShadow: '0 1px 2px rgba(0,0,0,0.3)'
-                }}
-              >
-                {vehicle.status}
-              </Badge>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{statusClicavel ? 'Clique para alterar status' : 'Status não alterável'}</p>
-            </TooltipContent>
-          </Tooltip>
+          <div className="flex items-center gap-1">
+            {isDEJEM && (
+              <DjIcon className="w-3 h-3 text-purple-600" />
+            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge 
+                  className={`${coresStatus[vehicle.status]} text-white text-xs px-2 py-0.5 cursor-pointer transition-all duration-200 font-semibold ${
+                    statusClicavel ? 'hover:scale-105 transform shadow-md' : 'cursor-default opacity-80'
+                  }`}
+                  onClick={statusClicavel ? handleClickStatus : undefined}
+                  style={{
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                  }}
+                >
+                  {vehicle.status}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{statusClicavel ? 'Clique para alterar status' : 'Status não alterável'}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
           
           <div className={`text-xs font-bold ${obterCorTempo()}`}
                style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>

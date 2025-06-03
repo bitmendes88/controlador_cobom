@@ -1,5 +1,5 @@
-
 import { ItemViatura } from './ItemViatura';
+import { Shield } from 'lucide-react';
 
 interface Viatura {
   id: string;
@@ -60,13 +60,17 @@ export const LinhaViaturaEstacao = ({
         <div 
           className="relative text-center p-2 rounded-lg min-h-[50px] flex items-center justify-center"
           style={{
-            backgroundImage: 'linear-gradient(135deg, rgba(185,28,28,0.1) 0%, rgba(220,38,38,0.15) 50%, rgba(153,27,27,0.1) 100%)',
-            backgroundSize: '200% 200%',
-            animation: 'gradient 3s ease infinite',
+            background: 'linear-gradient(135deg, rgba(59,130,246,0.1) 0%, rgba(147,51,234,0.1) 50%, rgba(239,68,68,0.1) 100%)',
           }}
         >
+          {/* Ícone de fundo */}
+          <Shield 
+            className="absolute inset-0 w-8 h-8 text-gray-300 opacity-20 m-auto"
+            style={{ zIndex: 0 }}
+          />
+          
           <h3 
-            className="font-bold text-red-800 text-lg leading-tight break-words"
+            className="relative font-bold text-red-800 text-lg leading-tight break-words text-left z-10"
             style={{
               textShadow: '2px 2px 4px rgba(255,255,255,0.9), -1px -1px 2px rgba(255,255,255,0.7), 0 0 6px rgba(255,255,255,0.8)',
               filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
@@ -79,7 +83,7 @@ export const LinhaViaturaEstacao = ({
 
       <div className="flex-1">
         {viaturas.length > 0 ? (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1">
             {viaturas.map((viatura) => (
               <ItemViatura
                 key={viatura.id}

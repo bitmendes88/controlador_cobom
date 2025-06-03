@@ -5,8 +5,9 @@ import { AnotacoesServicoDaily } from '@/components/AnotacoesServicoDaily';
 import { FormularioAdicionarViatura } from '@/components/FormularioAdicionarViatura';
 import { SeletorControlador } from '@/components/SeletorControlador';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Shield } from 'lucide-react';
+import { Plus, Shield, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Grupamento {
@@ -20,9 +21,12 @@ const Index = () => {
   const [grupamentos, setGrupamentos] = useState<Grupamento[]>([]);
   const [grupamentoSelecionado, setGrupamentoSelecionado] = useState<string>('');
   const [controladorSelecionado, setControladorSelecionado] = useState<string>('');
+  const [termoPesquisa, setTermoPesquisa] = useState<string>('');
+  const [corProntidao, setCorProntidao] = useState<'verde' | 'amarela' | 'azul'>('verde');
 
   useEffect(() => {
     carregarGrupamentos();
+    calcularCorProntidao();
   }, []);
 
   const carregarGrupamentos = async () => {
@@ -43,29 +47,66 @@ const Index = () => {
     }
   };
 
+  const calcularCorProntidao = () => {
+    const dataReferencia = new Date('2025-06-02T07:30:00-03:00'); // 02/06/2025 às 07:30 GMT-3 = verde
+    const agora = new Date();
+    
+    // Ajustar para GMT-3
+    const agoraGMT3 = new Date(agora.getTime() - (3 * 60 * 60 * 1000));
+    
+    // Calcular diferença em horas desde a data de referência
+    const diffHoras = Math.floor((agoraGMT3.getTime() - dataReferencia.getTime()) / (1000 * 60 * 60));
+    
+    // Calcular quantos ciclos de 24 horas se passaram
+    const ciclos = Math.floor(diffHoras / 24);
+    
+    // Determinar a cor baseada no ciclo (verde=0, amarela=1, azul=2)
+    const indiceCor = ciclos % 3;
+    const cores: ('verde' | 'amarela' | 'azul')[] = ['verde', 'amarela', 'azul'];
+    
+    setCorProntidao(cores[indiceCor]);
+  };
+
+  const obterEstiloProntidao = () => {
+    const estilos = {
+      verde: 'bg-green-500 text-white',
+      amarela: 'bg-yellow-500 text-white',
+      azul: 'bg-blue-500 text-white'
+    };
+    return estilos[corProntidao];
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Cabeçalho Principal */}
       <div className="bg-red-700 text-white shadow-lg">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <div className="bg-white rounded-full p-2 shadow-lg">
-                <Shield className="w-8 h-8 text-red-700" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold tracking-wide"
-                    style={{
-                      textShadow: '2px 2px 4px rgba(0,0,0,0.3), 0 1px 2px rgba(255,255,255,0.1)',
-                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
-                    }}>
-                  COMANDO DE BOMBEIROS DO INTERIOR 1
-                </h1>
-                <p className="text-red-100 mt-1 text-base font-medium">Controlador COBOM | Gestão de Unidades de Serviços</p>
-              </div>
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-center gap-4">
+            <div className="bg-white rounded-full p-2 shadow-lg">
+              <Shield className="w-8 h-8 text-red-700" />
             </div>
-            <div className="flex items-center gap-3">
+            <div className="text-center">
+              <h1 className="text-4xl font-bold tracking-wide"
+                  style={{
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.3), 0 1px 2px rgba(255,255,255,0.1)',
+                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
+                  }}>
+                COMANDO DE BOMBEIROS DO INTERIOR 1
+              </h1>
+              <p className="text-red-100 mt-1 text-lg font-medium">Controlador COBOM | Gestão de Unidades de Serviços</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Barra de Controles */}
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex flex-wrap items-center gap-3 justify-between">
+            <div className="flex items-center gap-3 flex-wrap">
+              {/* Seletor de Grupamento */}
               {grupamentos.length > 0 && (
-                <div className="bg-white rounded-lg p-2">
+                <div className="bg-gray-50 rounded-lg p-2">
                   <Select value={grupamentoSelecionado} onValueChange={setGrupamentoSelecionado}>
                     <SelectTrigger className="w-60 text-gray-900 h-8">
                       <SelectValue placeholder="Selecione um grupamento" />
@@ -81,19 +122,48 @@ const Index = () => {
                 </div>
               )}
 
+              {/* Seletor de Controlador */}
               <SeletorControlador
                 grupamentoSelecionado={grupamentoSelecionado}
                 controladorSelecionado={controladorSelecionado}
                 aoMudarControlador={setControladorSelecionado}
               />
               
+              {/* Botão Adicionar Controlador */}
               <Button 
-                onClick={() => setMostrarAdicionarViatura(true)}
-                className="bg-white text-red-700 hover:bg-gray-100 font-semibold h-8 px-3"
+                onClick={() => {/* Lógica para adicionar controlador já está no SeletorControlador */}}
+                className="bg-blue-600 text-white hover:bg-blue-700 font-semibold h-8 px-3"
               >
                 <Plus className="w-4 h-4 mr-1" />
-                Adicionar Viatura
+                Controlador
               </Button>
+
+              {/* Botão Adicionar Viatura */}
+              <Button 
+                onClick={() => setMostrarAdicionarViatura(true)}
+                className="bg-green-600 text-white hover:bg-green-700 font-semibold h-8 px-3"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Viatura
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {/* Caixa de Pesquisa */}
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="Pesquisar viaturas..."
+                  value={termoPesquisa}
+                  onChange={(e) => setTermoPesquisa(e.target.value)}
+                  className="pl-10 w-64 h-8"
+                />
+              </div>
+
+              {/* Indicador de Prontidão */}
+              <div className={`px-3 py-1 rounded-lg font-semibold text-sm ${obterEstiloProntidao()}`}>
+                Prontidão: {corProntidao.toUpperCase()}
+              </div>
             </div>
           </div>
         </div>
@@ -106,21 +176,14 @@ const Index = () => {
         />
         <PainelFrota 
           grupamentoSelecionado={grupamentoSelecionado} 
-          controladorSelecionado={controladorSelecionado} 
+          controladorSelecionado={controladorSelecionado}
+          termoPesquisa={termoPesquisa}
         />
       </div>
 
       {mostrarAdicionarViatura && (
         <FormularioAdicionarViatura aoFechar={() => setMostrarAdicionarViatura(false)} />
       )}
-
-      <style jsx>{`
-        @keyframes gradient {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-      `}</style>
     </div>
   );
 };

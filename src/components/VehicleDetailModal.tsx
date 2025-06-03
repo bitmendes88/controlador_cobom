@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -89,6 +88,37 @@ export const VehicleDetailModal = ({
       toast({
         title: "Erro",
         description: "Falha ao salvar observação. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setEstaCarregando(false);
+    }
+  };
+
+  const adicionarDEJEM = async () => {
+    setEstaCarregando(true);
+    try {
+      const { error } = await supabase
+        .from('observacoes_viatura')
+        .insert({
+          viatura_id: vehicle.id,
+          observacao: 'DEJEM',
+          criado_por: 'Sistema'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "DEJEM Adicionado",
+        description: "Viatura marcada como DEJEM com sucesso.",
+      });
+      
+      carregarObservacoes();
+    } catch (error) {
+      console.error('Erro ao adicionar DEJEM:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao marcar como DEJEM. Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -205,7 +235,7 @@ export const VehicleDetailModal = ({
 
           <div className="space-y-2">
             <h4 className="font-medium">Ações Rápidas</h4>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Button
                 size="sm"
                 variant="outline"
@@ -229,6 +259,15 @@ export const VehicleDetailModal = ({
                 className="text-xs"
               >
                 Levantar
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={adicionarDEJEM}
+                disabled={estaCarregando}
+                className="text-xs bg-purple-50 text-purple-700 hover:bg-purple-100"
+              >
+                DEJEM
               </Button>
             </div>
           </div>
