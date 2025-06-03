@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, Edit, AlertTriangle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Trash2, Edit, AlertTriangle, Smartphone, Radio } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -40,10 +41,16 @@ export const VehicleDetailModal = ({
   const [observacoes, setObservacoes] = useState<any[]>([]);
   const [novaObservacao, setNovaObservacao] = useState('');
   const [estaCarregando, setEstaCarregando] = useState(false);
+  const [qsaRadio, setQsaRadio] = useState<number | null>(null);
+  const [qsaZello, setQsaZello] = useState<number | null>(null);
+  const [isDejem, setIsDejem] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     carregarObservacoes();
+    // Verificar se já tem QSA definido (simular dados do banco)
+    setQsaRadio(Math.random() > 0.5 ? Math.floor(Math.random() * 5) + 1 : null);
+    setQsaZello(Math.random() > 0.5 ? Math.floor(Math.random() * 5) + 1 : null);
   }, [vehicle.id]);
 
   const carregarObservacoes = async () => {
@@ -88,37 +95,6 @@ export const VehicleDetailModal = ({
       toast({
         title: "Erro",
         description: "Falha ao salvar observação. Tente novamente.",
-        variant: "destructive",
-      });
-    } finally {
-      setEstaCarregando(false);
-    }
-  };
-
-  const adicionarDEJEM = async () => {
-    setEstaCarregando(true);
-    try {
-      const { error } = await supabase
-        .from('observacoes_viatura')
-        .insert({
-          viatura_id: vehicle.id,
-          observacao: 'DEJEM',
-          criado_por: 'Sistema'
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "DEJEM Adicionado",
-        description: "Viatura marcada como DEJEM com sucesso.",
-      });
-      
-      carregarObservacoes();
-    } catch (error) {
-      console.error('Erro ao adicionar DEJEM:', error);
-      toast({
-        title: "Erro",
-        description: "Falha ao marcar como DEJEM. Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -192,6 +168,78 @@ export const VehicleDetailModal = ({
     }
   };
 
+  const salvarQsaRadio = async (nota: number) => {
+    setEstaCarregando(true);
+    try {
+      // Em uma implementação real, salvaria no banco
+      setQsaRadio(nota);
+      
+      toast({
+        title: "QSA Rádio Atualizado",
+        description: `QSA Rádio definido como ${nota}`,
+      });
+    } catch (error) {
+      console.error('Erro ao salvar QSA Rádio:', error);
+    } finally {
+      setEstaCarregando(false);
+    }
+  };
+
+  const salvarQsaZello = async (nota: number) => {
+    setEstaCarregando(true);
+    try {
+      // Em uma implementação real, salvaria no banco
+      setQsaZello(nota);
+      
+      toast({
+        title: "QSA Zello Atualizado",
+        description: `QSA Zello definido como ${nota}`,
+      });
+    } catch (error) {
+      console.error('Erro ao salvar QSA Zello:', error);
+    } finally {
+      setEstaCarregando(false);
+    }
+  };
+
+  const toggleDejem = async () => {
+    setEstaCarregando(true);
+    try {
+      const novoStatus = !isDejem;
+      
+      if (novoStatus) {
+        const { error } = await supabase
+          .from('observacoes_viatura')
+          .insert({
+            viatura_id: vehicle.id,
+            observacao: 'DEJEM',
+            criado_por: 'Sistema'
+          });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('observacoes_viatura')
+          .delete()
+          .eq('viatura_id', vehicle.id)
+          .eq('observacao', 'DEJEM');
+        if (error) throw error;
+      }
+
+      setIsDejem(novoStatus);
+      
+      toast({
+        title: novoStatus ? "DEJEM Ativado" : "DEJEM Desativado",
+        description: novoStatus ? "Viatura marcada como DEJEM" : "Viatura desmarcada como DEJEM",
+      });
+      
+      carregarObservacoes();
+    } catch (error) {
+      console.error('Erro ao alterar DEJEM:', error);
+    } finally {
+      setEstaCarregando(false);
+    }
+  };
+
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
@@ -233,6 +281,53 @@ export const VehicleDetailModal = ({
 
           <Separator />
 
+          {/* QSA Controls */}
+          <div className="space-y-3">
+            <h4 className="font-medium">Qualidade do Sinal de Áudio (QSA)</h4>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-1">
+                  <Radio className="w-4 h-4" />
+                  QSA Rádio
+                </label>
+                <Select value={qsaRadio?.toString() || ""} onValueChange={(value) => salvarQsaRadio(parseInt(value))}>
+                  <SelectTrigger className="h-8">
+                    <SelectValue placeholder="Nota 1-5" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5].map((nota) => (
+                      <SelectItem key={nota} value={nota.toString()}>
+                        {nota}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-1">
+                  <Smartphone className="w-4 h-4" />
+                  QSA Zello
+                </label>
+                <Select value={qsaZello?.toString() || ""} onValueChange={(value) => salvarQsaZello(parseInt(value))}>
+                  <SelectTrigger className="h-8">
+                    <SelectValue placeholder="Nota 1-5" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5].map((nota) => (
+                      <SelectItem key={nota} value={nota.toString()}>
+                        {nota}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
           <div className="space-y-2">
             <h4 className="font-medium">Ações Rápidas</h4>
             <div className="grid grid-cols-2 gap-2">
@@ -262,12 +357,12 @@ export const VehicleDetailModal = ({
               </Button>
               <Button
                 size="sm"
-                variant="outline"
-                onClick={adicionarDEJEM}
+                variant={isDejem ? "default" : "outline"}
+                onClick={toggleDejem}
                 disabled={estaCarregando}
-                className="text-xs bg-purple-50 text-purple-700 hover:bg-purple-100"
+                className={`text-xs ${isDejem ? 'bg-purple-600 hover:bg-purple-700' : 'bg-purple-50 text-purple-700 hover:bg-purple-100'}`}
               >
-                DEJEM
+                {isDejem ? 'Remover DEJEM' : 'Marcar DEJEM'}
               </Button>
             </div>
           </div>

@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { FormularioAdicionarControlador } from '@/components/FormularioAdicionarControlador';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus } from 'lucide-react';
+import { Plus, UserPlus } from 'lucide-react';
 
 interface Controlador {
   id: string;
@@ -51,29 +51,32 @@ export const SeletorControlador = ({
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="bg-white rounded-lg p-2">
-        <Select value={controladorSelecionado} onValueChange={aoMudarControlador}>
-          <SelectTrigger className="w-48 text-gray-900 h-8">
-            <SelectValue placeholder="Selecione um controlador" />
-          </SelectTrigger>
-          <SelectContent>
-            {controladores.map((controlador) => (
-              <SelectItem key={controlador.id} value={controlador.id}>
-                {controlador.nome}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+    <>
+      <div className="flex items-center gap-2">
+        <div className="bg-white rounded-lg p-2">
+          <Select value={controladorSelecionado} onValueChange={aoMudarControlador}>
+            <SelectTrigger className="w-48 text-gray-900 h-8">
+              <SelectValue placeholder="Selecione um controlador" />
+            </SelectTrigger>
+            <SelectContent>
+              {controladores.map((controlador) => (
+                <SelectItem key={controlador.id} value={controlador.id}>
+                  {controlador.nome}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <Button 
+          onClick={() => setMostrarFormulario(true)}
+          className="bg-blue-600 text-white hover:bg-blue-700 font-semibold h-8 px-3"
+          size="sm"
+        >
+          <UserPlus className="w-4 h-4" />
+          <Plus className="w-3 h-3 -ml-1" />
+        </Button>
       </div>
-      
-      <Button 
-        onClick={() => setMostrarFormulario(true)}
-        className="bg-white text-red-700 hover:bg-gray-100 font-semibold h-8 px-3"
-      >
-        <Plus className="w-4 h-4 mr-1" />
-        Controlador
-      </Button>
 
       {mostrarFormulario && (
         <FormularioAdicionarControlador
@@ -82,6 +85,6 @@ export const SeletorControlador = ({
           aoControladorAdicionado={carregarControladores}
         />
       )}
-    </div>
+    </>
   );
 };

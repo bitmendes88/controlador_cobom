@@ -1,8 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { AlertTriangle, Users, Phone, GraduationCap } from 'lucide-react';
-import { DjIcon } from '@/components/DjIcon';
+import { AlertTriangle, Users, Phone, GraduationCap, Smartphone } from 'lucide-react';
+import { DIcon } from '@/components/DIcon';
 
 interface Viatura {
   id: string;
@@ -40,13 +41,13 @@ const coresStatus: Record<string, string> = {
 };
 
 const coresQuadroStatus: Record<string, string> = {
-  'DISPONÍVEL': 'from-green-100 to-green-200 border-green-300',
-  'QTI': 'from-blue-100 to-blue-200 border-blue-300',
-  'LOCAL': 'from-yellow-100 to-yellow-200 border-yellow-300',
-  'QTI PS': 'from-purple-100 to-purple-200 border-purple-300',
-  'REGRESSO': 'from-orange-100 to-orange-200 border-orange-300',
-  'BAIXADO': 'from-red-200 to-red-300 border-red-400',
-  'RESERVA': 'from-gray-200 to-gray-300 border-gray-400',
+  'DISPONÍVEL': 'from-green-50 to-green-100 border-green-200',
+  'QTI': 'from-blue-50 to-blue-100 border-blue-200',
+  'LOCAL': 'from-yellow-50 to-yellow-100 border-yellow-200',
+  'QTI PS': 'from-purple-50 to-purple-100 border-purple-200',
+  'REGRESSO': 'from-orange-50 to-orange-100 border-orange-200',
+  'BAIXADO': 'from-red-100 to-red-200 border-red-300',
+  'RESERVA': 'from-gray-100 to-gray-200 border-gray-300',
 };
 
 const sequenciaStatus = [
@@ -66,6 +67,8 @@ export const ItemViatura = ({
 }: ItemViaturaProps) => {
   const [tempoNoStatus, setTempoNoStatus] = useState('');
   const [isDEJEM, setIsDEJEM] = useState(false);
+  const [qsaRadio, setQsaRadio] = useState<number | null>(null);
+  const [qsaZello, setQsaZello] = useState<number | null>(null);
 
   useEffect(() => {
     const atualizarTimer = () => {
@@ -93,9 +96,15 @@ export const ItemViatura = ({
   }, [vehicle.status_alterado_em]);
 
   useEffect(() => {
-    // Verificar se a viatura tem observação DEJEM
     setIsDEJEM(vehicleObservation?.includes('DEJEM') || false);
-  }, [vehicle.status_alterado_em, vehicleObservation]);
+    
+    // Simular dados QSA - em uma implementação real, viriam do banco de dados
+    const hasQsaData = Math.random() > 0.7;
+    if (hasQsaData) {
+      setQsaRadio(Math.floor(Math.random() * 5) + 1);
+      setQsaZello(Math.floor(Math.random() * 5) + 1);
+    }
+  }, [vehicleObservation]);
 
   const handleClickStatus = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -122,16 +131,7 @@ export const ItemViatura = ({
   };
 
   const obterCorFundo = () => {
-    const coresQuadroStatusClaro: Record<string, string> = {
-      'DISPONÍVEL': 'from-green-50 to-green-100 border-green-200',
-      'QTI': 'from-blue-50 to-blue-100 border-blue-200',
-      'LOCAL': 'from-yellow-50 to-yellow-100 border-yellow-200',
-      'QTI PS': 'from-purple-50 to-purple-100 border-purple-200',
-      'REGRESSO': 'from-orange-50 to-orange-100 border-orange-200',
-      'BAIXADO': 'from-red-100 to-red-200 border-red-300',
-      'RESERVA': 'from-gray-100 to-gray-200 border-gray-300',
-    };
-    return coresQuadroStatusClaro[vehicle.status] || 'from-white to-gray-50 border-gray-300';
+    return coresQuadroStatus[vehicle.status] || 'from-white to-gray-50 border-gray-300';
   };
 
   const statusClicavel = vehicle.status !== 'BAIXADO' && vehicle.status !== 'RESERVA';
@@ -146,7 +146,7 @@ export const ItemViatura = ({
         shadow-[0_4px_8px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.05)] 
         hover:shadow-[0_6px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] 
         transform hover:-translate-y-0.5
-        min-w-[170px] w-[170px] min-h-[60px]
+        min-w-[160px] w-[160px] min-h-[55px]
       `}>
         
         {/* Indicador de informações no topo direito */}
@@ -156,20 +156,20 @@ export const ItemViatura = ({
           </div>
         )}
 
-        {/* Área da viatura - Imagem e prefixo alinhados no topo */}
+        {/* Área da viatura - Imagem e prefixo */}
         <div className="relative flex-1 flex flex-col justify-start">
-          <div className="relative w-full h-7 flex items-center justify-center mb-0.5">
+          <div className="relative w-full h-6 flex items-center justify-center mb-0.5">
             {vehicle.modalidade?.icone_url ? (
               <img 
                 src={vehicle.modalidade.icone_url} 
                 alt={`Viatura ${vehicle.prefixo}`}
-                className="w-6 h-6 object-contain opacity-40 z-0"
+                className="w-5 h-5 object-contain opacity-60 z-0"
                 style={{
-                  filter: 'brightness(1.1) contrast(1.05) saturate(0.8)',
+                  filter: 'brightness(1.2) contrast(1.1) saturate(0.9)',
                 }}
               />
             ) : (
-              <div className="w-6 h-6 bg-gray-100 rounded flex items-center justify-center opacity-40">
+              <div className="w-5 h-5 bg-gray-100 rounded flex items-center justify-center opacity-60">
                 <span className="text-gray-300 text-xs">IMG</span>
               </div>
             )}
@@ -182,7 +182,7 @@ export const ItemViatura = ({
                   onClick={() => onVehicleClick(vehicle)}
                 >
                   <div 
-                    className="text-red-800 font-black text-lg whitespace-nowrap pointer-events-none tracking-wider"
+                    className="text-red-800 font-black text-base whitespace-nowrap pointer-events-none tracking-wider"
                     style={{
                       textShadow: '2px 2px 4px rgba(255,255,255,0.95), -2px -2px 4px rgba(255,255,255,0.95), 2px -2px 4px rgba(255,255,255,0.95), -2px 2px 4px rgba(255,255,255,0.95), 0 0 8px rgba(255,255,255,0.8)',
                       filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))'
@@ -239,12 +239,34 @@ export const ItemViatura = ({
           </div>
         </div>
 
-        {/* Status e tempo - compactados na parte inferior */}
+        {/* Status e indicadores - parte inferior */}
         <div className="flex flex-col items-center space-y-0.5">
-          <div className="flex items-center gap-1">
-            {isDEJEM && (
-              <DjIcon className="w-3 h-3 text-purple-600" />
+          <div className="flex items-center gap-1 mb-1">
+            {/* QSA Rádio */}
+            {qsaRadio && (
+              <div className="flex items-center gap-0.5 text-xs bg-blue-100 px-1 py-0.5 rounded">
+                <div className="w-3 h-3 bg-blue-600 rounded text-white flex items-center justify-center text-xs font-bold">
+                  R
+                </div>
+                <span className="text-blue-700 font-semibold">{qsaRadio}</span>
+              </div>
             )}
+            
+            {/* QSA Zello */}
+            {qsaZello && (
+              <div className="flex items-center gap-0.5 text-xs bg-green-100 px-1 py-0.5 rounded">
+                <Smartphone className="w-3 h-3 text-green-700" />
+                <span className="text-green-700 font-semibold">{qsaZello}</span>
+              </div>
+            )}
+            
+            {/* DEJEM */}
+            {isDEJEM && (
+              <DIcon className="w-3 h-3" />
+            )}
+          </div>
+          
+          <div className="flex items-center gap-1">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Badge 

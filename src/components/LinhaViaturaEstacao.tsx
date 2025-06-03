@@ -1,3 +1,4 @@
+
 import { ItemViatura } from './ItemViatura';
 import { Shield } from 'lucide-react';
 
@@ -56,16 +57,16 @@ export const LinhaViaturaEstacao = ({
 
   return (
     <div className="flex items-center space-x-3 py-0.5">
-      <div className="min-w-[180px] w-[180px] flex items-center justify-center">
+      <div className="min-w-[180px] w-[180px] flex items-center justify-start">
         <div 
-          className="relative text-center p-2 rounded-lg min-h-[50px] flex items-center justify-center"
+          className="relative text-left p-2 rounded-lg min-h-[45px] flex items-center justify-start w-full"
           style={{
-            background: 'linear-gradient(135deg, rgba(59,130,246,0.1) 0%, rgba(147,51,234,0.1) 50%, rgba(239,68,68,0.1) 100%)',
+            background: 'linear-gradient(135deg, rgba(59,130,246,0.05) 0%, rgba(147,51,234,0.05) 50%, rgba(239,68,68,0.05) 100%)',
           }}
         >
           {/* Ícone de fundo */}
           <Shield 
-            className="absolute inset-0 w-8 h-8 text-gray-300 opacity-20 m-auto"
+            className="absolute right-2 w-6 h-6 text-gray-300 opacity-15"
             style={{ zIndex: 0 }}
           />
           

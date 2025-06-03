@@ -7,7 +7,7 @@ import { SeletorControlador } from '@/components/SeletorControlador';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Shield, Search } from 'lucide-react';
+import { Plus, Shield, Search, UserPlus, Car } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Grupamento {
@@ -48,19 +48,15 @@ const Index = () => {
   };
 
   const calcularCorProntidao = () => {
-    const dataReferencia = new Date('2025-06-02T07:30:00-03:00'); // 02/06/2025 às 07:30 GMT-3 = verde
+    const dataReferencia = new Date('2025-06-02T07:30:00-03:00');
     const agora = new Date();
     
-    // Ajustar para GMT-3
     const agoraGMT3 = new Date(agora.getTime() - (3 * 60 * 60 * 1000));
     
-    // Calcular diferença em horas desde a data de referência
     const diffHoras = Math.floor((agoraGMT3.getTime() - dataReferencia.getTime()) / (1000 * 60 * 60));
     
-    // Calcular quantos ciclos de 24 horas se passaram
     const ciclos = Math.floor(diffHoras / 24);
     
-    // Determinar a cor baseada no ciclo (verde=0, amarela=1, azul=2)
     const indiceCor = ciclos % 3;
     const cores: ('verde' | 'amarela' | 'azul')[] = ['verde', 'amarela', 'azul'];
     
@@ -81,11 +77,14 @@ const Index = () => {
       {/* Cabeçalho Principal */}
       <div className="bg-red-700 text-white shadow-lg">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center justify-between">
+            {/* Logo Esquerda */}
             <div className="bg-white rounded-full p-2 shadow-lg">
               <Shield className="w-8 h-8 text-red-700" />
             </div>
-            <div className="text-center">
+            
+            {/* Título Central */}
+            <div className="text-center flex-1">
               <h1 className="text-4xl font-bold tracking-wide"
                   style={{
                     textShadow: '2px 2px 4px rgba(0,0,0,0.3), 0 1px 2px rgba(255,255,255,0.1)',
@@ -95,6 +94,11 @@ const Index = () => {
               </h1>
               <p className="text-red-100 mt-1 text-lg font-medium">Controlador COBOM | Gestão de Unidades de Serviços</p>
             </div>
+            
+            {/* Logo Direita */}
+            <div className="bg-white rounded-full p-2 shadow-lg">
+              <Shield className="w-8 h-8 text-red-700" />
+            </div>
           </div>
         </div>
       </div>
@@ -102,8 +106,9 @@ const Index = () => {
       {/* Barra de Controles */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex flex-wrap items-center gap-3 justify-between">
-            <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-4 justify-between">
+            {/* Controles principais em linha única */}
+            <div className="flex items-center gap-3">
               {/* Seletor de Grupamento */}
               {grupamentos.length > 0 && (
                 <div className="bg-gray-50 rounded-lg p-2">
@@ -129,26 +134,16 @@ const Index = () => {
                 aoMudarControlador={setControladorSelecionado}
               />
               
-              {/* Botão Adicionar Controlador */}
-              <Button 
-                onClick={() => {/* Lógica para adicionar controlador já está no SeletorControlador */}}
-                className="bg-blue-600 text-white hover:bg-blue-700 font-semibold h-8 px-3"
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                Controlador
-              </Button>
-
               {/* Botão Adicionar Viatura */}
               <Button 
                 onClick={() => setMostrarAdicionarViatura(true)}
                 className="bg-green-600 text-white hover:bg-green-700 font-semibold h-8 px-3"
+                size="sm"
               >
-                <Plus className="w-4 h-4 mr-1" />
-                Viatura
+                <Car className="w-4 h-4" />
+                <Plus className="w-3 h-3 -ml-1" />
               </Button>
-            </div>
 
-            <div className="flex items-center gap-3">
               {/* Caixa de Pesquisa */}
               <div className="relative">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -159,11 +154,11 @@ const Index = () => {
                   className="pl-10 w-64 h-8"
                 />
               </div>
+            </div>
 
-              {/* Indicador de Prontidão */}
-              <div className={`px-3 py-1 rounded-lg font-semibold text-sm ${obterEstiloProntidao()}`}>
-                Prontidão: {corProntidao.toUpperCase()}
-              </div>
+            {/* Indicador de Prontidão */}
+            <div className={`px-3 py-1 rounded-lg font-semibold text-sm ${obterEstiloProntidao()}`}>
+              Prontidão: {corProntidao.toUpperCase()}
             </div>
           </div>
         </div>
