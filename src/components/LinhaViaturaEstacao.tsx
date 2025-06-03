@@ -1,11 +1,14 @@
 
 import { ItemViatura } from './ItemViatura';
-import { Shield } from 'lucide-react';
+import { Shield, Radio, Smartphone } from 'lucide-react';
 
 interface Viatura {
   id: string;
   prefixo: string;
   status: string;
+  qsa_radio?: number;
+  qsa_zello?: number;
+  dejem?: boolean;
   modalidade: {
     nome: string;
     icone_url: string;
@@ -15,12 +18,22 @@ interface Viatura {
 interface Estacao {
   id: string;
   nome: string;
+  endereco?: string;
+  telegrafista?: string;
+  qsa_radio?: number;
+  qsa_zello?: number;
+  telefone?: string;
+  subgrupamento?: {
+    id: string;
+    nome: string;
+  };
 }
 
 interface LinhaViaturaEstacaoProps {
   estacao: Estacao;
   viaturas: Viatura[];
   aoClicarViatura: (viatura: Viatura) => void;
+  aoClicarEstacao: (estacao: Estacao) => void;
   aoAtualizarStatus: (viaturaId: string, status: string) => void;
   observacoesViaturas: Record<string, string>;
 }
@@ -29,14 +42,13 @@ export const LinhaViaturaEstacao = ({
   estacao, 
   viaturas, 
   aoClicarViatura, 
+  aoClicarEstacao,
   aoAtualizarStatus, 
   observacoesViaturas 
 }: LinhaViaturaEstacaoProps) => {
   // Simular dados de equipe (em uma implementação real, viriam do banco de dados)
   const obterEquipeViatura = (viaturaId: string) => {
-    // Dados mock para demonstração
     const equipesDemo = {
-      // Exemplo de dados que poderiam vir do banco
       'default': [
         {
           nome: 'João Silva',
@@ -51,22 +63,29 @@ export const LinhaViaturaEstacao = ({
       ]
     };
     
-    // Retorna uma equipe demo ou array vazio
     return Math.random() > 0.5 ? equipesDemo.default : [];
+  };
+
+  const formatarInformacoesEstacao = () => {
+    const infos = [];
+    if (estacao.endereco) infos.push(estacao.endereco);
+    if (estacao.telegrafista) infos.push(`Tel: ${estacao.telegrafista}`);
+    if (estacao.telefone) infos.push(estacao.telefone);
+    return infos.join(' | ');
   };
 
   return (
     <div className="flex items-center space-x-3 py-0.5">
       <div className="min-w-[180px] w-[180px] flex items-center justify-start">
         <div 
-          className="relative text-left p-2 rounded-lg min-h-[45px] flex items-center justify-start w-full"
+          className="relative text-left p-2 rounded-lg min-h-[45px] flex flex-col justify-center w-full cursor-pointer hover:bg-opacity-70 transition-all"
           style={{
             background: 'linear-gradient(135deg, rgba(59,130,246,0.05) 0%, rgba(147,51,234,0.05) 50%, rgba(239,68,68,0.05) 100%)',
           }}
+          onClick={() => aoClicarEstacao(estacao)}
         >
-          {/* Ícone de fundo */}
           <Shield 
-            className="absolute right-2 w-6 h-6 text-gray-300 opacity-15"
+            className="absolute right-2 top-2 w-5 h-5 text-gray-300 opacity-20"
             style={{ zIndex: 0 }}
           />
           
@@ -79,6 +98,29 @@ export const LinhaViaturaEstacao = ({
           >
             {estacao.nome}
           </h3>
+          
+          {/* Informações adicionais da estação */}
+          {formatarInformacoesEstacao() && (
+            <p className="text-xs text-gray-600 mt-1 relative z-10">
+              {formatarInformacoesEstacao()}
+            </p>
+          )}
+          
+          {/* QSA da estação */}
+          <div className="flex items-center gap-2 mt-1 relative z-10">
+            {estacao.qsa_radio && (
+              <div className="flex items-center gap-1 text-xs text-gray-700">
+                <Radio className="w-3 h-3" />
+                <span>{estacao.qsa_radio}</span>
+              </div>
+            )}
+            {estacao.qsa_zello && (
+              <div className="flex items-center gap-1 text-xs text-gray-700">
+                <Smartphone className="w-3 h-3" />
+                <span>{estacao.qsa_zello}</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

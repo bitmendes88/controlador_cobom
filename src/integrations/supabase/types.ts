@@ -89,21 +89,36 @@ export type Database = {
       estacoes: {
         Row: {
           criado_em: string | null
+          endereco: string | null
           id: string
           nome: string
+          qsa_radio: number | null
+          qsa_zello: number | null
           subgrupamento_id: string
+          telefone: string | null
+          telegrafista: string | null
         }
         Insert: {
           criado_em?: string | null
+          endereco?: string | null
           id?: string
           nome: string
+          qsa_radio?: number | null
+          qsa_zello?: number | null
           subgrupamento_id: string
+          telefone?: string | null
+          telegrafista?: string | null
         }
         Update: {
           criado_em?: string | null
+          endereco?: string | null
           id?: string
           nome?: string
+          qsa_radio?: number | null
+          qsa_zello?: number | null
           subgrupamento_id?: string
+          telefone?: string | null
+          telegrafista?: string | null
         }
         Relationships: [
           {
@@ -264,30 +279,39 @@ export type Database = {
         Row: {
           atualizado_em: string | null
           criado_em: string | null
+          dejem: boolean | null
           estacao_id: string
           id: string
           modalidade_id: string
           prefixo: string
+          qsa_radio: number | null
+          qsa_zello: number | null
           status: string | null
           status_alterado_em: string | null
         }
         Insert: {
           atualizado_em?: string | null
           criado_em?: string | null
+          dejem?: boolean | null
           estacao_id: string
           id?: string
           modalidade_id: string
           prefixo: string
+          qsa_radio?: number | null
+          qsa_zello?: number | null
           status?: string | null
           status_alterado_em?: string | null
         }
         Update: {
           atualizado_em?: string | null
           criado_em?: string | null
+          dejem?: boolean | null
           estacao_id?: string
           id?: string
           modalidade_id?: string
           prefixo?: string
+          qsa_radio?: number | null
+          qsa_zello?: number | null
           status?: string | null
           status_alterado_em?: string | null
         }

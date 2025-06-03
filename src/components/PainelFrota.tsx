@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LinhaViaturaEstacao } from '@/components/LinhaViaturaEstacao';
 import { VehicleDetailModal } from '@/components/VehicleDetailModal';
 import { FormularioEditarViatura } from '@/components/FormularioEditarViatura';
+import { EstacaoDetailModal } from '@/components/EstacaoDetailModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -11,6 +12,9 @@ interface Viatura {
   prefixo: string;
   status: string;
   status_alterado_em?: string;
+  qsa_radio?: number;
+  qsa_zello?: number;
+  dejem?: boolean;
   modalidade: {
     id: string;
     nome: string;
@@ -19,6 +23,11 @@ interface Viatura {
   estacao: {
     id: string;
     nome: string;
+    endereco?: string;
+    telegrafista?: string;
+    qsa_radio?: number;
+    qsa_zello?: number;
+    telefone?: string;
     subgrupamento: {
       id: string;
       nome: string;
@@ -30,6 +39,11 @@ interface Viatura {
 interface Estacao {
   id: string;
   nome: string;
+  endereco?: string;
+  telegrafista?: string;
+  qsa_radio?: number;
+  qsa_zello?: number;
+  telefone?: string;
   subgrupamento: {
     id: string;
     nome: string;
@@ -46,6 +60,7 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
   const [viaturas, setViaturas] = useState<Viatura[]>([]);
   const [viaturaSelecionada, setViaturaSelecionada] = useState<Viatura | null>(null);
   const [viaturaEditando, setViaturaEditando] = useState<Viatura | null>(null);
+  const [estacaoEditando, setEstacaoEditando] = useState<Estacao | null>(null);
   const [estaCarregando, setEstaCarregando] = useState(true);
   const [observacoesViaturas, setObservacoesViaturas] = useState<Record<string, string>>({});
   const { toast } = useToast();
@@ -70,14 +85,14 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
           *,
           modalidade:modalidades_viatura(id, nome, icone_url),
           estacao:estacoes(
-            id, nome,
+            id, nome, endereco, telegrafista, qsa_radio, qsa_zello, telefone,
             subgrupamento:subgrupamentos(
               id, nome, grupamento_id
             )
           )
         `)
         .eq('estacao.subgrupamento.grupamento_id', grupamentoSelecionado)
-        .order('prefixo'); // Ordem fixa por prefixo
+        .order('prefixo');
 
       if (error) throw error;
       setViaturas(data || []);
@@ -136,6 +151,10 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
 
   const aoEditarViatura = (viatura: Viatura) => {
     setViaturaEditando(viatura);
+  };
+
+  const aoClicarEstacao = (estacao: Estacao) => {
+    setEstacaoEditando(estacao);
   };
 
   const aoAtualizarStatus = async (viaturaId: string, novoStatus: string) => {
@@ -235,6 +254,7 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
       viatura.prefixo.toLowerCase().includes(termo) ||
       viatura.modalidade?.nome.toLowerCase().includes(termo) ||
       viatura.status.toLowerCase().includes(termo) ||
+      viatura.estacao?.nome.toLowerCase().includes(termo) ||
       observacoesViaturas[viatura.id]?.toLowerCase().includes(termo)
     );
   };
@@ -375,9 +395,10 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
                   return (
                     <div key={estacaoId}>
                       <LinhaViaturaEstacao
-                        estacao={{ id: estacaoId, nome: dados.nome } as Estacao}
+                        estacao={dados as Estacao}
                         viaturas={viaturasOrdenadas}
                         aoClicarViatura={aoClicarViatura}
+                        aoClicarEstacao={aoClicarEstacao}
                         aoAtualizarStatus={aoAtualizarStatus}
                         observacoesViaturas={observacoesViaturas}
                       />
@@ -432,6 +453,14 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
           vehicle={viaturaEditando}
           onClose={() => setViaturaEditando(null)}
           onVehicleUpdated={carregarViaturas}
+        />
+      )}
+
+      {estacaoEditando && (
+        <EstacaoDetailModal
+          estacao={estacaoEditando}
+          onClose={() => setEstacaoEditando(null)}
+          onEstacaoUpdated={carregarViaturas}
         />
       )}
     </div>

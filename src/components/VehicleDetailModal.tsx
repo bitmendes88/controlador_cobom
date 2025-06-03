@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Edit, AlertTriangle, Smartphone, Radio } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Trash2, Edit, Radio, Smartphone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -48,10 +51,26 @@ export const VehicleDetailModal = ({
 
   useEffect(() => {
     carregarObservacoes();
-    // Verificar se já tem QSA definido (simular dados do banco)
-    setQsaRadio(Math.random() > 0.5 ? Math.floor(Math.random() * 5) + 1 : null);
-    setQsaZello(Math.random() > 0.5 ? Math.floor(Math.random() * 5) + 1 : null);
+    carregarDadosViatura();
   }, [vehicle.id]);
+
+  const carregarDadosViatura = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('viaturas')
+        .select('qsa_radio, qsa_zello, dejem')
+        .eq('id', vehicle.id)
+        .single();
+
+      if (error) throw error;
+      
+      setQsaRadio(data.qsa_radio);
+      setQsaZello(data.qsa_zello);
+      setIsDejem(data.dejem || false);
+    } catch (error) {
+      console.error('Erro ao carregar dados da viatura:', error);
+    }
+  };
 
   const carregarObservacoes = async () => {
     try {
@@ -171,7 +190,13 @@ export const VehicleDetailModal = ({
   const salvarQsaRadio = async (nota: number) => {
     setEstaCarregando(true);
     try {
-      // Em uma implementação real, salvaria no banco
+      const { error } = await supabase
+        .from('viaturas')
+        .update({ qsa_radio: nota })
+        .eq('id', vehicle.id);
+
+      if (error) throw error;
+      
       setQsaRadio(nota);
       
       toast({
@@ -180,6 +205,11 @@ export const VehicleDetailModal = ({
       });
     } catch (error) {
       console.error('Erro ao salvar QSA Rádio:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao salvar QSA Rádio. Tente novamente.",
+        variant: "destructive",
+      });
     } finally {
       setEstaCarregando(false);
     }
@@ -188,7 +218,13 @@ export const VehicleDetailModal = ({
   const salvarQsaZello = async (nota: number) => {
     setEstaCarregando(true);
     try {
-      // Em uma implementação real, salvaria no banco
+      const { error } = await supabase
+        .from('viaturas')
+        .update({ qsa_zello: nota })
+        .eq('id', vehicle.id);
+
+      if (error) throw error;
+      
       setQsaZello(nota);
       
       toast({
@@ -197,44 +233,39 @@ export const VehicleDetailModal = ({
       });
     } catch (error) {
       console.error('Erro ao salvar QSA Zello:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao salvar QSA Zello. Tente novamente.",
+        variant: "destructive",
+      });
     } finally {
       setEstaCarregando(false);
     }
   };
 
-  const toggleDejem = async () => {
+  const toggleDejem = async (novoStatus: boolean) => {
     setEstaCarregando(true);
     try {
-      const novoStatus = !isDejem;
-      
-      if (novoStatus) {
-        const { error } = await supabase
-          .from('observacoes_viatura')
-          .insert({
-            viatura_id: vehicle.id,
-            observacao: 'DEJEM',
-            criado_por: 'Sistema'
-          });
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('observacoes_viatura')
-          .delete()
-          .eq('viatura_id', vehicle.id)
-          .eq('observacao', 'DEJEM');
-        if (error) throw error;
-      }
+      const { error } = await supabase
+        .from('viaturas')
+        .update({ dejem: novoStatus })
+        .eq('id', vehicle.id);
 
+      if (error) throw error;
+      
       setIsDejem(novoStatus);
       
       toast({
         title: novoStatus ? "DEJEM Ativado" : "DEJEM Desativado",
         description: novoStatus ? "Viatura marcada como DEJEM" : "Viatura desmarcada como DEJEM",
       });
-      
-      carregarObservacoes();
     } catch (error) {
       console.error('Erro ao alterar DEJEM:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao alterar status DEJEM. Tente novamente.",
+        variant: "destructive",
+      });
     } finally {
       setEstaCarregando(false);
     }
@@ -277,6 +308,19 @@ export const VehicleDetailModal = ({
           <div className="flex items-center justify-between">
             <span className="font-medium">Modalidade:</span>
             <span>{vehicle.vehicle_type}</span>
+          </div>
+
+          <Separator />
+
+          {/* DEJEM Toggle */}
+          <div className="flex items-center justify-between">
+            <Label htmlFor="dejem-switch" className="font-medium">DEJEM</Label>
+            <Switch
+              id="dejem-switch"
+              checked={isDejem}
+              onCheckedChange={toggleDejem}
+              disabled={estaCarregando}
+            />
           </div>
 
           <Separator />
@@ -330,7 +374,7 @@ export const VehicleDetailModal = ({
 
           <div className="space-y-2">
             <h4 className="font-medium">Ações Rápidas</h4>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <Button
                 size="sm"
                 variant="outline"
@@ -354,15 +398,6 @@ export const VehicleDetailModal = ({
                 className="text-xs"
               >
                 Levantar
-              </Button>
-              <Button
-                size="sm"
-                variant={isDejem ? "default" : "outline"}
-                onClick={toggleDejem}
-                disabled={estaCarregando}
-                className={`text-xs ${isDejem ? 'bg-purple-600 hover:bg-purple-700' : 'bg-purple-50 text-purple-700 hover:bg-purple-100'}`}
-              >
-                {isDejem ? 'Remover DEJEM' : 'Marcar DEJEM'}
               </Button>
             </div>
           </div>

@@ -119,7 +119,7 @@ const Index = () => {
                     <SelectContent>
                       {grupamentos.map((grupamento) => (
                         <SelectItem key={grupamento.id} value={grupamento.id}>
-                          {grupamento.nome} - {grupamento.endereco}
+                          {grupamento.nome}
                         </SelectItem>
                       ))}
                     </SelectContent>
