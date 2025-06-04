@@ -50,6 +50,19 @@ export const ItemViatura = ({
     }
   };
 
+  const getStatusBackgroundColor = (status: string) => {
+    switch (status) {
+      case 'DISPONÍVEL': return 'bg-green-50 border-green-200';
+      case 'QTI': return 'bg-yellow-50 border-yellow-200';
+      case 'LOCAL': return 'bg-blue-50 border-blue-200';
+      case 'QTI PS': return 'bg-orange-50 border-orange-200';
+      case 'REGRESSO': return 'bg-purple-50 border-purple-200';
+      case 'BAIXADO': return 'bg-red-50 border-red-200';
+      case 'RESERVA': return 'bg-gray-50 border-gray-200';
+      default: return 'bg-white border-gray-200';
+    }
+  };
+
   const getQsaColor = (qsa?: number) => {
     if (!qsa && qsa !== 0) return 'bg-gray-100 text-gray-600';
     switch (qsa) {
@@ -68,13 +81,12 @@ export const ItemViatura = ({
     'QTI',
     'LOCAL', 
     'QTI PS',
-    'REGRESSO',
-    'BAIXADO',
-    'RESERVA'
+    'REGRESSO'
   ];
 
   const getNextStatus = (currentStatus: string) => {
     const currentIndex = statusSequence.indexOf(currentStatus);
+    if (currentIndex === -1) return statusSequence[0];
     return statusSequence[(currentIndex + 1) % statusSequence.length];
   };
 
@@ -96,14 +108,11 @@ export const ItemViatura = ({
   return (
     <TooltipProvider>
       <Card 
-        className="relative group hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 hover:border-blue-300 bg-white animate-pulse hover:animate-none hover:scale-105 transform-gpu"
+        className={`relative group hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 hover:border-blue-300 hover:animate-none hover:scale-105 transform-gpu ${getStatusBackgroundColor(vehicle.status)}`}
         style={{
           minWidth: `${cardWidth}px`,
           maxWidth: `${cardWidth}px`,
-          background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08)',
-          animationDuration: '3s',
-          animationDelay: `${Math.random() * 2}s`
+          boxShadow: '0 4px 8px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08)'
         }}
         onClick={() => onVehicleClick(vehicle)}
       >
@@ -113,8 +122,8 @@ export const ItemViatura = ({
             <img 
               src={vehicle.modalidade.icone_url} 
               alt={vehicle.modalidade.nome}
-              className="w-12 h-12 object-contain opacity-25 filter brightness-110 contrast-125"
-              style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.1))' }}
+              className="w-12 h-12 object-contain opacity-40 filter brightness-110 contrast-125"
+              style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.15))' }}
             />
           </div>
 

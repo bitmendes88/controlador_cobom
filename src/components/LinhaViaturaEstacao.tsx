@@ -66,6 +66,19 @@ export const LinhaViaturaEstacao = ({
     return Math.random() > 0.5 ? equipesDemo.default : [];
   };
 
+  const getQsaColor = (qsa?: number) => {
+    if (!qsa && qsa !== 0) return 'bg-gray-100 text-gray-600';
+    switch (qsa) {
+      case 0: return 'bg-red-500 text-white';
+      case 1: return 'bg-red-400 text-white';
+      case 2: return 'bg-orange-400 text-white';
+      case 3: return 'bg-yellow-400 text-white';
+      case 4: return 'bg-lime-400 text-white';
+      case 5: return 'bg-green-500 text-white';
+      default: return 'bg-gray-100 text-gray-600';
+    }
+  };
+
   return (
     <div className="flex items-center space-x-3 py-0.5">
       <div className="min-w-[180px] w-[180px] flex items-center justify-start">
@@ -87,30 +100,30 @@ export const LinhaViaturaEstacao = ({
           </h3>
           
           {/* Informações da estação alinhadas à esquerda com fonte maior */}
-          <div className="flex flex-col gap-1 mt-1 relative z-10 text-sm text-gray-700">
+          <div className="flex flex-col gap-1 mt-1 relative z-10 text-base text-gray-700">
             {estacao.telegrafista && (
               <div className="flex items-center gap-1">
-                <User className="w-3 h-3" />
+                <User className="w-4 h-4" />
                 <span>{estacao.telegrafista}</span>
               </div>
             )}
             {estacao.telefone && (
               <div className="flex items-center gap-1">
-                <Phone className="w-3 h-3" />
+                <Phone className="w-4 h-4" />
                 <span>{estacao.telefone}</span>
               </div>
             )}
             <div className="flex items-center gap-3">
               {(estacao.qsa_radio || estacao.qsa_radio === 0) && (
-                <div className="flex items-center gap-1">
+                <div className={`flex items-center gap-1 text-xs px-1 py-0.5 rounded ${getQsaColor(estacao.qsa_radio)}`}>
                   <Radio className="w-3 h-3" />
-                  <span>R:{estacao.qsa_radio}</span>
+                  <span className="font-medium">R:{estacao.qsa_radio}</span>
                 </div>
               )}
               {(estacao.qsa_zello || estacao.qsa_zello === 0) && (
-                <div className="flex items-center gap-1">
+                <div className={`flex items-center gap-1 text-xs px-1 py-0.5 rounded ${getQsaColor(estacao.qsa_zello)}`}>
                   <Smartphone className="w-3 h-3" />
-                  <span>Z:{estacao.qsa_zello}</span>
+                  <span className="font-medium">Z:{estacao.qsa_zello}</span>
                 </div>
               )}
             </div>
