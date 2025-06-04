@@ -109,16 +109,20 @@ const Index = () => {
           <div className="flex items-center gap-4 justify-between">
             {/* Controles principais em linha única */}
             <div className="flex items-center gap-3">
-              {/* Seletor de Grupamento */}
+              {/* Seletor de Grupamento com estilo aprimorado */}
               {grupamentos.length > 0 && (
-                <div className="bg-gray-50 rounded-lg p-2">
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-2 shadow-sm border border-gray-200">
                   <Select value={grupamentoSelecionado} onValueChange={setGrupamentoSelecionado}>
-                    <SelectTrigger className="w-60 text-gray-900 h-8">
+                    <SelectTrigger className="w-60 text-gray-900 h-8 bg-white border-gray-300 hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 shadow-sm">
                       <SelectValue placeholder="Selecione um grupamento" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white border border-gray-300 shadow-lg rounded-lg z-50">
                       {grupamentos.map((grupamento) => (
-                        <SelectItem key={grupamento.id} value={grupamento.id}>
+                        <SelectItem 
+                          key={grupamento.id} 
+                          value={grupamento.id}
+                          className="hover:bg-blue-50 focus:bg-blue-100 cursor-pointer"
+                        >
                           {grupamento.nome}
                         </SelectItem>
                       ))}
@@ -127,17 +131,19 @@ const Index = () => {
                 </div>
               )}
 
-              {/* Seletor de Controlador */}
-              <SeletorControlador
-                grupamentoSelecionado={grupamentoSelecionado}
-                controladorSelecionado={controladorSelecionado}
-                aoMudarControlador={setControladorSelecionado}
-              />
+              {/* Seletor de Controlador com estilo aprimorado */}
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-2 shadow-sm border border-gray-200">
+                <SeletorControlador
+                  grupamentoSelecionado={grupamentoSelecionado}
+                  controladorSelecionado={controladorSelecionado}
+                  aoMudarControlador={setControladorSelecionado}
+                />
+              </div>
               
               {/* Botão Adicionar Viatura */}
               <Button 
                 onClick={() => setMostrarAdicionarViatura(true)}
-                className="bg-green-600 text-white hover:bg-green-700 font-semibold h-8 px-3"
+                className="bg-green-600 text-white hover:bg-green-700 font-semibold h-8 px-3 shadow-md"
                 size="sm"
               >
                 <Car className="w-4 h-4" />
@@ -151,14 +157,18 @@ const Index = () => {
                   placeholder="Pesquisar viaturas..."
                   value={termoPesquisa}
                   onChange={(e) => setTermoPesquisa(e.target.value)}
-                  className="pl-10 w-64 h-8"
+                  className="pl-10 w-64 h-8 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 shadow-sm"
                 />
               </div>
             </div>
 
-            {/* Indicador de Prontidão */}
-            <div className={`px-3 py-1 rounded-lg font-semibold text-sm ${obterEstiloProntidao()}`}>
-              Prontidão: {corProntidao.toUpperCase()}
+            {/* Indicador de Prontidão - tamanho aumentado */}
+            <div className={`px-6 py-3 rounded-lg font-bold text-lg shadow-lg border-2 border-white ${obterEstiloProntidao()}`}
+                 style={{
+                   textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
+                   filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
+                 }}>
+              PRONTIDÃO: {corProntidao.toUpperCase()}
             </div>
           </div>
         </div>

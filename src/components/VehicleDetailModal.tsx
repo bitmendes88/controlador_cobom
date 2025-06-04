@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Trash2, Edit, Radio, Smartphone } from 'lucide-react';
@@ -187,6 +186,21 @@ export const VehicleDetailModal = ({
     }
   };
 
+  const getQsaButtonColor = (value: number, currentValue: number | null) => {
+    if (currentValue === value) {
+      switch (value) {
+        case 0: return 'bg-red-500 text-white border-red-600';
+        case 1: return 'bg-red-400 text-white border-red-500';
+        case 2: return 'bg-orange-400 text-white border-orange-500';
+        case 3: return 'bg-yellow-400 text-white border-yellow-500';
+        case 4: return 'bg-lime-400 text-white border-lime-500';
+        case 5: return 'bg-green-500 text-white border-green-600';
+        default: return 'bg-gray-200 text-gray-700 border-gray-300';
+      }
+    }
+    return 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200';
+  };
+
   const salvarQsaRadio = async (nota: number) => {
     setEstaCarregando(true);
     try {
@@ -329,24 +343,35 @@ export const VehicleDetailModal = ({
           <div className="space-y-3">
             <h4 className="font-medium">Qualidade do Sinal de Áudio (QSA)</h4>
             
-            <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-3">
               <div className="space-y-2">
                 <label className="text-sm font-medium flex items-center gap-1">
                   <Radio className="w-4 h-4" />
                   QSA Rádio
                 </label>
-                <Select value={qsaRadio?.toString() || ""} onValueChange={(value) => salvarQsaRadio(parseInt(value))}>
-                  <SelectTrigger className="h-8">
-                    <SelectValue placeholder="Nota 1-5" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[1, 2, 3, 4, 5].map((nota) => (
-                      <SelectItem key={nota} value={nota.toString()}>
-                        {nota}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className={`w-8 h-8 p-0 ${qsaRadio === null ? 'bg-gray-300 text-gray-700 border-gray-400' : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'}`}
+                    onClick={() => setQsaRadio(null)}
+                  >
+                    -
+                  </Button>
+                  {[0, 1, 2, 3, 4, 5].map((value) => (
+                    <Button
+                      key={value}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className={`w-8 h-8 p-0 ${getQsaButtonColor(value, qsaRadio)}`}
+                      onClick={() => salvarQsaRadio(value)}
+                    >
+                      {value}
+                    </Button>
+                  ))}
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -354,18 +379,29 @@ export const VehicleDetailModal = ({
                   <Smartphone className="w-4 h-4" />
                   QSA Zello
                 </label>
-                <Select value={qsaZello?.toString() || ""} onValueChange={(value) => salvarQsaZello(parseInt(value))}>
-                  <SelectTrigger className="h-8">
-                    <SelectValue placeholder="Nota 1-5" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[1, 2, 3, 4, 5].map((nota) => (
-                      <SelectItem key={nota} value={nota.toString()}>
-                        {nota}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className={`w-8 h-8 p-0 ${qsaZello === null ? 'bg-gray-300 text-gray-700 border-gray-400' : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'}`}
+                    onClick={() => setQsaZello(null)}
+                  >
+                    -
+                  </Button>
+                  {[0, 1, 2, 3, 4, 5].map((value) => (
+                    <Button
+                      key={value}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className={`w-8 h-8 p-0 ${getQsaButtonColor(value, qsaZello)}`}
+                      onClick={() => salvarQsaZello(value)}
+                    >
+                      {value}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

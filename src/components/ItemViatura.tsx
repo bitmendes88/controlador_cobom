@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -108,7 +107,7 @@ export const ItemViatura = ({
   return (
     <TooltipProvider>
       <Card 
-        className={`relative group hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 hover:border-blue-300 hover:animate-none hover:scale-105 transform-gpu ${getStatusBackgroundColor(vehicle.status)}`}
+        className={`relative group hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 hover:border-blue-300 hover:scale-105 transform-gpu ${getStatusBackgroundColor(vehicle.status)}`}
         style={{
           minWidth: `${cardWidth}px`,
           maxWidth: `${cardWidth}px`,
@@ -116,7 +115,7 @@ export const ItemViatura = ({
         }}
         onClick={() => onVehicleClick(vehicle)}
       >
-        <div className="p-2 space-y-2 relative">
+        <div className="p-2 space-y-1 relative">
           {/* Ícone da modalidade como marca d'água mais visível */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <img 
@@ -127,17 +126,16 @@ export const ItemViatura = ({
             />
           </div>
 
-          {/* Prefixo com tooltip para informações da equipe - sem quebra de linha */}
-          <div className="text-center relative z-10">
+          {/* Prefixo com tooltip para informações da equipe - sem quebra de linha e colado na linha */}
+          <div className="text-center relative z-10 mt-0">
             <Tooltip>
               <TooltipTrigger asChild>
                 <div 
-                  className="text-2xl font-black text-red-800 tracking-wide cursor-pointer whitespace-nowrap overflow-hidden"
+                  className="text-2xl font-black text-red-800 tracking-wide cursor-pointer whitespace-nowrap overflow-hidden leading-none"
                   style={{
                     textShadow: '2px 2px 4px rgba(0,0,0,0.3), 0 1px 2px rgba(255,255,255,0.8)',
                     filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
-                    fontSize: '1.75rem',
-                    lineHeight: '1.2'
+                    fontSize: '1.75rem'
                   }}
                 >
                   {vehicle.prefixo}
@@ -179,8 +177,8 @@ export const ItemViatura = ({
               </div>
             </div>
 
-            {/* QSA Indicators com cores */}
-            <div className="flex items-center justify-center gap-2">
+            {/* QSA Indicators com cores - espaçamento reduzido */}
+            <div className="flex items-center justify-center gap-2 pb-1">
               {(vehicle.qsa_radio || vehicle.qsa_radio === 0) && (
                 <div className={`flex items-center gap-1 text-xs px-1 py-0.5 rounded ${getQsaColor(vehicle.qsa_radio)}`}>
                   <Radio className="w-3 h-3" />
