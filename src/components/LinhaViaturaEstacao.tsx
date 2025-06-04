@@ -86,8 +86,8 @@ export const LinhaViaturaEstacao = ({
             {estacao.nome}
           </h3>
           
-          {/* Informações da estação alinhadas à esquerda */}
-          <div className="flex flex-col gap-1 mt-1 relative z-10 text-xs text-gray-700">
+          {/* Informações da estação alinhadas à esquerda com fonte maior */}
+          <div className="flex flex-col gap-1 mt-1 relative z-10 text-sm text-gray-700">
             {estacao.telegrafista && (
               <div className="flex items-center gap-1">
                 <User className="w-3 h-3" />
@@ -101,13 +101,13 @@ export const LinhaViaturaEstacao = ({
               </div>
             )}
             <div className="flex items-center gap-3">
-              {estacao.qsa_radio && (
+              {(estacao.qsa_radio || estacao.qsa_radio === 0) && (
                 <div className="flex items-center gap-1">
                   <Radio className="w-3 h-3" />
                   <span>R:{estacao.qsa_radio}</span>
                 </div>
               )}
-              {estacao.qsa_zello && (
+              {(estacao.qsa_zello || estacao.qsa_zello === 0) && (
                 <div className="flex items-center gap-1">
                   <Smartphone className="w-3 h-3" />
                   <span>Z:{estacao.qsa_zello}</span>

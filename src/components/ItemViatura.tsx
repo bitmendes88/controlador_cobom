@@ -1,7 +1,6 @@
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DIcon } from '@/components/DIcon';
 import { Radio, Smartphone } from 'lucide-react';
@@ -51,6 +50,19 @@ export const ItemViatura = ({
     }
   };
 
+  const getQsaColor = (qsa?: number) => {
+    if (!qsa && qsa !== 0) return 'bg-gray-100 text-gray-600';
+    switch (qsa) {
+      case 0: return 'bg-red-500 text-white';
+      case 1: return 'bg-red-400 text-white';
+      case 2: return 'bg-orange-400 text-white';
+      case 3: return 'bg-yellow-400 text-white';
+      case 4: return 'bg-lime-400 text-white';
+      case 5: return 'bg-green-500 text-white';
+      default: return 'bg-gray-100 text-gray-600';
+    }
+  };
+
   const statusSequence = [
     'DISPONÍVEL',
     'QTI',
@@ -84,30 +96,34 @@ export const ItemViatura = ({
   return (
     <TooltipProvider>
       <Card 
-        className="relative group hover:shadow-lg transition-all duration-200 cursor-pointer border-2 hover:border-blue-300 bg-white"
+        className="relative group hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 hover:border-blue-300 bg-white animate-pulse hover:animate-none hover:scale-105 transform-gpu"
         style={{
           minWidth: `${cardWidth}px`,
           maxWidth: `${cardWidth}px`,
-          background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)'
+          background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08)',
+          animationDuration: '3s',
+          animationDelay: `${Math.random() * 2}s`
         }}
         onClick={() => onVehicleClick(vehicle)}
       >
         <div className="p-2 space-y-2 relative">
-          {/* Ícone da modalidade como marca d'água */}
+          {/* Ícone da modalidade como marca d'água mais visível */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <img 
               src={vehicle.modalidade.icone_url} 
               alt={vehicle.modalidade.nome}
-              className="w-16 h-16 object-contain opacity-10 filter grayscale"
+              className="w-12 h-12 object-contain opacity-25 filter brightness-110 contrast-125"
+              style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.1))' }}
             />
           </div>
 
-          {/* Prefixo com tooltip para informações da equipe */}
+          {/* Prefixo com tooltip para informações da equipe - sem quebra de linha */}
           <div className="text-center relative z-10">
             <Tooltip>
               <TooltipTrigger asChild>
                 <div 
-                  className="text-2xl font-black text-red-800 tracking-wide cursor-pointer"
+                  className="text-2xl font-black text-red-800 tracking-wide cursor-pointer whitespace-nowrap overflow-hidden"
                   style={{
                     textShadow: '2px 2px 4px rgba(0,0,0,0.3), 0 1px 2px rgba(255,255,255,0.8)',
                     filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
@@ -154,16 +170,16 @@ export const ItemViatura = ({
               </div>
             </div>
 
-            {/* QSA Indicators */}
+            {/* QSA Indicators com cores */}
             <div className="flex items-center justify-center gap-2">
-              {vehicle.qsa_radio && (
-                <div className="flex items-center gap-1 text-xs bg-blue-100 text-blue-800 px-1 py-0.5 rounded">
+              {(vehicle.qsa_radio || vehicle.qsa_radio === 0) && (
+                <div className={`flex items-center gap-1 text-xs px-1 py-0.5 rounded ${getQsaColor(vehicle.qsa_radio)}`}>
                   <Radio className="w-3 h-3" />
                   <span className="font-medium">{vehicle.qsa_radio}</span>
                 </div>
               )}
-              {vehicle.qsa_zello && (
-                <div className="flex items-center gap-1 text-xs bg-green-100 text-green-800 px-1 py-0.5 rounded">
+              {(vehicle.qsa_zello || vehicle.qsa_zello === 0) && (
+                <div className={`flex items-center gap-1 text-xs px-1 py-0.5 rounded ${getQsaColor(vehicle.qsa_zello)}`}>
                   <Smartphone className="w-3 h-3" />
                   <span className="font-medium">{vehicle.qsa_zello}</span>
                 </div>
@@ -175,15 +191,6 @@ export const ItemViatura = ({
           {vehicleObservation && (
             <div className="text-xs text-gray-600 bg-yellow-50 p-1 rounded border-l-2 border-yellow-400 truncate relative z-10">
               {vehicleObservation}
-            </div>
-          )}
-
-          {/* Indicador de equipe */}
-          {integrantesEquipe.length > 0 && (
-            <div className="text-xs text-center relative z-10">
-              <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
-                {integrantesEquipe.length} integrante{integrantesEquipe.length > 1 ? 's' : ''}
-              </Badge>
             </div>
           )}
         </div>
