@@ -245,7 +245,6 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
     carregarViaturas();
   };
 
-  // Função para filtrar viaturas baseado no termo de pesquisa
   const filtrarViaturas = (viaturas: Viatura[]) => {
     if (!termoPesquisa.trim()) return viaturas;
     
@@ -259,7 +258,6 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
     );
   };
 
-  // Cores diferentes para cada subgrupamento
   const coresSubgrupamento = [
     'from-red-50 via-red-100 to-red-50 border-red-200',
     'from-blue-50 via-blue-100 to-blue-50 border-blue-200',
@@ -282,7 +280,6 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
     'text-pink-800',
   ];
 
-  // Filter vehicles that have valid station and subgrupamento data
   const viaturasValidas = viaturas.filter(viatura => 
     viatura.estacao && 
     viatura.estacao.subgrupamento && 
@@ -290,12 +287,9 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
     viatura.estacao.id
   );
 
-  // Aplicar filtro de pesquisa nas viaturas válidas
   const viaturasFiltradasPorPesquisa = filtrarViaturas(viaturasValidas);
 
-  // Agrupar viaturas por subgrupamento e depois por estação
   const dadosAgrupados = viaturasFiltradasPorPesquisa.reduce((acc, viatura) => {
-    // Add safety checks since we've already filtered above, but keeping for extra safety
     if (!viatura.estacao || !viatura.estacao.subgrupamento) {
       return acc;
     }
@@ -322,19 +316,16 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
     return acc;
   }, {} as Record<string, { nome: string; estacoes: Record<string, { dados: any; viaturas: Viatura[] }> }>);
 
-  // Subgrupamentos em ordem crescente
   const subgrupamentosOrdenados = Object.keys(dadosAgrupados).sort((a, b) => {
     return dadosAgrupados[a].nome.localeCompare(dadosAgrupados[b].nome);
   });
 
-  // Função para ordenar estações por nome (ordem fixa)
   const ordenarEstacoesPorNome = (estacoes: Record<string, { dados: any; viaturas: Viatura[] }>) => {
     return Object.entries(estacoes).sort(([, a], [, b]) => {
       return a.dados.nome.localeCompare(b.dados.nome);
     });
   };
 
-  // Função para manter ordem fixa das viaturas por prefixo
   const ordenarViaturasPorPrefixo = (viaturas: Viatura[]) => {
     return [...viaturas].sort((a, b) => a.prefixo.localeCompare(b.prefixo));
   };
@@ -435,7 +426,6 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
           }}
           onClose={() => setViaturaSelecionada(null)}
           onVehicleAction={(vehicleId: string, action: 'RESERVA' | 'BAIXAR' | 'LEVANTAR') => {
-            // Convert English actions to Portuguese
             const actionMap = {
               'RESERVA': 'reserva',
               'BAIXAR': 'baixar', 

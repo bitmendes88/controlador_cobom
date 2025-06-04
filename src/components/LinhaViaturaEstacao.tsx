@@ -1,6 +1,6 @@
 
 import { ItemViatura } from './ItemViatura';
-import { Shield, Radio, Smartphone } from 'lucide-react';
+import { Shield, Radio, Smartphone, Phone, User } from 'lucide-react';
 
 interface Viatura {
   id: string;
@@ -66,60 +66,54 @@ export const LinhaViaturaEstacao = ({
     return Math.random() > 0.5 ? equipesDemo.default : [];
   };
 
-  const formatarInformacoesEstacao = () => {
-    const infos = [];
-    if (estacao.endereco) infos.push(estacao.endereco);
-    if (estacao.telegrafista) infos.push(`Tel: ${estacao.telegrafista}`);
-    if (estacao.telefone) infos.push(estacao.telefone);
-    return infos.join(' | ');
-  };
-
   return (
     <div className="flex items-center space-x-3 py-0.5">
       <div className="min-w-[180px] w-[180px] flex items-center justify-start">
-        <div 
-          className="relative text-left p-2 rounded-lg min-h-[45px] flex flex-col justify-center w-full cursor-pointer hover:bg-opacity-70 transition-all"
-          style={{
-            background: 'linear-gradient(135deg, rgba(59,130,246,0.05) 0%, rgba(147,51,234,0.05) 50%, rgba(239,68,68,0.05) 100%)',
-          }}
-          onClick={() => aoClicarEstacao(estacao)}
-        >
+        <div className="relative text-left p-2 rounded-lg min-h-[45px] flex flex-col justify-center w-full">
           <Shield 
             className="absolute right-2 top-2 w-5 h-5 text-gray-300 opacity-20"
             style={{ zIndex: 0 }}
           />
           
           <h3 
-            className="relative font-bold text-red-800 text-lg leading-tight break-words text-left z-10"
+            className="relative font-bold text-red-800 text-lg leading-tight break-words text-left z-10 cursor-pointer hover:underline"
             style={{
               textShadow: '2px 2px 4px rgba(255,255,255,0.9), -1px -1px 2px rgba(255,255,255,0.7), 0 0 6px rgba(255,255,255,0.8)',
               filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
             }}
+            onClick={() => aoClicarEstacao(estacao)}
           >
             {estacao.nome}
           </h3>
           
-          {/* Informações adicionais da estação */}
-          {formatarInformacoesEstacao() && (
-            <p className="text-xs text-gray-600 mt-1 relative z-10">
-              {formatarInformacoesEstacao()}
-            </p>
-          )}
-          
-          {/* QSA da estação */}
-          <div className="flex items-center gap-2 mt-1 relative z-10">
-            {estacao.qsa_radio && (
-              <div className="flex items-center gap-1 text-xs text-gray-700">
-                <Radio className="w-3 h-3" />
-                <span>{estacao.qsa_radio}</span>
+          {/* Informações da estação alinhadas à esquerda */}
+          <div className="flex flex-col gap-1 mt-1 relative z-10 text-xs text-gray-700">
+            {estacao.telegrafista && (
+              <div className="flex items-center gap-1">
+                <User className="w-3 h-3" />
+                <span>{estacao.telegrafista}</span>
               </div>
             )}
-            {estacao.qsa_zello && (
-              <div className="flex items-center gap-1 text-xs text-gray-700">
-                <Smartphone className="w-3 h-3" />
-                <span>{estacao.qsa_zello}</span>
+            {estacao.telefone && (
+              <div className="flex items-center gap-1">
+                <Phone className="w-3 h-3" />
+                <span>{estacao.telefone}</span>
               </div>
             )}
+            <div className="flex items-center gap-3">
+              {estacao.qsa_radio && (
+                <div className="flex items-center gap-1">
+                  <Radio className="w-3 h-3" />
+                  <span>R:{estacao.qsa_radio}</span>
+                </div>
+              )}
+              {estacao.qsa_zello && (
+                <div className="flex items-center gap-1">
+                  <Smartphone className="w-3 h-3" />
+                  <span>Z:{estacao.qsa_zello}</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

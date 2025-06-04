@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -125,12 +125,12 @@ export const EstacaoDetailModal = ({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>QSA Rádio</Label>
-              <Select value={qsaRadio?.toString() || ""} onValueChange={(value) => setQsaRadio(value ? parseInt(value) : null)}>
+              <Select value={qsaRadio?.toString() || "none"} onValueChange={(value) => setQsaRadio(value === "none" ? null : parseInt(value))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Nota 1-5" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Não informado</SelectItem>
+                  <SelectItem value="none">Não informado</SelectItem>
                   {[1, 2, 3, 4, 5].map((nota) => (
                     <SelectItem key={nota} value={nota.toString()}>
                       {nota}
@@ -142,12 +142,12 @@ export const EstacaoDetailModal = ({
 
             <div className="space-y-2">
               <Label>QSA Zello</Label>
-              <Select value={qsaZello?.toString() || ""} onValueChange={(value) => setQsaZello(value ? parseInt(value) : null)}>
+              <Select value={qsaZello?.toString() || "none"} onValueChange={(value) => setQsaZello(value === "none" ? null : parseInt(value))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Nota 1-5" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Não informado</SelectItem>
+                  <SelectItem value="none">Não informado</SelectItem>
                   {[1, 2, 3, 4, 5].map((nota) => (
                     <SelectItem key={nota} value={nota.toString()}>
                       {nota}
