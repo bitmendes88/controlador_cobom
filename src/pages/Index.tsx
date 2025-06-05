@@ -74,8 +74,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Cabeçalho Principal - Reduzido para uma linha */}
-      <div className="bg-red-700 text-white shadow-lg group">
+      {/* Cabeçalho Principal - Uma linha só */}
+      <div className="bg-red-700 text-white shadow-lg relative group">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Logo Esquerda */}
@@ -95,7 +95,7 @@ const Index = () => {
             </div>
             
             {/* Indicador de Prontidão - aumentado */}
-            <div className={`px-8 py-4 rounded-lg font-bold text-xl shadow-lg border-2 border-white ${obterEstiloProntidao()}`}
+            <div className={`px-10 py-5 rounded-lg font-bold text-2xl shadow-lg border-2 border-white ${obterEstiloProntidao()}`}
                  style={{
                    textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
@@ -105,8 +105,8 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Barra de Controles - Oculta por padrão, aparece no hover */}
-        <div className="bg-white border-b border-gray-200 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 absolute top-full left-0 right-0 z-10">
+        {/* Barra de Controles - Aparece no hover do grupo */}
+        <div className="bg-white border-b border-gray-200 shadow-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 ease-in-out absolute top-full left-0 right-0 z-50">
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center gap-4 justify-between">
               {/* Controles principais em linha única */}
