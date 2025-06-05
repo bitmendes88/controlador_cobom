@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -107,7 +108,7 @@ export const ItemViatura = ({
   return (
     <TooltipProvider>
       <Card 
-        className={`relative group hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 hover:border-blue-300 hover:scale-105 transform-gpu ${getStatusBackgroundColor(vehicle.status)}`}
+        className={`relative group hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 hover:border-blue-300 hover:scale-105 transform-gpu overflow-visible ${getStatusBackgroundColor(vehicle.status)}`}
         style={{
           minWidth: `${cardWidth}px`,
           maxWidth: `${cardWidth}px`,
@@ -115,27 +116,29 @@ export const ItemViatura = ({
         }}
         onClick={() => onVehicleClick(vehicle)}
       >
-        <div className="p-2 space-y-1 relative">
-          {/* Ícone da modalidade como marca d'água mais visível */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        {/* Ícone da modalidade com efeito 3D - metade para fora */}
+        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20">
+          <div className="w-8 h-8 bg-white rounded-full shadow-lg border-2 border-gray-200 flex items-center justify-center hover:shadow-xl transition-shadow duration-300">
             <img 
               src={vehicle.modalidade.icone_url} 
               alt={vehicle.modalidade.nome}
-              className="w-12 h-12 object-contain opacity-40 filter brightness-110 contrast-125"
-              style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.15))' }}
+              className="w-5 h-5 object-contain"
+              style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))' }}
             />
           </div>
+        </div>
 
-          {/* Prefixo com tooltip para informações da equipe - sem quebra de linha e colado na linha */}
+        <div className="p-2 space-y-1 relative pt-6">
+          {/* Prefixo com tooltip para informações da equipe - fonte reduzida */}
           <div className="text-center relative z-10 mt-0">
             <Tooltip>
               <TooltipTrigger asChild>
                 <div 
-                  className="text-2xl font-black text-red-800 tracking-wide cursor-pointer whitespace-nowrap overflow-hidden leading-none"
+                  className="text-lg font-black text-red-800 tracking-wide cursor-pointer whitespace-nowrap overflow-hidden leading-none"
                   style={{
                     textShadow: '2px 2px 4px rgba(0,0,0,0.3), 0 1px 2px rgba(255,255,255,0.8)',
                     filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
-                    fontSize: '1.75rem'
+                    fontSize: '1.25rem'
                   }}
                 >
                   {vehicle.prefixo}
