@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { PainelFrota } from '@/components/PainelFrota';
 import { AnotacoesServicoDaily } from '@/components/AnotacoesServicoDaily';
@@ -60,15 +61,6 @@ const Index = () => {
     const cores: ('verde' | 'amarela' | 'azul')[] = ['verde', 'amarela', 'azul'];
     
     setCorProntidao(cores[indiceCor]);
-  };
-
-  const obterEstiloProntidao = () => {
-    const estilos = {
-      verde: 'bg-green-500 text-white',
-      amarela: 'bg-yellow-500 text-white',
-      azul: 'bg-blue-500 text-white'
-    };
-    return estilos[corProntidao];
   };
 
   return (
@@ -148,14 +140,8 @@ const Index = () => {
               </div>
             </div>
             
-            {/* Indicador de Prontidão */}
-            <div className={`px-8 py-4 rounded-lg font-bold text-xl shadow-lg border-2 border-white flex-shrink-0 ${obterEstiloProntidao()}`}
-                 style={{
-                   textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
-                   filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
-                 }}>
-              PRONTIDÃO: {corProntidao.toUpperCase()}
-            </div>
+            {/* Espaço reservado para manter layout balanceado */}
+            <div className="flex-shrink-0 w-24"></div>
           </div>
         </div>
       </div>
@@ -164,6 +150,7 @@ const Index = () => {
         <AnotacoesServicoDaily 
           grupamentoSelecionado={grupamentoSelecionado} 
           controladorSelecionado={controladorSelecionado}
+          corProntidao={corProntidao}
         />
         <PainelFrota 
           grupamentoSelecionado={grupamentoSelecionado} 

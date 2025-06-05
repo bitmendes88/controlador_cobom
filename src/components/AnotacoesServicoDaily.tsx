@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,9 +9,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 interface AnotacoesServicoProps {
   grupamentoSelecionado: string;
   controladorSelecionado?: string;
+  corProntidao: 'verde' | 'amarela' | 'azul';
 }
 
-export const AnotacoesServicoDaily = ({ grupamentoSelecionado, controladorSelecionado }: AnotacoesServicoProps) => {
+export const AnotacoesServicoDaily = ({ grupamentoSelecionado, controladorSelecionado, corProntidao }: AnotacoesServicoProps) => {
   const [anotacoes, setAnotacoes] = useState('');
   const [estaCarregando, setEstaCarregando] = useState(true);
   const [registroId, setRegistroId] = useState<string | null>(null);
@@ -20,6 +20,15 @@ export const AnotacoesServicoDaily = ({ grupamentoSelecionado, controladorSeleci
   const { toast } = useToast();
 
   const dataHoje = new Date().toLocaleDateString('pt-BR');
+
+  const obterEstiloProntidao = () => {
+    const estilos = {
+      verde: 'bg-green-500 text-white',
+      amarela: 'bg-yellow-500 text-white',
+      azul: 'bg-blue-500 text-white'
+    };
+    return estilos[corProntidao];
+  };
 
   // Função debounced para salvamento automático
   const salvarAnotacoes = useCallback(
@@ -128,7 +137,12 @@ export const AnotacoesServicoDaily = ({ grupamentoSelecionado, controladorSeleci
         <Collapsible open={!estaRecolhido} onOpenChange={(open) => setEstaRecolhido(!open)}>
           <CardHeader className="bg-red-50 border-b border-red-200 py-2">
             <CollapsibleTrigger className="flex items-center justify-between w-full hover:bg-red-100 rounded p-1 transition-colors">
-              <CardTitle className="text-red-800 text-sm">Anotações do Serviço - {dataHoje}</CardTitle>
+              <div className="flex items-center gap-3">
+                <CardTitle className="text-red-800 text-sm">Anotações do Serviço - {dataHoje}</CardTitle>
+                <div className={`px-3 py-1 rounded-md font-bold text-xs shadow-sm ${obterEstiloProntidao()}`}>
+                  PRONTIDÃO: {corProntidao.toUpperCase()}
+                </div>
+              </div>
               {estaRecolhido ? <ChevronDown className="w-4 h-4 text-red-600" /> : <ChevronUp className="w-4 h-4 text-red-600" />}
             </CollapsibleTrigger>
           </CardHeader>
@@ -150,7 +164,12 @@ export const AnotacoesServicoDaily = ({ grupamentoSelecionado, controladorSeleci
         <Collapsible open={!estaRecolhido} onOpenChange={(open) => setEstaRecolhido(!open)}>
           <CardHeader className="bg-red-50 border-b border-red-200 py-2">
             <CollapsibleTrigger className="flex items-center justify-between w-full hover:bg-red-100 rounded p-1 transition-colors">
-              <CardTitle className="text-red-800 text-sm">Anotações do Serviço - {dataHoje}</CardTitle>
+              <div className="flex items-center gap-3">
+                <CardTitle className="text-red-800 text-sm">Anotações do Serviço - {dataHoje}</CardTitle>
+                <div className={`px-3 py-1 rounded-md font-bold text-xs shadow-sm ${obterEstiloProntidao()}`}>
+                  PRONTIDÃO: {corProntidao.toUpperCase()}
+                </div>
+              </div>
               {estaRecolhido ? <ChevronDown className="w-4 h-4 text-red-600" /> : <ChevronUp className="w-4 h-4 text-red-600" />}
             </CollapsibleTrigger>
           </CardHeader>
@@ -169,12 +188,17 @@ export const AnotacoesServicoDaily = ({ grupamentoSelecionado, controladorSeleci
       <Collapsible open={!estaRecolhido} onOpenChange={(open) => setEstaRecolhido(!open)}>
         <CardHeader className="bg-red-50 border-b border-red-200 py-2">
           <CollapsibleTrigger className="flex items-center justify-between w-full hover:bg-red-100 rounded p-1 transition-colors">
-            <CardTitle className="text-red-800 text-sm">
-              Anotações do Serviço - {dataHoje}
-              <span className="text-xs text-gray-600 ml-2 font-normal">
-                (Salvamento automático ativado)
-              </span>
-            </CardTitle>
+            <div className="flex items-center gap-3">
+              <CardTitle className="text-red-800 text-sm">
+                Anotações do Serviço - {dataHoje}
+                <span className="text-xs text-gray-600 ml-2 font-normal">
+                  (Salvamento automático ativado)
+                </span>
+              </CardTitle>
+              <div className={`px-3 py-1 rounded-md font-bold text-xs shadow-sm ${obterEstiloProntidao()}`}>
+                PRONTIDÃO: {corProntidao.toUpperCase()}
+              </div>
+            </div>
             {estaRecolhido ? <ChevronDown className="w-4 h-4 text-red-600" /> : <ChevronUp className="w-4 h-4 text-red-600" />}
           </CollapsibleTrigger>
         </CardHeader>
