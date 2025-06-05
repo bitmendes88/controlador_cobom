@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { PainelFrota } from '@/components/PainelFrota';
 import { AnotacoesServicoDaily } from '@/components/AnotacoesServicoDaily';
@@ -74,95 +73,88 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Cabeçalho Principal - Uma linha só */}
-      <div className="bg-red-700 text-white shadow-lg relative group">
+      {/* Cabeçalho Principal - Uma linha com controles integrados */}
+      <div className="bg-red-700 text-white shadow-lg">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             {/* Logo Esquerda */}
-            <div className="bg-white rounded-full p-1.5 shadow-lg">
+            <div className="bg-white rounded-full p-1.5 shadow-lg flex-shrink-0">
               <Shield className="w-6 h-6 text-red-700" />
             </div>
             
             {/* Título Central */}
-            <div className="text-center flex-1">
-              <h1 className="text-2xl font-bold tracking-wide leading-tight"
+            <div className="text-center flex-shrink-0">
+              <h1 className="text-xl font-bold tracking-wide leading-tight"
                   style={{
                     textShadow: '2px 2px 4px rgba(0,0,0,0.3), 0 1px 2px rgba(255,255,255,0.1)',
                     filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
                   }}>
-                COMANDO DE BOMBEIROS DO INTERIOR 1
+                CBI-1 COBOM | Painel do Controlador
               </h1>
             </div>
+
+            {/* Controles Centrais */}
+            <div className="flex items-center gap-3 flex-1 justify-center">
+              {/* Seletor de Grupamento */}
+              {grupamentos.length > 0 && (
+                <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-1.5 shadow-md border border-blue-200">
+                  <Select value={grupamentoSelecionado} onValueChange={setGrupamentoSelecionado}>
+                    <SelectTrigger className="w-48 text-gray-900 h-8 bg-white border-blue-300 hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 shadow-sm font-medium text-sm">
+                      <SelectValue placeholder="Selecione um grupamento" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border border-blue-300 shadow-xl rounded-lg z-50">
+                      {grupamentos.map((grupamento) => (
+                        <SelectItem 
+                          key={grupamento.id} 
+                          value={grupamento.id}
+                          className="hover:bg-blue-50 focus:bg-blue-100 cursor-pointer font-medium"
+                        >
+                          {grupamento.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Seletor de Controlador */}
+              <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-1.5 shadow-md border border-green-200">
+                <SeletorControlador
+                  grupamentoSelecionado={grupamentoSelecionado}
+                  controladorSelecionado={controladorSelecionado}
+                  aoMudarControlador={setControladorSelecionado}
+                />
+              </div>
+              
+              {/* Botão Adicionar Viatura */}
+              <Button 
+                onClick={() => setMostrarAdicionarViatura(true)}
+                className="bg-green-600 text-white hover:bg-green-700 font-semibold h-8 px-3 shadow-md"
+                size="sm"
+              >
+                <Car className="w-4 h-4" />
+                <Plus className="w-3 h-3 -ml-1" />
+              </Button>
+
+              {/* Caixa de Pesquisa */}
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="Pesquisar viaturas..."
+                  value={termoPesquisa}
+                  onChange={(e) => setTermoPesquisa(e.target.value)}
+                  className="pl-10 w-48 h-8 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 shadow-sm"
+                />
+              </div>
+            </div>
             
-            {/* Indicador de Prontidão - aumentado */}
-            <div className={`px-10 py-5 rounded-lg font-bold text-2xl shadow-lg border-2 border-white ${obterEstiloProntidao()}`}
+            {/* Indicador de Prontidão */}
+            <div className={`px-8 py-4 rounded-lg font-bold text-xl shadow-lg border-2 border-white flex-shrink-0 ${obterEstiloProntidao()}`}
                  style={{
                    textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
                  }}>
               PRONTIDÃO: {corProntidao.toUpperCase()}
-            </div>
-          </div>
-        </div>
-
-        {/* Barra de Controles - Aparece no hover do grupo */}
-        <div className="bg-white border-b border-gray-200 shadow-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 ease-in-out absolute top-full left-0 right-0 z-50">
-          <div className="container mx-auto px-4 py-3">
-            <div className="flex items-center gap-4 justify-between">
-              {/* Controles principais em linha única */}
-              <div className="flex items-center gap-3">
-                {/* Seletor de Grupamento com estilo aprimorado */}
-                {grupamentos.length > 0 && (
-                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-2 shadow-md border border-blue-200">
-                    <Select value={grupamentoSelecionado} onValueChange={setGrupamentoSelecionado}>
-                      <SelectTrigger className="w-60 text-gray-900 h-8 bg-white border-blue-300 hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 shadow-sm font-medium">
-                        <SelectValue placeholder="Selecione um grupamento" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border border-blue-300 shadow-xl rounded-lg z-50">
-                        {grupamentos.map((grupamento) => (
-                          <SelectItem 
-                            key={grupamento.id} 
-                            value={grupamento.id}
-                            className="hover:bg-blue-50 focus:bg-blue-100 cursor-pointer font-medium"
-                          >
-                            {grupamento.nome}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                {/* Seletor de Controlador com estilo aprimorado */}
-                <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-2 shadow-md border border-green-200">
-                  <SeletorControlador
-                    grupamentoSelecionado={grupamentoSelecionado}
-                    controladorSelecionado={controladorSelecionado}
-                    aoMudarControlador={setControladorSelecionado}
-                  />
-                </div>
-                
-                {/* Botão Adicionar Viatura */}
-                <Button 
-                  onClick={() => setMostrarAdicionarViatura(true)}
-                  className="bg-green-600 text-white hover:bg-green-700 font-semibold h-8 px-3 shadow-md"
-                  size="sm"
-                >
-                  <Car className="w-4 h-4" />
-                  <Plus className="w-3 h-3 -ml-1" />
-                </Button>
-
-                {/* Caixa de Pesquisa */}
-                <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <Input
-                    placeholder="Pesquisar viaturas..."
-                    value={termoPesquisa}
-                    onChange={(e) => setTermoPesquisa(e.target.value)}
-                    className="pl-10 w-64 h-8 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 shadow-sm"
-                  />
-                </div>
-              </div>
             </div>
           </div>
         </div>
