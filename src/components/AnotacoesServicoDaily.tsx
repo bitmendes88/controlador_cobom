@@ -2,8 +2,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface AnotacoesServicoProps {
   grupamentoSelecionado: string;
@@ -14,6 +16,7 @@ export const AnotacoesServicoDaily = ({ grupamentoSelecionado, controladorSeleci
   const [anotacoes, setAnotacoes] = useState('');
   const [estaCarregando, setEstaCarregando] = useState(true);
   const [registroId, setRegistroId] = useState<string | null>(null);
+  const [estaRecolhido, setEstaRecolhido] = useState(true);
   const { toast } = useToast();
 
   const dataHoje = new Date().toLocaleDateString('pt-BR');
@@ -122,14 +125,21 @@ export const AnotacoesServicoDaily = ({ grupamentoSelecionado, controladorSeleci
   if (!grupamentoSelecionado) {
     return (
       <Card className="border-red-200 shadow-lg">
-        <CardHeader className="bg-red-50 border-b border-red-200 py-2">
-          <CardTitle className="text-red-800 text-sm">Anotações do Serviço - {dataHoje}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4">
-          <div className="text-center text-gray-500">
-            Selecione um grupamento para visualizar as anotações
-          </div>
-        </CardContent>
+        <Collapsible open={!estaRecolhido} onOpenChange={(open) => setEstaRecolhido(!open)}>
+          <CardHeader className="bg-red-50 border-b border-red-200 py-2">
+            <CollapsibleTrigger className="flex items-center justify-between w-full hover:bg-red-100 rounded p-1 transition-colors">
+              <CardTitle className="text-red-800 text-sm">Anotações do Serviço - {dataHoje}</CardTitle>
+              {estaRecolhido ? <ChevronDown className="w-4 h-4 text-red-600" /> : <ChevronUp className="w-4 h-4 text-red-600" />}
+            </CollapsibleTrigger>
+          </CardHeader>
+          <CollapsibleContent>
+            <CardContent className="p-4">
+              <div className="text-center text-gray-500">
+                Selecione um grupamento para visualizar as anotações
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
       </Card>
     );
   }
@@ -137,34 +147,48 @@ export const AnotacoesServicoDaily = ({ grupamentoSelecionado, controladorSeleci
   if (estaCarregando) {
     return (
       <Card className="border-red-200 shadow-lg">
-        <CardHeader className="bg-red-50 border-b border-red-200 py-2">
-          <CardTitle className="text-red-800 text-sm">Anotações do Serviço - {dataHoje}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4">
-          <div className="text-center">Carregando anotações...</div>
-        </CardContent>
+        <Collapsible open={!estaRecolhido} onOpenChange={(open) => setEstaRecolhido(!open)}>
+          <CardHeader className="bg-red-50 border-b border-red-200 py-2">
+            <CollapsibleTrigger className="flex items-center justify-between w-full hover:bg-red-100 rounded p-1 transition-colors">
+              <CardTitle className="text-red-800 text-sm">Anotações do Serviço - {dataHoje}</CardTitle>
+              {estaRecolhido ? <ChevronDown className="w-4 h-4 text-red-600" /> : <ChevronUp className="w-4 h-4 text-red-600" />}
+            </CollapsibleTrigger>
+          </CardHeader>
+          <CollapsibleContent>
+            <CardContent className="p-4">
+              <div className="text-center">Carregando anotações...</div>
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
       </Card>
     );
   }
 
   return (
     <Card className="border-red-200 shadow-lg">
-      <CardHeader className="bg-red-50 border-b border-red-200 py-2">
-        <CardTitle className="text-red-800 text-sm">
-          Anotações do Serviço - {dataHoje}
-          <span className="text-xs text-gray-600 ml-2 font-normal">
-            (Salvamento automático ativado)
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-4">
-        <Textarea
-          value={anotacoes}
-          onChange={(e) => setAnotacoes(e.target.value)}
-          placeholder="Digite as anotações do serviço do dia..."
-          className="min-h-32 resize-none border-red-200 focus:border-red-500"
-        />
-      </CardContent>
+      <Collapsible open={!estaRecolhido} onOpenChange={(open) => setEstaRecolhido(!open)}>
+        <CardHeader className="bg-red-50 border-b border-red-200 py-2">
+          <CollapsibleTrigger className="flex items-center justify-between w-full hover:bg-red-100 rounded p-1 transition-colors">
+            <CardTitle className="text-red-800 text-sm">
+              Anotações do Serviço - {dataHoje}
+              <span className="text-xs text-gray-600 ml-2 font-normal">
+                (Salvamento automático ativado)
+              </span>
+            </CardTitle>
+            {estaRecolhido ? <ChevronDown className="w-4 h-4 text-red-600" /> : <ChevronUp className="w-4 h-4 text-red-600" />}
+          </CollapsibleTrigger>
+        </CardHeader>
+        <CollapsibleContent>
+          <CardContent className="p-4">
+            <Textarea
+              value={anotacoes}
+              onChange={(e) => setAnotacoes(e.target.value)}
+              placeholder="Digite as anotações do serviço do dia..."
+              className="min-h-32 resize-none border-red-200 focus:border-red-500"
+            />
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
     </Card>
   );
 };
