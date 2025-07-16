@@ -137,7 +137,8 @@ const Index = () => {
               {/* Botão Adicionar Viatura */}
               <Button 
                 onClick={() => setMostrarAdicionarViatura(true)}
-                className="bg-green-600 text-white hover:bg-green-700 font-semibold h-8 px-3 shadow-md"
+                disabled={!controladorSelecionado}
+                className="bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold h-8 px-3 shadow-md"
                 size="sm"
               >
                 <Car className="w-4 h-4" />
@@ -181,8 +182,8 @@ const Index = () => {
         
         {/* Título do Grupamento Selecionado */}
         {grupamentoSelecionado && grupamentos.length > 0 && (
-          <div className="bg-red-800 text-white text-center py-1 border-t border-red-600">
-            <div className="text-sm font-semibold">
+          <div className="bg-red-800 text-white text-center py-2 border-t border-red-600">
+            <div className="text-lg font-bold tracking-wide">
               {obterNomeGrupamentoCompleto(
                 grupamentos.find(g => g.id === grupamentoSelecionado)?.nome || ''
               )}
@@ -203,6 +204,7 @@ const Index = () => {
           controladorSelecionado={controladorSelecionado}
           termoPesquisa={termoPesquisa}
           key={`frota-${refreshKey}`}
+          bloqueado={!controladorSelecionado}
         />
       </div>
 

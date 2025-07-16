@@ -54,9 +54,10 @@ interface PainelFrotaProps {
   grupamentoSelecionado: string;
   controladorSelecionado?: string;
   termoPesquisa?: string;
+  bloqueado?: boolean;
 }
 
-export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, termoPesquisa = '' }: PainelFrotaProps) => {
+export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, termoPesquisa = '', bloqueado = false }: PainelFrotaProps) => {
   const [viaturas, setViaturas] = useState<Viatura[]>([]);
   const [viaturaSelecionada, setViaturaSelecionada] = useState<Viatura | null>(null);
   const [viaturaEditando, setViaturaEditando] = useState<Viatura | null>(null);
@@ -158,6 +159,15 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
   };
 
   const aoAtualizarStatus = async (viaturaId: string, novoStatus: string) => {
+    if (bloqueado) {
+      toast({
+        title: "Acesso Negado",
+        description: "Selecione um controlador para realizar alterações nas viaturas.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('viaturas')
@@ -190,6 +200,15 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
   };
 
   const aoAcaoViatura = async (viaturaId: string, acao: 'baixar' | 'reserva' | 'levantar') => {
+    if (bloqueado) {
+      toast({
+        title: "Acesso Negado",
+        description: "Selecione um controlador para realizar alterações nas viaturas.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       let dadosAtualizacao: any = {
         status_alterado_em: new Date().toISOString(),
@@ -345,6 +364,19 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
     return (
       <div className="text-center py-8 text-gray-600">
         Selecione um grupamento para visualizar as viaturas
+      </div>
+    );
+  }
+
+  if (bloqueado) {
+    return (
+      <div className="text-center py-8">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 max-w-md mx-auto">
+          <div className="text-yellow-800 font-semibold mb-2">Controlador Necessário</div>
+          <div className="text-yellow-700">
+            Selecione um controlador para visualizar e gerenciar as viaturas
+          </div>
+        </div>
       </div>
     );
   }
