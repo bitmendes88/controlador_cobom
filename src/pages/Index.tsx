@@ -3,11 +3,12 @@ import { useState, useEffect } from 'react';
 import { PainelFrota } from '@/components/PainelFrota';
 import { AnotacoesServicoDaily } from '@/components/AnotacoesServicoDaily';
 import { FormularioAdicionarViatura } from '@/components/FormularioAdicionarViatura';
+import { ModalLogsAtividade } from '@/components/ModalLogsAtividade';
 import { SeletorControlador } from '@/components/SeletorControlador';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Shield, Search, Car } from 'lucide-react';
+import { Plus, Shield, Search, Car, RefreshCw, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Grupamento {
@@ -18,11 +19,13 @@ interface Grupamento {
 
 const Index = () => {
   const [mostrarAdicionarViatura, setMostrarAdicionarViatura] = useState(false);
+  const [mostrarLogsAtividade, setMostrarLogsAtividade] = useState(false);
   const [grupamentos, setGrupamentos] = useState<Grupamento[]>([]);
   const [grupamentoSelecionado, setGrupamentoSelecionado] = useState<string>('');
   const [controladorSelecionado, setControladorSelecionado] = useState<string>('');
   const [termoPesquisa, setTermoPesquisa] = useState<string>('');
   const [corProntidao, setCorProntidao] = useState<'verde' | 'amarela' | 'azul'>('verde');
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     carregarGrupamentos();
@@ -61,6 +64,18 @@ const Index = () => {
     const cores: ('verde' | 'amarela' | 'azul')[] = ['verde', 'amarela', 'azul'];
     
     setCorProntidao(cores[indiceCor]);
+  };
+
+  const recarregarDados = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
+  const obterNomeGrupamentoCompleto = (nomeGrupamento: string) => {
+    const numeroGB = nomeGrupamento.match(/(\d+)º GB/)?.[1];
+    if (numeroGB) {
+      return `${numeroGB}º GRUPAMENTO DE BOMBEIROS`;
+    }
+    return nomeGrupamento;
   };
 
   return (
@@ -138,12 +153,41 @@ const Index = () => {
                   className="pl-10 w-48 h-8 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 shadow-sm"
                 />
               </div>
+
+              {/* Botão Logs de Atividade */}
+              <Button 
+                onClick={() => setMostrarLogsAtividade(true)}
+                className="bg-blue-600 text-white hover:bg-blue-700 font-semibold h-8 px-3 shadow-md"
+                size="sm"
+              >
+                <FileText className="w-4 h-4" />
+              </Button>
+
+              {/* Botão Recarregar */}
+              <Button 
+                onClick={recarregarDados}
+                className="bg-orange-600 text-white hover:bg-orange-700 font-semibold h-8 px-3 shadow-md"
+                size="sm"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </Button>
             </div>
             
             {/* Espaço reservado para manter layout balanceado */}
             <div className="flex-shrink-0 w-24"></div>
           </div>
         </div>
+        
+        {/* Título do Grupamento Selecionado */}
+        {grupamentoSelecionado && grupamentos.length > 0 && (
+          <div className="bg-red-800 text-white text-center py-1 border-t border-red-600">
+            <div className="text-sm font-semibold">
+              {obterNomeGrupamentoCompleto(
+                grupamentos.find(g => g.id === grupamentoSelecionado)?.nome || ''
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="container mx-auto px-4 py-4 space-y-4">
@@ -151,16 +195,26 @@ const Index = () => {
           grupamentoSelecionado={grupamentoSelecionado} 
           controladorSelecionado={controladorSelecionado}
           corProntidao={corProntidao}
+          key={`anotacoes-${refreshKey}`}
         />
         <PainelFrota 
           grupamentoSelecionado={grupamentoSelecionado} 
           controladorSelecionado={controladorSelecionado}
           termoPesquisa={termoPesquisa}
+          key={`frota-${refreshKey}`}
         />
       </div>
 
       {mostrarAdicionarViatura && (
         <FormularioAdicionarViatura aoFechar={() => setMostrarAdicionarViatura(false)} />
+      )}
+
+      {mostrarLogsAtividade && (
+        <ModalLogsAtividade 
+          estaAberto={mostrarLogsAtividade}
+          aoFechar={() => setMostrarLogsAtividade(false)}
+          grupamentoSelecionado={grupamentoSelecionado}
+        />
       )}
     </div>
   );
