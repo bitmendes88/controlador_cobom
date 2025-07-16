@@ -18,6 +18,7 @@ interface Grupamento {
 }
 
 const Index = () => {
+  console.log('Index component rendering...');
   const [mostrarAdicionarViatura, setMostrarAdicionarViatura] = useState(false);
   const [mostrarLogsAtividade, setMostrarLogsAtividade] = useState(false);
   const [grupamentos, setGrupamentos] = useState<Grupamento[]>([]);

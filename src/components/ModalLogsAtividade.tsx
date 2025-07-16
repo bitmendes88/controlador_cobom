@@ -21,6 +21,7 @@ interface ModalLogsAtividadeProps {
 }
 
 export const ModalLogsAtividade = ({ estaAberto, aoFechar, grupamentoSelecionado }: ModalLogsAtividadeProps) => {
+  console.log('ModalLogsAtividade component rendering...', { estaAberto, grupamentoSelecionado });
   const [logs, setLogs] = useState<LogAtividade[]>([]);
   const [estaCarregando, setEstaCarregando] = useState(false);
 
