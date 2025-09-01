@@ -35,20 +35,29 @@
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Status colors - Enhanced vibrancy */
+    --status-disponivel: 134 61% 41%;
+    --status-disponivel-bg: 134 41% 94%;
+    --status-qti: 43 96% 56%;
+    --status-qti-bg: 43 96% 95%;
+    --status-local: 217 91% 60%;
+    --status-local-bg: 217 91% 95%;
+    --status-qti-ps: 25 95% 53%;
+    --status-qti-ps-bg: 25 95% 95%;
+    --status-regresso: 262 83% 58%;
+    --status-regresso-bg: 262 83% 95%;
+    --status-baixado: 0 84% 60%;
+    --status-baixado-bg: 0 84% 95%;
+    --status-reserva: 215 16% 47%;
+    --status-reserva-bg: 215 16% 95%;
   }
 
   .dark {

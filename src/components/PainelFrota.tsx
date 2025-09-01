@@ -69,6 +69,39 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
   useEffect(() => {
     if (grupamentoSelecionado) {
       carregarViaturas();
+      
+      // Configurar real-time updates
+      const channel = supabase
+        .channel('viaturas-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'viaturas'
+          },
+          (payload) => {
+            console.log('Mudança nas viaturas:', payload);
+            carregarViaturas();
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'observacoes_viatura'
+          },
+          (payload) => {
+            console.log('Mudança nas observações:', payload);
+            carregarObservacoes();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [grupamentoSelecionado]);
 
@@ -382,7 +415,7 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {subgrupamentosOrdenados.map((subgrupamentoId, index) => {
         const estacoesOrdenadas = ordenarEstacoesPorNome(dadosAgrupados[subgrupamentoId].estacoes);
         const corIndex = index % coresSubgrupamento.length;
@@ -393,7 +426,7 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
                   boxShadow: '0 8px 25px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.1)',
                   filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))'
                 }}>
-            <CardHeader className={`bg-gradient-to-r ${coresSubgrupamento[corIndex]} border-b-2 py-3`}
+            <CardHeader className={`bg-gradient-to-r ${coresSubgrupamento[corIndex]} border-b-2 py-2`}
                         style={{
                           boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.5), 0 2px 8px rgba(0,0,0,0.1)'
                         }}>
@@ -407,11 +440,11 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
                 {dadosAgrupados[subgrupamentoId].nome}
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4"
+            <CardContent className="p-3"
                           style={{
                             background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)'
                           }}>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {estacoesOrdenadas.map(([estacaoId, { dados, viaturas }], index) => {
                   const viaturasOrdenadas = ordenarViaturasPorPrefixo(viaturas);
                   

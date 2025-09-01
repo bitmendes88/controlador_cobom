@@ -39,27 +39,27 @@ export const ItemViatura = ({
 }: ItemViaturaProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'DISPONÍVEL': return 'bg-green-500';
-      case 'QTI': return 'bg-yellow-500';
-      case 'LOCAL': return 'bg-blue-500';
-      case 'QTI PS': return 'bg-orange-500';
-      case 'REGRESSO': return 'bg-purple-500';
-      case 'BAIXADO': return 'bg-red-500';
-      case 'RESERVA': return 'bg-gray-500';
-      default: return 'bg-gray-500';
+      case 'DISPONÍVEL': return 'bg-emerald-600 hover:bg-emerald-700';
+      case 'QTI': return 'bg-amber-500 hover:bg-amber-600';
+      case 'LOCAL': return 'bg-blue-600 hover:bg-blue-700';
+      case 'QTI PS': return 'bg-orange-600 hover:bg-orange-700';
+      case 'REGRESSO': return 'bg-purple-600 hover:bg-purple-700';
+      case 'BAIXADO': return 'bg-red-600 hover:bg-red-700';
+      case 'RESERVA': return 'bg-slate-600 hover:bg-slate-700';
+      default: return 'bg-gray-600 hover:bg-gray-700';
     }
   };
 
   const getStatusBackgroundColor = (status: string) => {
     switch (status) {
-      case 'DISPONÍVEL': return 'bg-green-50 border-green-200';
-      case 'QTI': return 'bg-yellow-50 border-yellow-200';
-      case 'LOCAL': return 'bg-blue-50 border-blue-200';
-      case 'QTI PS': return 'bg-orange-50 border-orange-200';
-      case 'REGRESSO': return 'bg-purple-50 border-purple-200';
-      case 'BAIXADO': return 'bg-red-50 border-red-200';
-      case 'RESERVA': return 'bg-gray-50 border-gray-200';
-      default: return 'bg-white border-gray-200';
+      case 'DISPONÍVEL': return 'bg-emerald-50 border-emerald-300 shadow-emerald-100';
+      case 'QTI': return 'bg-amber-50 border-amber-300 shadow-amber-100';
+      case 'LOCAL': return 'bg-blue-50 border-blue-300 shadow-blue-100';
+      case 'QTI PS': return 'bg-orange-50 border-orange-300 shadow-orange-100';
+      case 'REGRESSO': return 'bg-purple-50 border-purple-300 shadow-purple-100';
+      case 'BAIXADO': return 'bg-red-50 border-red-300 shadow-red-100';
+      case 'RESERVA': return 'bg-slate-50 border-slate-300 shadow-slate-100';
+      default: return 'bg-white border-gray-300 shadow-gray-100';
     }
   };
 
@@ -128,7 +128,7 @@ export const ItemViatura = ({
           </div>
         </div>
 
-        <div className="p-2 space-y-1 relative pt-6">
+        <div className="p-2 space-y-0.5 relative pt-6">
           {/* Prefixo com tooltip para informações da equipe - fonte reduzida */}
           <div className="text-center relative z-10 mt-0">
             <Tooltip>
@@ -163,37 +163,37 @@ export const ItemViatura = ({
             </Tooltip>
           </div>
 
-          {/* Status e indicadores */}
-          <div className="space-y-1 relative z-10">
-            <div className="flex items-center justify-between">
+          {/* Status e indicadores em linha única */}
+          <div className="relative z-10">
+            <div className="flex items-center justify-between gap-1">
               <div className="flex items-center gap-1">
                 {vehicle.dejem && (
                   <DIcon className="w-4 h-4" />
                 )}
                 <Button
-                  className={`h-6 text-xs font-medium text-white border-0 ${getStatusColor(vehicle.status)} hover:opacity-90`}
-                  style={{ minWidth: '70px', fontSize: '10px' }}
+                  className={`h-6 text-xs font-bold text-white border-0 ${getStatusColor(vehicle.status)} hover:opacity-90 shadow-lg`}
+                  style={{ minWidth: '60px', fontSize: '9px' }}
                   onClick={handleStatusClick}
                 >
                   {vehicle.status}
                 </Button>
               </div>
-            </div>
-
-            {/* QSA Indicators com cores - espaçamento reduzido */}
-            <div className="flex items-center justify-center gap-2 pb-1">
-              {(vehicle.qsa_radio || vehicle.qsa_radio === 0) && (
-                <div className={`flex items-center gap-1 text-xs px-1 py-0.5 rounded ${getQsaColor(vehicle.qsa_radio)}`}>
-                  <Radio className="w-3 h-3" />
-                  <span className="font-medium">{vehicle.qsa_radio}</span>
-                </div>
-              )}
-              {(vehicle.qsa_zello || vehicle.qsa_zello === 0) && (
-                <div className={`flex items-center gap-1 text-xs px-1 py-0.5 rounded ${getQsaColor(vehicle.qsa_zello)}`}>
-                  <Smartphone className="w-3 h-3" />
-                  <span className="font-medium">{vehicle.qsa_zello}</span>
-                </div>
-              )}
+              
+              {/* QSA Indicators ao lado direito do status */}
+              <div className="flex items-center gap-1">
+                {(vehicle.qsa_radio || vehicle.qsa_radio === 0) && (
+                  <div className={`flex items-center gap-0.5 text-xs px-1 py-0.5 rounded shadow-sm ${getQsaColor(vehicle.qsa_radio)}`}>
+                    <Radio className="w-2.5 h-2.5" />
+                    <span className="font-bold text-xs">{vehicle.qsa_radio}</span>
+                  </div>
+                )}
+                {(vehicle.qsa_zello || vehicle.qsa_zello === 0) && (
+                  <div className={`flex items-center gap-0.5 text-xs px-1 py-0.5 rounded shadow-sm ${getQsaColor(vehicle.qsa_zello)}`}>
+                    <Smartphone className="w-2.5 h-2.5" />
+                    <span className="font-bold text-xs">{vehicle.qsa_zello}</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

@@ -80,9 +80,9 @@ export const LinhaViaturaEstacao = ({
   };
 
   return (
-    <div className="flex items-center space-x-3 py-0.5">
+    <div className="flex items-center space-x-3 py-0">
       <div className="min-w-[180px] w-[180px] flex items-center justify-start">
-        <div className="relative text-left p-2 rounded-lg min-h-[45px] flex flex-col justify-center w-full">
+        <div className="relative text-left p-2 rounded-lg min-h-[40px] flex flex-col justify-center w-full">
           <Shield 
             className="absolute right-2 top-2 w-5 h-5 text-gray-300 opacity-20"
             style={{ zIndex: 0 }}
