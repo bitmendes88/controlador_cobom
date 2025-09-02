@@ -1,6 +1,5 @@
 
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DIcon } from '@/components/DIcon';
 import { Radio, Smartphone } from 'lucide-react';
@@ -126,19 +125,22 @@ export const ItemViatura = ({
 
   return (
     <TooltipProvider>
-      <Card 
-        className="relative group hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 border-gray-300 hover:border-blue-300 hover:scale-105 transform-gpu overflow-visible bg-white"
+      <div 
+        className="relative group hover:scale-105 transition-transform duration-300 cursor-pointer"
         style={{
           minWidth: `${cardWidth}px`,
           maxWidth: `${cardWidth}px`,
-          boxShadow: '0 4px 8px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08)'
+          margin: '0 2px'
         }}
         onClick={() => onVehicleClick(vehicle)}
       >
         {/* Imagem de fundo baseada na modalidade e status */}
         <div 
-          className="absolute inset-0 z-0 rounded-lg"
-          style={getBackgroundImage(vehicle.status, vehicle.modalidade)}
+          className="absolute inset-0 z-0"
+          style={{
+            ...getBackgroundImage(vehicle.status, vehicle.modalidade),
+            opacity: '0.8'
+          }}
         />
 
         <div className="p-2 space-y-0.5 relative z-10 pt-2">
@@ -217,7 +219,7 @@ export const ItemViatura = ({
             </div>
           )}
         </div>
-      </Card>
+      </div>
     </TooltipProvider>
   );
 };
