@@ -15,6 +15,13 @@ interface Viatura {
   modalidade: {
     nome: string;
     icone_url: string;
+    imagem_disponivel?: string;
+    imagem_qti?: string;
+    imagem_local?: string;
+    imagem_qti_ps?: string;
+    imagem_regresso?: string;
+    imagem_baixado?: string;
+    imagem_reserva?: string;
   };
 }
 
@@ -50,17 +57,29 @@ export const ItemViatura = ({
     }
   };
 
-  const getStatusBackgroundColor = (status: string) => {
+  const getBackgroundImage = (status: string, modalidade: Viatura['modalidade']) => {
+    let imageUrl = '';
     switch (status) {
-      case 'DISPONÍVEL': return 'bg-emerald-50 border-emerald-300 shadow-emerald-100';
-      case 'QTI': return 'bg-amber-50 border-amber-300 shadow-amber-100';
-      case 'LOCAL': return 'bg-blue-50 border-blue-300 shadow-blue-100';
-      case 'QTI PS': return 'bg-orange-50 border-orange-300 shadow-orange-100';
-      case 'REGRESSO': return 'bg-purple-50 border-purple-300 shadow-purple-100';
-      case 'BAIXADO': return 'bg-red-50 border-red-300 shadow-red-100';
-      case 'RESERVA': return 'bg-slate-50 border-slate-300 shadow-slate-100';
-      default: return 'bg-white border-gray-300 shadow-gray-100';
+      case 'DISPONÍVEL': imageUrl = modalidade.imagem_disponivel || ''; break;
+      case 'QTI': imageUrl = modalidade.imagem_qti || ''; break;
+      case 'LOCAL': imageUrl = modalidade.imagem_local || ''; break;
+      case 'QTI PS': imageUrl = modalidade.imagem_qti_ps || ''; break;
+      case 'REGRESSO': imageUrl = modalidade.imagem_regresso || ''; break;
+      case 'BAIXADO': imageUrl = modalidade.imagem_baixado || ''; break;
+      case 'RESERVA': imageUrl = modalidade.imagem_reserva || ''; break;
+      default: imageUrl = ''; break;
     }
+    
+    if (imageUrl) {
+      return {
+        backgroundImage: `url(${imageUrl})`,
+        backgroundSize: 'contain',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        opacity: '0.15'
+      };
+    }
+    return {};
   };
 
   const getQsaColor = (qsa?: number) => {
@@ -108,7 +127,7 @@ export const ItemViatura = ({
   return (
     <TooltipProvider>
       <Card 
-        className={`relative group hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 hover:border-blue-300 hover:scale-105 transform-gpu overflow-visible ${getStatusBackgroundColor(vehicle.status)}`}
+        className="relative group hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 border-gray-300 hover:border-blue-300 hover:scale-105 transform-gpu overflow-visible bg-white"
         style={{
           minWidth: `${cardWidth}px`,
           maxWidth: `${cardWidth}px`,
@@ -116,19 +135,13 @@ export const ItemViatura = ({
         }}
         onClick={() => onVehicleClick(vehicle)}
       >
-        {/* Ícone da modalidade com efeito 3D - metade para fora - maior e mais largo */}
-        <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 z-20">
-          <div className="w-12 h-10 bg-white rounded-lg shadow-lg border-2 border-gray-200 flex items-center justify-center hover:shadow-xl transition-shadow duration-300">
-            <img 
-              src={vehicle.modalidade.icone_url} 
-              alt={vehicle.modalidade.nome}
-              className="w-7 h-7 object-contain"
-              style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))' }}
-            />
-          </div>
-        </div>
+        {/* Imagem de fundo baseada na modalidade e status */}
+        <div 
+          className="absolute inset-0 z-0 rounded-lg"
+          style={getBackgroundImage(vehicle.status, vehicle.modalidade)}
+        />
 
-        <div className="p-2 space-y-0.5 relative pt-6">
+        <div className="p-2 space-y-0.5 relative z-10 pt-2">
           {/* Prefixo com tooltip para informações da equipe - fonte reduzida */}
           <div className="text-center relative z-10 mt-0">
             <Tooltip>

@@ -31,6 +31,11 @@ interface VehicleDetailModalProps {
   onVehicleAction: (vehicleId: string, action: 'RESERVA' | 'BAIXAR' | 'LEVANTAR') => void;
   onVehicleDelete: (vehicleId: string) => void;
   onEditVehicle: (vehicle: any) => void;
+  integrantesEquipe?: Array<{
+    nome: string;
+    telefone: string;
+    cursos: string[];
+  }>;
 }
 
 export const VehicleDetailModal = ({ 
@@ -38,7 +43,8 @@ export const VehicleDetailModal = ({
   onClose, 
   onVehicleAction, 
   onVehicleDelete,
-  onEditVehicle 
+  onEditVehicle,
+  integrantesEquipe = []
 }: VehicleDetailModalProps) => {
   const [observacoes, setObservacoes] = useState<any[]>([]);
   const [novaObservacao, setNovaObservacao] = useState('');
@@ -325,6 +331,44 @@ export const VehicleDetailModal = ({
           </div>
 
           <Separator />
+
+          {/* Informações da Equipe */}
+          {integrantesEquipe.length > 0 && (
+            <>
+              <div className="space-y-3">
+                <h4 className="font-medium">Integrantes da Equipe</h4>
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {integrantesEquipe.map((integrante, index) => (
+                    <div key={index} className="bg-gray-50 p-3 rounded-lg">
+                      <div className="font-medium text-sm">{integrante.nome}</div>
+                      <div className="text-sm text-gray-600 mt-1">
+                        <div>📞 {integrante.telefone}</div>
+                        {integrante.cursos.length > 0 && (
+                          <div className="mt-1">
+                            <span className="font-medium">Cursos: </span>
+                            <span className="text-gray-500">{integrante.cursos.join(', ')}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
+
+          {integrantesEquipe.length === 0 && (
+            <>
+              <div className="space-y-2">
+                <h4 className="font-medium">Integrantes da Equipe</h4>
+                <p className="text-sm text-gray-500 text-center py-2">
+                  Nenhum integrante atribuído a esta viatura
+                </p>
+              </div>
+              <Separator />
+            </>
+          )}
 
           {/* DEJEM Toggle */}
           <div className="flex items-center justify-between">

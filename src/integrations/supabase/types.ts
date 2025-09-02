@@ -203,18 +203,39 @@ export type Database = {
           criado_em: string | null
           icone_url: string
           id: string
+          imagem_baixado: string | null
+          imagem_disponivel: string | null
+          imagem_local: string | null
+          imagem_qti: string | null
+          imagem_qti_ps: string | null
+          imagem_regresso: string | null
+          imagem_reserva: string | null
           nome: string
         }
         Insert: {
           criado_em?: string | null
           icone_url: string
           id?: string
+          imagem_baixado?: string | null
+          imagem_disponivel?: string | null
+          imagem_local?: string | null
+          imagem_qti?: string | null
+          imagem_qti_ps?: string | null
+          imagem_regresso?: string | null
+          imagem_reserva?: string | null
           nome: string
         }
         Update: {
           criado_em?: string | null
           icone_url?: string
           id?: string
+          imagem_baixado?: string | null
+          imagem_disponivel?: string | null
+          imagem_local?: string | null
+          imagem_qti?: string | null
+          imagem_qti_ps?: string | null
+          imagem_regresso?: string | null
+          imagem_reserva?: string | null
           nome?: string
         }
         Relationships: []
