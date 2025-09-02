@@ -69,13 +69,14 @@ export const ItemViatura = ({
       default: imageUrl = ''; break;
     }
     
+    console.log('Status:', status, 'Image URL:', imageUrl, 'Modalidade:', modalidade);
+    
     if (imageUrl) {
       return {
         backgroundImage: `url(${imageUrl})`,
         backgroundSize: 'contain',
         backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'center',
-        opacity: '0.15'
+        backgroundPosition: 'center'
       };
     }
     return {};
@@ -130,7 +131,7 @@ export const ItemViatura = ({
         style={{
           minWidth: `${cardWidth}px`,
           maxWidth: `${cardWidth}px`,
-          margin: '0 2px'
+          margin: '0 8px'
         }}
         onClick={() => onVehicleClick(vehicle)}
       >
