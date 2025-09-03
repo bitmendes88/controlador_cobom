@@ -204,7 +204,9 @@ export type Database = {
           icone_url: string
           id: string
           imagem_baixado: string | null
-          imagem_disponivel: string | null
+          imagem_disponivel:
+            | Database["public"]["Enums"]["vehicle_status"]
+            | null
           imagem_local: string | null
           imagem_qti: string | null
           imagem_qti_ps: string | null
@@ -217,7 +219,9 @@ export type Database = {
           icone_url: string
           id?: string
           imagem_baixado?: string | null
-          imagem_disponivel?: string | null
+          imagem_disponivel?:
+            | Database["public"]["Enums"]["vehicle_status"]
+            | null
           imagem_local?: string | null
           imagem_qti?: string | null
           imagem_qti_ps?: string | null
@@ -230,7 +234,9 @@ export type Database = {
           icone_url?: string
           id?: string
           imagem_baixado?: string | null
-          imagem_disponivel?: string | null
+          imagem_disponivel?:
+            | Database["public"]["Enums"]["vehicle_status"]
+            | null
           imagem_local?: string | null
           imagem_qti?: string | null
           imagem_qti_ps?: string | null
