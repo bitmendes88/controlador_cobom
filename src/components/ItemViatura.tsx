@@ -125,21 +125,22 @@ export const ItemViatura = ({
   return (
     <TooltipProvider>
       <div 
-        className="relative group hover:scale-105 transition-transform duration-300 cursor-pointer"
+        className="relative group hover:scale-105 transition-all duration-300 cursor-pointer border-2 border-red-300 rounded-lg shadow-lg hover:shadow-xl"
         style={{
           minWidth: `${cardWidth}px`,
           maxWidth: `${cardWidth}px`,
-          margin: '0 8px'
+          margin: '0 3px',
+          padding: '3px',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.1)',
+          background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
+          ...getBackgroundImage(vehicle.status, vehicle.modalidade)
         }}
         onClick={() => onVehicleClick(vehicle)}
       >
-        {/* Imagem de fundo baseada na modalidade e status */}
+        {/* Overlay sutil para melhor legibilidade do texto sobre a imagem */}
         <div 
-          className="absolute inset-0 z-0"
-          style={{
-            ...getBackgroundImage(vehicle.status, vehicle.modalidade),
-            opacity: '0.8'
-          }}
+          className="absolute inset-0 rounded-md bg-white bg-opacity-20 backdrop-blur-[1px]"
+          style={{ zIndex: 1 }}
         />
 
         <div className="p-2 space-y-0.5 relative z-10 pt-2">

@@ -301,14 +301,14 @@ const Index = () => {
       )}
 
       <div className="container mx-auto px-4 py-2 pt-28 sm:pt-30 lg:pt-32">
-        <div className="space-y-1.5">
+        <div className="space-y-0.5">
           <AnotacoesServicoDaily 
             grupamentoSelecionado={grupamentoSelecionado} 
             controladorSelecionado={controladorSelecionado}
             corProntidao={corProntidao}
             key={`anotacoes-${refreshKey}`}
           />
-          <div style={{ height: '5px' }} />
+          <div style={{ height: '4px' }} />
           <PainelFrota 
             grupamentoSelecionado={grupamentoSelecionado} 
             controladorSelecionado={controladorSelecionado}

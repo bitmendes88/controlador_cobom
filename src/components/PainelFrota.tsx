@@ -426,7 +426,7 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
   }
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-0.5">
       {subgrupamentosOrdenados.map((subgrupamentoId, index) => {
         const estacoesOrdenadas = ordenarEstacoesPorNome(dadosAgrupados[subgrupamentoId].estacoes);
         const corIndex = index % coresSubgrupamento.length;
@@ -455,7 +455,7 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
                           style={{
                             background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)'
                           }}>
-              <div className="space-y-1.5">
+              <div className="space-y-0.5">
                 {estacoesOrdenadas.map(([estacaoId, { dados, viaturas }], index) => {
                   const viaturasOrdenadas = ordenarViaturasPorPrefixo(viaturas);
                   
@@ -469,9 +469,9 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
                         aoAtualizarStatus={aoAtualizarStatus}
                         observacoesViaturas={observacoesViaturas}
                       />
-                      {/* Separador elegante entre estações com 5px de espaço */}
+                      {/* Separador elegante entre estações com 4px de espaço */}
                       {index < estacoesOrdenadas.length - 1 && (
-                        <div className="my-1.5">
+                        <div className="my-1">
                           <div className="h-0.5 bg-gradient-to-r from-transparent via-gray-300 to-transparent opacity-50" />
                         </div>
                       )}
