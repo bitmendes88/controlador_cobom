@@ -19,6 +19,13 @@ interface Viatura {
     id: string;
     nome: string;
     icone_url: string;
+    imagem_disponivel?: string;
+    imagem_qti?: string;
+    imagem_local?: string;
+    imagem_qti_ps?: string;
+    imagem_regresso?: string;
+    imagem_baixado?: string;
+    imagem_reserva?: string;
   };
   estacao: {
     id: string;
@@ -117,7 +124,11 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
         .from('viaturas')
         .select(`
           *,
-          modalidade:modalidades_viatura(id, nome, icone_url),
+          modalidade:modalidades_viatura(
+            id, nome, icone_url, 
+            imagem_disponivel, imagem_qti, imagem_local, 
+            imagem_qti_ps, imagem_regresso, imagem_baixado, imagem_reserva
+          ),
           estacao:estacoes(
             id, nome, endereco, telegrafista, qsa_radio, qsa_zello, telefone,
             subgrupamento:subgrupamentos(
@@ -415,7 +426,7 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       {subgrupamentosOrdenados.map((subgrupamentoId, index) => {
         const estacoesOrdenadas = ordenarEstacoesPorNome(dadosAgrupados[subgrupamentoId].estacoes);
         const corIndex = index % coresSubgrupamento.length;
@@ -444,7 +455,7 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
                           style={{
                             background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)'
                           }}>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 {estacoesOrdenadas.map(([estacaoId, { dados, viaturas }], index) => {
                   const viaturasOrdenadas = ordenarViaturasPorPrefixo(viaturas);
                   
@@ -458,12 +469,11 @@ export const PainelFrota = ({ grupamentoSelecionado, controladorSelecionado, ter
                         aoAtualizarStatus={aoAtualizarStatus}
                         observacoesViaturas={observacoesViaturas}
                       />
+                      {/* Separador elegante entre estações com 5px de espaço */}
                       {index < estacoesOrdenadas.length - 1 && (
-                        <hr className="border-gray-300 my-2 shadow-sm" 
-                            style={{ 
-                              borderTop: '1px solid #e5e7eb',
-                              boxShadow: '0 1px 2px rgba(0,0,0,0.05)' 
-                            }} />
+                        <div className="my-1.5">
+                          <div className="h-0.5 bg-gradient-to-r from-transparent via-gray-300 to-transparent opacity-50" />
+                        </div>
                       )}
                     </div>
                   );

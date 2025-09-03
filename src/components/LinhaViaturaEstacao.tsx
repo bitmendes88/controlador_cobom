@@ -12,6 +12,13 @@ interface Viatura {
   modalidade: {
     nome: string;
     icone_url: string;
+    imagem_disponivel?: string;
+    imagem_qti?: string;
+    imagem_local?: string;
+    imagem_qti_ps?: string;
+    imagem_regresso?: string;
+    imagem_baixado?: string;
+    imagem_reserva?: string;
   };
 }
 
@@ -131,18 +138,25 @@ export const LinhaViaturaEstacao = ({
         </div>
       </div>
 
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         {viaturas.length > 0 ? (
-          <div className="flex flex-wrap gap-1">
-            {viaturas.map((viatura) => (
-              <ItemViatura
-                key={viatura.id}
-                vehicle={viatura}
-                onVehicleClick={aoClicarViatura}
-                onStatusUpdate={aoAtualizarStatus}
-                vehicleObservation={observacoesViaturas[viatura.id]}
-                integrantesEquipe={obterEquipeViatura(viatura.id)}
-              />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-3 w-full">
+            {viaturas.map((viatura, index) => (
+              <div key={viatura.id} className="flex items-center">
+                <ItemViatura
+                  vehicle={viatura}
+                  onVehicleClick={aoClicarViatura}
+                  onStatusUpdate={aoAtualizarStatus}
+                  vehicleObservation={observacoesViaturas[viatura.id]}
+                  integrantesEquipe={obterEquipeViatura(viatura.id)}
+                />
+                {/* Divisor elegante entre viaturas */}
+                {index < viaturas.length - 1 && (
+                  <div className="hidden sm:flex items-center justify-center mx-2 h-12">
+                    <div className="w-0.5 h-8 bg-gradient-to-b from-transparent via-gray-300 to-transparent opacity-40"></div>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         ) : (

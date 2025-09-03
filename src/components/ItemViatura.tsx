@@ -69,8 +69,6 @@ export const ItemViatura = ({
       default: imageUrl = ''; break;
     }
     
-    console.log('Status:', status, 'Image URL:', imageUrl, 'Modalidade:', modalidade);
-    
     if (imageUrl) {
       return {
         backgroundImage: `url(${imageUrl})`,

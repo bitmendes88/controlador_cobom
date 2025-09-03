@@ -283,30 +283,40 @@ const Index = () => {
       {/* Título do Grupamento - sempre visível abaixo do painel */}
       {grupamentoSelecionado && grupamentos.length > 0 && (
         <div className="fixed top-0 left-0 right-0 z-40 pt-2">
-          <div className="bg-red-800 text-white text-center py-4 shadow-lg mt-2">
-            <div className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-wide">
-              {obterNomeGrupamentoCompleto(
-                grupamentos.find(g => g.id === grupamentoSelecionado)?.nome || ''
-              )}
+          <div className="bg-red-800 text-white shadow-lg mt-2">
+            <div className="flex items-center justify-center py-3 px-4">
+              {/* Logo do GB à esquerda */}
+              <div className="bg-white rounded-full p-2 shadow-lg mr-4">
+                <Shield className="w-8 h-8 sm:w-10 sm:h-10 text-red-700" />
+              </div>
+              {/* Título reduzido */}
+              <div className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold tracking-wide">
+                {obterNomeGrupamentoCompleto(
+                  grupamentos.find(g => g.id === grupamentoSelecionado)?.nome || ''
+                )}
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      <div className="container mx-auto px-4 py-2 space-y-2 pt-28 sm:pt-30 lg:pt-32">
-        <AnotacoesServicoDaily 
-          grupamentoSelecionado={grupamentoSelecionado} 
-          controladorSelecionado={controladorSelecionado}
-          corProntidao={corProntidao}
-          key={`anotacoes-${refreshKey}`}
-        />
-        <PainelFrota 
-          grupamentoSelecionado={grupamentoSelecionado} 
-          controladorSelecionado={controladorSelecionado}
-          termoPesquisa={termoPesquisa}
-          key={`frota-${refreshKey}`}
-          bloqueado={!controladorSelecionado}
-        />
+      <div className="container mx-auto px-4 py-2 pt-28 sm:pt-30 lg:pt-32">
+        <div className="space-y-1.5">
+          <AnotacoesServicoDaily 
+            grupamentoSelecionado={grupamentoSelecionado} 
+            controladorSelecionado={controladorSelecionado}
+            corProntidao={corProntidao}
+            key={`anotacoes-${refreshKey}`}
+          />
+          <div style={{ height: '5px' }} />
+          <PainelFrota 
+            grupamentoSelecionado={grupamentoSelecionado} 
+            controladorSelecionado={controladorSelecionado}
+            termoPesquisa={termoPesquisa}
+            key={`frota-${refreshKey}`}
+            bloqueado={!controladorSelecionado}
+          />
+        </div>
       </div>
 
       {mostrarAdicionarViatura && (
