@@ -113,14 +113,21 @@ export const ItemViatura = ({
     onStatusUpdate(vehicle.id, nextStatus);
   };
 
-  // Calcular largura baseada no comprimento do prefixo
-  const getCardWidth = (prefixo: string) => {
-    const baseWidth = 120;
-    const extraWidth = Math.max(0, (prefixo.length - 4) * 8);
-    return Math.min(baseWidth + extraWidth, 180);
+  // Calcular largura responsiva baseada no conteúdo
+  const getCardWidth = (prefixo: string, status: string) => {
+    // Largura base para o prefixo
+    const prefixWidth = Math.max(60, prefixo.length * 12);
+    // Largura do botão de status (mínimo 60px + texto)
+    const statusWidth = Math.max(60, status.length * 8 + 16);
+    // Largura dos indicadores QSA (aproximadamente 50px se existirem)
+    const qsaWidth = ((vehicle.qsa_radio !== undefined) || (vehicle.qsa_zello !== undefined)) ? 50 : 0;
+    
+    // Largura total considerando o maior elemento + padding e borda
+    const contentWidth = Math.max(prefixWidth, statusWidth + qsaWidth + 8);
+    return Math.max(120, Math.min(contentWidth + 8, 200)); // +8 para padding e bordas
   };
 
-  const cardWidth = getCardWidth(vehicle.prefixo);
+  const cardWidth = getCardWidth(vehicle.prefixo, vehicle.status);
 
   return (
     <TooltipProvider>
@@ -130,7 +137,7 @@ export const ItemViatura = ({
           minWidth: `${cardWidth}px`,
           maxWidth: `${cardWidth}px`,
           margin: '0 3px',
-          padding: '3px',
+          padding: '1px',
           boxShadow: '0 4px 8px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.1)',
           background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
           ...getBackgroundImage(vehicle.status, vehicle.modalidade)
