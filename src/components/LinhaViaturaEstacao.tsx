@@ -140,9 +140,16 @@ export const LinhaViaturaEstacao = ({
 
       <div className="flex-1 min-w-0">
         {viaturas.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-3 w-full">
-            {viaturas.map((viatura, index) => (
-              <div key={viatura.id} className="flex items-center">
+          <div className="flex flex-wrap gap-1 sm:gap-2 w-full">
+            {viaturas.map((viatura) => (
+              <div 
+                key={viatura.id} 
+                className="flex-shrink-0"
+                style={{
+                  minWidth: 'clamp(120px, 15vw, 200px)',
+                  maxWidth: 'clamp(160px, 20vw, 240px)'
+                }}
+              >
                 <ItemViatura
                   vehicle={viatura}
                   onVehicleClick={aoClicarViatura}
@@ -150,21 +157,15 @@ export const LinhaViaturaEstacao = ({
                   vehicleObservation={observacoesViaturas[viatura.id]}
                   integrantesEquipe={obterEquipeViatura(viatura.id)}
                 />
-                {/* Divisor elegante entre viaturas */}
-                {index < viaturas.length - 1 && (
-                  <div className="hidden sm:flex items-center justify-center mx-2 h-12">
-                    <div className="w-0.5 h-8 bg-gradient-to-b from-transparent via-gray-300 to-transparent opacity-40"></div>
-                  </div>
-                )}
               </div>
             ))}
           </div>
         ) : (
           <div 
-            className="text-gray-500 italic text-sm font-medium flex items-center"
+            className="text-gray-500 italic text-sm font-medium flex items-center px-4 py-2 rounded-lg bg-gray-50/50"
             style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}
           >
-            Nenhuma viatura atribuída
+            🚒 Nenhuma viatura atribuída a esta estação
           </div>
         )}
       </div>

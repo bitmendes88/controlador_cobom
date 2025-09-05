@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DIcon } from '@/components/DIcon';
@@ -93,6 +92,49 @@ export const ItemViatura = ({
     }
   };
 
+  // Destaque baseado no status para tema de bombeiros
+  const getStatusHighlight = (status: string) => {
+    switch (status) {
+      case 'QTI': 
+      case 'LOCAL':
+      case 'QTI PS': 
+        return {
+          borderClass: 'border-red-500 border-2',
+          shadowClass: 'shadow-lg shadow-red-500/40',
+          glowClass: 'ring-2 ring-red-400/60',
+          bgOverlay: 'bg-red-50/20'
+        };
+      case 'REGRESSO': 
+        return {
+          borderClass: 'border-purple-500 border-2',
+          shadowClass: 'shadow-lg shadow-purple-500/40',
+          glowClass: 'ring-2 ring-purple-400/60',
+          bgOverlay: 'bg-purple-50/20'
+        };
+      case 'BAIXADO': 
+        return {
+          borderClass: 'border-red-700 border-3',
+          shadowClass: 'shadow-xl shadow-red-700/50',
+          glowClass: 'ring-3 ring-red-600/70',
+          bgOverlay: 'bg-red-100/30'
+        };
+      case 'RESERVA': 
+        return {
+          borderClass: 'border-gray-500 border-2',
+          shadowClass: 'shadow-md shadow-gray-500/30',
+          glowClass: 'ring-1 ring-gray-400/40',
+          bgOverlay: 'bg-gray-50/20'
+        };
+      default: // DISPONÍVEL
+        return {
+          borderClass: 'border-green-500 border-2',
+          shadowClass: 'shadow-md shadow-green-500/30',
+          glowClass: 'ring-1 ring-green-400/40',
+          bgOverlay: 'bg-green-50/20'
+        };
+    }
+  };
+
   const statusSequence = [
     'DISPONÍVEL',
     'QTI',
@@ -113,54 +155,44 @@ export const ItemViatura = ({
     onStatusUpdate(vehicle.id, nextStatus);
   };
 
-  // Calcular largura responsiva baseada no conteúdo
-  const getCardWidth = (prefixo: string, status: string) => {
-    // Largura base para o prefixo
-    const prefixWidth = Math.max(80, prefixo.length * 14);
-    // Largura do botão de status (mínimo 60px + texto com padding mínimo)
-    const statusWidth = Math.max(60, status.length * 9 + 8);
-    // Largura dos indicadores QSA (aproximadamente 50px se existirem)
-    const qsaWidth = ((vehicle.qsa_radio !== undefined) || (vehicle.qsa_zello !== undefined)) ? 60 : 0;
-    
-    // Largura total considerando o maior elemento + padding e borda
-    const contentWidth = Math.max(prefixWidth, statusWidth + qsaWidth + 12);
-    return Math.max(140, Math.min(contentWidth + 12, 220)); // +12 para padding e bordas adequados
-  };
-
-  const cardWidth = getCardWidth(vehicle.prefixo, vehicle.status);
+  const statusHighlight = getStatusHighlight(vehicle.status);
 
   return (
     <TooltipProvider>
       <div 
-        className="relative group hover:scale-105 transition-all duration-300 cursor-pointer border-2 border-red-300 rounded-lg shadow-lg hover:shadow-xl"
+        className={`
+          relative group hover:scale-105 transition-all duration-300 cursor-pointer 
+          ${statusHighlight.borderClass} ${statusHighlight.shadowClass} ${statusHighlight.glowClass}
+          rounded-lg hover:shadow-xl
+          w-full min-w-[120px] max-w-[200px] 
+          sm:min-w-[140px] sm:max-w-[180px]
+          md:min-w-[160px] md:max-w-[200px]
+          flex-1 mx-1
+        `}
         style={{
-          minWidth: `${cardWidth}px`,
-          maxWidth: `${cardWidth}px`,
-          margin: '0 3px',
-          padding: '1px',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.1)',
+          boxShadow: '0 6px 12px rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)',
           background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
           ...getBackgroundImage(vehicle.status, vehicle.modalidade)
         }}
         onClick={() => onVehicleClick(vehicle)}
       >
-        {/* Overlay sutil para melhor legibilidade do texto sobre a imagem */}
+        {/* Overlay para melhor legibilidade com tema de bombeiros */}
         <div 
-          className="absolute inset-0 rounded-md bg-white bg-opacity-20 backdrop-blur-[1px]"
+          className={`absolute inset-0 rounded-md ${statusHighlight.bgOverlay} backdrop-blur-[0.5px]`}
           style={{ zIndex: 1 }}
         />
 
-        <div className="p-2 space-y-0.5 relative z-10 pt-2">
-          {/* Prefixo com tooltip para informações da equipe - fonte reduzida */}
-          <div className="text-center relative z-10 mt-0">
+        <div className="p-1 space-y-0.5 relative z-10">
+          {/* Prefixo com destaque de bombeiros */}
+          <div className="text-center relative z-10">
             <Tooltip>
               <TooltipTrigger asChild>
                 <div 
-                  className="text-lg font-black text-red-800 tracking-wide cursor-pointer whitespace-nowrap overflow-hidden leading-none"
+                  className="text-lg font-black text-red-800 tracking-wide cursor-pointer whitespace-nowrap overflow-hidden leading-none px-1"
                   style={{
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.3), 0 1px 2px rgba(255,255,255,0.8)',
-                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
-                    fontSize: '1.25rem'
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.4), 0 1px 3px rgba(255,255,255,0.9)',
+                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                    fontSize: 'clamp(1rem, 2.5vw, 1.25rem)'
                   }}
                 >
                   {vehicle.prefixo}
@@ -168,7 +200,7 @@ export const ItemViatura = ({
               </TooltipTrigger>
               <TooltipContent side="top" className="max-w-xs">
                 <div className="space-y-2">
-                  <div className="font-semibold text-sm">Equipe</div>
+                  <div className="font-semibold text-sm text-red-800">🚒 Equipe de Bombeiros</div>
                   {integrantesEquipe.length > 0 ? (
                     integrantesEquipe.map((integrante, index) => (
                       <div key={index} className="text-xs space-y-1">
@@ -178,51 +210,58 @@ export const ItemViatura = ({
                       </div>
                     ))
                   ) : (
-                    <div className="text-xs text-gray-500">Nenhum integrante atribuído</div>
+                    <div className="text-xs text-gray-500">Aguardando atribuição de equipe</div>
                   )}
                 </div>
               </TooltipContent>
             </Tooltip>
           </div>
 
-          {/* Status e indicadores em linha única */}
+          {/* Status e indicadores responsivos */}
           <div className="relative z-10">
-            <div className="flex items-center justify-between gap-1">
+            <div className="flex items-center justify-center gap-1 flex-wrap">
               <div className="flex items-center gap-1">
                 {vehicle.dejem && (
-                  <DIcon className="w-4 h-4" />
+                  <DIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                 )}
                 <Button
-                  className={`h-6 text-xs font-bold text-white border-0 px-1 ${getStatusColor(vehicle.status)} hover:opacity-90 shadow-lg`}
-                  style={{ minWidth: 'auto', fontSize: '9px', padding: '1px 4px' }}
+                  className={`h-5 text-xs font-bold text-white border-0 px-1 ${getStatusColor(vehicle.status)} hover:opacity-90 shadow-md`}
+                  style={{ 
+                    minWidth: 'auto', 
+                    fontSize: 'clamp(7px, 1.5vw, 9px)', 
+                    padding: '1px 3px',
+                    whiteSpace: 'nowrap'
+                  }}
                   onClick={handleStatusClick}
                 >
                   {vehicle.status}
                 </Button>
               </div>
               
-              {/* QSA Indicators ao lado direito do status */}
-              <div className="flex items-center gap-1">
+              {/* QSA Indicators responsivos */}
+              <div className="flex items-center gap-0.5">
                 {(vehicle.qsa_radio || vehicle.qsa_radio === 0) && (
                   <div className={`flex items-center gap-0.5 text-xs px-1 py-0.5 rounded shadow-sm ${getQsaColor(vehicle.qsa_radio)}`}>
-                    <Radio className="w-2.5 h-2.5" />
-                    <span className="font-bold text-xs">{vehicle.qsa_radio}</span>
+                    <Radio className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
+                    <span className="font-bold" style={{ fontSize: 'clamp(6px, 1.2vw, 8px)' }}>{vehicle.qsa_radio}</span>
                   </div>
                 )}
                 {(vehicle.qsa_zello || vehicle.qsa_zello === 0) && (
                   <div className={`flex items-center gap-0.5 text-xs px-1 py-0.5 rounded shadow-sm ${getQsaColor(vehicle.qsa_zello)}`}>
-                    <Smartphone className="w-2.5 h-2.5" />
-                    <span className="font-bold text-xs">{vehicle.qsa_zello}</span>
+                    <Smartphone className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
+                    <span className="font-bold" style={{ fontSize: 'clamp(6px, 1.2vw, 8px)' }}>{vehicle.qsa_zello}</span>
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Observação */}
+          {/* Observação com tema de bombeiros */}
           {vehicleObservation && (
-            <div className="text-xs text-gray-600 bg-yellow-50 p-1 rounded border-l-2 border-yellow-400 truncate relative z-10">
-              {vehicleObservation}
+            <div className="text-xs text-red-800 bg-yellow-50/80 p-1 rounded border-l-2 border-red-400 truncate relative z-10 shadow-sm">
+              <span style={{ fontSize: 'clamp(6px, 1.2vw, 10px)' }}>
+                ⚠️ {vehicleObservation}
+              </span>
             </div>
           )}
         </div>
