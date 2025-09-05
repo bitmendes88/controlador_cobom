@@ -116,15 +116,15 @@ export const ItemViatura = ({
   // Calcular largura responsiva baseada no conteúdo
   const getCardWidth = (prefixo: string, status: string) => {
     // Largura base para o prefixo
-    const prefixWidth = Math.max(60, prefixo.length * 12);
-    // Largura do botão de status (mínimo 60px + texto)
-    const statusWidth = Math.max(60, status.length * 8 + 16);
+    const prefixWidth = Math.max(80, prefixo.length * 14);
+    // Largura do botão de status (mínimo 60px + texto com padding mínimo)
+    const statusWidth = Math.max(60, status.length * 9 + 8);
     // Largura dos indicadores QSA (aproximadamente 50px se existirem)
-    const qsaWidth = ((vehicle.qsa_radio !== undefined) || (vehicle.qsa_zello !== undefined)) ? 50 : 0;
+    const qsaWidth = ((vehicle.qsa_radio !== undefined) || (vehicle.qsa_zello !== undefined)) ? 60 : 0;
     
     // Largura total considerando o maior elemento + padding e borda
-    const contentWidth = Math.max(prefixWidth, statusWidth + qsaWidth + 8);
-    return Math.max(120, Math.min(contentWidth + 8, 200)); // +8 para padding e bordas
+    const contentWidth = Math.max(prefixWidth, statusWidth + qsaWidth + 12);
+    return Math.max(140, Math.min(contentWidth + 12, 220)); // +12 para padding e bordas adequados
   };
 
   const cardWidth = getCardWidth(vehicle.prefixo, vehicle.status);
@@ -193,8 +193,8 @@ export const ItemViatura = ({
                   <DIcon className="w-4 h-4" />
                 )}
                 <Button
-                  className={`h-6 text-xs font-bold text-white border-0 ${getStatusColor(vehicle.status)} hover:opacity-90 shadow-lg`}
-                  style={{ minWidth: '60px', fontSize: '9px' }}
+                  className={`h-6 text-xs font-bold text-white border-0 px-1 ${getStatusColor(vehicle.status)} hover:opacity-90 shadow-lg`}
+                  style={{ minWidth: 'auto', fontSize: '9px', padding: '1px 4px' }}
                   onClick={handleStatusClick}
                 >
                   {vehicle.status}

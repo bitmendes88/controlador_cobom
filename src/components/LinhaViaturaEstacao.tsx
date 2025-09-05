@@ -89,14 +89,14 @@ export const LinhaViaturaEstacao = ({
   return (
     <div className="flex items-center space-x-3 py-0">
       <div className="min-w-[180px] w-[180px] flex items-center justify-start">
-        <div className="relative text-left p-2 rounded-lg min-h-[40px] flex flex-col justify-center w-full">
+        <div className="relative text-left p-1 rounded-lg min-h-[30px] flex flex-col justify-center w-full">
           <Shield 
-            className="absolute right-2 top-2 w-5 h-5 text-gray-300 opacity-20"
+            className="absolute right-1 top-1 w-4 h-4 text-gray-300 opacity-20"
             style={{ zIndex: 0 }}
           />
           
           <h3 
-            className="relative font-bold text-red-800 text-lg leading-tight break-words text-left z-10 cursor-pointer hover:underline"
+            className="relative font-bold text-red-800 text-base leading-tight break-words text-left z-10 cursor-pointer hover:underline"
             style={{
               textShadow: '2px 2px 4px rgba(255,255,255,0.9), -1px -1px 2px rgba(255,255,255,0.7), 0 0 6px rgba(255,255,255,0.8)',
               filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
@@ -106,30 +106,30 @@ export const LinhaViaturaEstacao = ({
             {estacao.nome}
           </h3>
           
-          {/* Informações da estação alinhadas à esquerda com fonte maior */}
-          <div className="flex flex-col gap-1 mt-1 relative z-10 text-base text-gray-700">
+          {/* Informações da estação alinhadas à esquerda com fonte menor */}
+          <div className="flex flex-col gap-0 mt-0.5 relative z-10 text-sm text-gray-700">
             {estacao.telegrafista && (
               <div className="flex items-center gap-1">
-                <User className="w-4 h-4" />
+                <User className="w-3 h-3" />
                 <span>{estacao.telegrafista}</span>
               </div>
             )}
             {estacao.telefone && (
               <div className="flex items-center gap-1">
-                <Phone className="w-4 h-4" />
+                <Phone className="w-3 h-3" />
                 <span>{estacao.telefone}</span>
               </div>
             )}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {(estacao.qsa_radio || estacao.qsa_radio === 0) && (
                 <div className={`flex items-center gap-1 text-xs px-1 py-0.5 rounded ${getQsaColor(estacao.qsa_radio)}`}>
-                  <Radio className="w-3 h-3" />
+                  <Radio className="w-2.5 h-2.5" />
                   <span className="font-medium">R:{estacao.qsa_radio}</span>
                 </div>
               )}
               {(estacao.qsa_zello || estacao.qsa_zello === 0) && (
                 <div className={`flex items-center gap-1 text-xs px-1 py-0.5 rounded ${getQsaColor(estacao.qsa_zello)}`}>
-                  <Smartphone className="w-3 h-3" />
+                  <Smartphone className="w-2.5 h-2.5" />
                   <span className="font-medium">Z:{estacao.qsa_zello}</span>
                 </div>
               )}
