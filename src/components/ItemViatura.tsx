@@ -57,14 +57,14 @@ export const ItemViatura = ({
 
   const getStatusBackgroundColor = (status: string) => {
     switch (status) {
-      case 'DISPONÍVEL': return 'rgba(16, 185, 129, 0.1)';
-      case 'QTI': return 'rgba(245, 158, 11, 0.15)';
-      case 'LOCAL': return 'rgba(37, 99, 235, 0.1)';
-      case 'QTI PS': return 'rgba(234, 88, 12, 0.15)';
-      case 'REGRESSO': return 'rgba(147, 51, 234, 0.1)';
-      case 'BAIXADO': return 'rgba(220, 38, 38, 0.15)';
-      case 'RESERVA': return 'rgba(100, 116, 139, 0.1)';
-      default: return 'rgba(107, 114, 128, 0.1)';
+      case 'DISPONÍVEL': return 'rgba(16, 185, 129, 0.2)';
+      case 'QTI': return 'rgba(245, 158, 11, 0.25)';
+      case 'LOCAL': return 'rgba(37, 99, 235, 0.2)';
+      case 'QTI PS': return 'rgba(234, 88, 12, 0.25)';
+      case 'REGRESSO': return 'rgba(147, 51, 234, 0.2)';
+      case 'BAIXADO': return 'rgba(220, 38, 38, 0.25)';
+      case 'RESERVA': return 'rgba(100, 116, 139, 0.2)';
+      default: return 'rgba(107, 114, 128, 0.2)';
     }
   };
 
@@ -112,35 +112,35 @@ export const ItemViatura = ({
       case 'LOCAL':
       case 'QTI PS': 
         return {
-          borderClass: 'border-red-500 border-2',
+          borderClass: 'border-red-500 border-4',
           shadowClass: 'shadow-lg shadow-red-500/40',
           glowClass: 'ring-2 ring-red-400/60',
           bgOverlay: 'bg-red-50/20'
         };
       case 'REGRESSO': 
         return {
-          borderClass: 'border-purple-500 border-2',
+          borderClass: 'border-purple-500 border-4',
           shadowClass: 'shadow-lg shadow-purple-500/40',
           glowClass: 'ring-2 ring-purple-400/60',
           bgOverlay: 'bg-purple-50/20'
         };
       case 'BAIXADO': 
         return {
-          borderClass: 'border-red-700 border-3',
+          borderClass: 'border-red-700 border-4',
           shadowClass: 'shadow-xl shadow-red-700/50',
           glowClass: 'ring-3 ring-red-600/70',
           bgOverlay: 'bg-red-100/30'
         };
       case 'RESERVA': 
         return {
-          borderClass: 'border-gray-500 border-2',
+          borderClass: 'border-gray-500 border-4',
           shadowClass: 'shadow-md shadow-gray-500/30',
           glowClass: 'ring-1 ring-gray-400/40',
           bgOverlay: 'bg-gray-50/20'
         };
       default: // DISPONÍVEL
         return {
-          borderClass: 'border-green-500 border-2',
+          borderClass: 'border-green-500 border-4',
           shadowClass: 'shadow-md shadow-green-500/30',
           glowClass: 'ring-1 ring-green-400/40',
           bgOverlay: 'bg-green-50/20'
@@ -194,89 +194,86 @@ export const ItemViatura = ({
           style={{ zIndex: 1 }}
         />
 
-        <div className="p-1 space-y-1 relative z-10 min-w-fit">
-          {/* Prefixo com destaque de bombeiros */}
-          <div className="text-center relative z-10">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div 
-                  className="text-lg font-black text-red-800 tracking-wide cursor-pointer whitespace-nowrap overflow-hidden leading-none px-1"
-                  style={{
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.4), 0 1px 3px rgba(255,255,255,0.9)',
-                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
-                    fontSize: 'clamp(1rem, 2.5vw, 1.25rem)'
-                  }}
-                >
-                  {vehicle.prefixo}
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-xs">
-                <div className="space-y-2">
-                  <div className="font-semibold text-sm text-red-800">🚒 Equipe de Bombeiros</div>
-                  {integrantesEquipe.length > 0 ? (
-                    integrantesEquipe.map((integrante, index) => (
-                      <div key={index} className="text-xs space-y-1">
-                        <div className="font-medium">{integrante.nome}</div>
-                        <div className="text-gray-600">{integrante.telefone}</div>
-                        <div className="text-gray-500">{integrante.cursos.join(', ')}</div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-xs text-gray-500">Aguardando atribuição de equipe</div>
-                  )}
-                </div>
-              </TooltipContent>
-            </Tooltip>
+        <div className="relative z-10 flex h-full min-h-[60px]" style={{ padding: '1px' }}>
+          {/* QSA Indicators à esquerda em coluna */}
+          <div className="flex flex-col justify-center gap-1 pr-1">
+            {(vehicle.qsa_radio || vehicle.qsa_radio === 0) && (
+              <div className={`flex items-center gap-0.5 text-xs px-1 py-0.5 rounded shadow-sm ${getQsaColor(vehicle.qsa_radio)}`}>
+                <Radio className="w-2 h-2" />
+                <span className="font-bold text-xs">{vehicle.qsa_radio}</span>
+              </div>
+            )}
+            {(vehicle.qsa_zello || vehicle.qsa_zello === 0) && (
+              <div className={`flex items-center gap-0.5 text-xs px-1 py-0.5 rounded shadow-sm ${getQsaColor(vehicle.qsa_zello)}`}>
+                <Smartphone className="w-2 h-2" />
+                <span className="font-bold text-xs">{vehicle.qsa_zello}</span>
+              </div>
+            )}
           </div>
 
-          {/* Status e indicadores responsivos */}
-          <div className="relative z-10">
-            <div className="flex items-center justify-center gap-1 flex-wrap">
-              <div className="flex items-center gap-1">
-                {vehicle.dejem && (
-                  <DIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                )}
-                <Button
-                  className={`h-5 text-xs font-bold text-white border-0 px-1 ${getStatusColor(vehicle.status)} hover:opacity-90 shadow-md`}
-                  style={{ 
-                    minWidth: 'auto', 
-                    fontSize: 'clamp(7px, 1.5vw, 9px)', 
-                    padding: '1px 3px',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onClick={handleStatusClick}
-                >
-                  {vehicle.status}
-                </Button>
-              </div>
-              
-              {/* QSA Indicators responsivos */}
-              <div className="flex items-center gap-0.5">
-                {(vehicle.qsa_radio || vehicle.qsa_radio === 0) && (
-                  <div className={`flex items-center gap-0.5 text-xs px-1 py-0.5 rounded shadow-sm ${getQsaColor(vehicle.qsa_radio)}`}>
-                    <Radio className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
-                    <span className="font-bold" style={{ fontSize: 'clamp(6px, 1.2vw, 8px)' }}>{vehicle.qsa_radio}</span>
+          {/* Conteúdo central */}
+          <div className="flex-1 flex flex-col items-center justify-center space-y-1">
+            {/* Prefixo com DEJEM na mesma linha */}
+            <div className="flex items-center justify-center gap-1">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div 
+                    className="text-lg font-black text-red-800 tracking-wide cursor-pointer whitespace-nowrap leading-none"
+                    style={{
+                      textShadow: '2px 2px 4px rgba(0,0,0,0.4), 0 1px 3px rgba(255,255,255,0.9)',
+                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                      fontSize: 'clamp(1rem, 2.5vw, 1.25rem)'
+                    }}
+                  >
+                    {vehicle.prefixo}
                   </div>
-                )}
-                {(vehicle.qsa_zello || vehicle.qsa_zello === 0) && (
-                  <div className={`flex items-center gap-0.5 text-xs px-1 py-0.5 rounded shadow-sm ${getQsaColor(vehicle.qsa_zello)}`}>
-                    <Smartphone className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
-                    <span className="font-bold" style={{ fontSize: 'clamp(6px, 1.2vw, 8px)' }}>{vehicle.qsa_zello}</span>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-xs">
+                  <div className="space-y-2">
+                    <div className="font-semibold text-sm text-red-800">🚒 Equipe de Bombeiros</div>
+                    {integrantesEquipe.length > 0 ? (
+                      integrantesEquipe.map((integrante, index) => (
+                        <div key={index} className="text-xs space-y-1">
+                          <div className="font-medium">{integrante.nome}</div>
+                          <div className="text-gray-600">{integrante.telefone}</div>
+                          <div className="text-gray-500">{integrante.cursos.join(', ')}</div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-xs text-gray-500">Aguardando atribuição de equipe</div>
+                    )}
                   </div>
-                )}
-              </div>
+                </TooltipContent>
+              </Tooltip>
+              {vehicle.dejem && (
+                <DIcon className="w-4 h-4 text-red-700" />
+              )}
+            </div>
+
+            {/* Botão de status redesenhado */}
+            <div className="w-full max-w-[80px]">
+              <Button
+                className={`w-full h-6 text-xs font-bold text-white border-0 ${getStatusColor(vehicle.status)} hover:opacity-90 shadow-md rounded-md`}
+                style={{ 
+                  fontSize: 'clamp(8px, 1.5vw, 10px)',
+                  whiteSpace: 'nowrap'
+                }}
+                onClick={handleStatusClick}
+              >
+                {vehicle.status}
+              </Button>
             </div>
           </div>
-
-          {/* Indicador de observação no rodapé */}
-          {vehicleObservation && (
-            <div className="absolute bottom-0 left-0 right-0 bg-yellow-400/90 text-yellow-900 text-xs px-1 py-0.5 rounded-b-lg relative z-20 overflow-hidden whitespace-nowrap" 
-                 title={`⚠️ ${vehicleObservation}`}
-                 style={{ fontSize: 'clamp(6px, 1vw, 8px)' }}>
-              <span className="font-medium">⚠️ {vehicleObservation.length > 20 ? `${vehicleObservation.substring(0, 20)}...` : vehicleObservation}</span>
-            </div>
-          )}
         </div>
+
+        {/* Indicador de observação no rodapé */}
+        {vehicleObservation && (
+          <div className="absolute bottom-0 left-0 right-0 bg-yellow-400/90 text-yellow-900 text-sm px-2 py-1 rounded-b-lg relative z-20 overflow-hidden whitespace-nowrap" 
+               title={`⚠️ ${vehicleObservation}`}
+               style={{ fontSize: 'clamp(10px, 1.5vw, 12px)' }}>
+            <span className="font-bold">⚠️ {vehicleObservation.length > 18 ? `${vehicleObservation.substring(0, 18)}...` : vehicleObservation}</span>
+          </div>
+        )}
       </div>
     </TooltipProvider>
   );
