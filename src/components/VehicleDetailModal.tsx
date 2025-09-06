@@ -46,8 +46,7 @@ export const VehicleDetailModal = ({
   onEditVehicle,
   integrantesEquipe = []
 }: VehicleDetailModalProps) => {
-  const [observacoes, setObservacoes] = useState<any[]>([]);
-  const [novaObservacao, setNovaObservacao] = useState('');
+  const [observacao, setObservacao] = useState('');
   const [estaCarregando, setEstaCarregando] = useState(false);
   const [qsaRadio, setQsaRadio] = useState<number | null>(null);
   const [qsaZello, setQsaZello] = useState<number | null>(null);
@@ -55,7 +54,7 @@ export const VehicleDetailModal = ({
   const { toast } = useToast();
 
   useEffect(() => {
-    carregarObservacoes();
+    carregarObservacao();
     carregarDadosViatura();
   }, [vehicle.id]);
 
@@ -77,79 +76,94 @@ export const VehicleDetailModal = ({
     }
   };
 
-  const carregarObservacoes = async () => {
+  const carregarObservacao = async () => {
     try {
       const { data, error } = await supabase
         .from('observacoes_viatura')
         .select('*')
         .eq('viatura_id', vehicle.id)
-        .order('criado_em', { ascending: false });
+        .order('criado_em', { ascending: false })
+        .limit(1)
+        .single();
 
-      if (error) throw error;
-      setObservacoes(data || []);
+      if (error && error.code !== 'PGRST116') throw error;
+      setObservacao(data?.observacao || '');
     } catch (error) {
-      console.error('Erro ao carregar observações:', error);
+      console.error('Erro ao carregar observação:', error);
+      setObservacao('');
     }
   };
 
-  const adicionarObservacao = async () => {
-    if (!novaObservacao.trim()) return;
+  const salvarObservacao = async (novaObservacao: string) => {
+    if (!novaObservacao.trim()) {
+      // Se observação está vazia, deletar a observação existente
+      try {
+        await supabase
+          .from('observacoes_viatura')
+          .delete()
+          .eq('viatura_id', vehicle.id);
+      } catch (error) {
+        console.error('Erro ao deletar observação:', error);
+      }
+      return;
+    }
 
-    setEstaCarregando(true);
     try {
-      const { error } = await supabase
+      // Verificar se já existe uma observação
+      const { data: existing } = await supabase
         .from('observacoes_viatura')
-        .insert({
-          viatura_id: vehicle.id,
-          observacao: novaObservacao,
-          criado_por: 'Sistema'
-        });
+        .select('id')
+        .eq('viatura_id', vehicle.id)
+        .single();
 
-      if (error) throw error;
+      if (existing) {
+        // Atualizar observação existente
+        const { error } = await supabase
+          .from('observacoes_viatura')
+          .update({ 
+            observacao: novaObservacao,
+            criado_em: new Date().toISOString()
+          })
+          .eq('viatura_id', vehicle.id);
+
+        if (error) throw error;
+      } else {
+        // Criar nova observação
+        const { error } = await supabase
+          .from('observacoes_viatura')
+          .insert({
+            viatura_id: vehicle.id,
+            observacao: novaObservacao,
+            criado_por: 'Sistema'
+          });
+
+        if (error) throw error;
+      }
 
       toast({
-        title: "Observação Adicionada",
-        description: "Nova observação foi salva com sucesso.",
+        title: "Observação Salva",
+        description: "Observação atualizada com sucesso.",
       });
-      
-      setNovaObservacao('');
-      carregarObservacoes();
     } catch (error) {
-      console.error('Erro ao adicionar observação:', error);
+      console.error('Erro ao salvar observação:', error);
       toast({
         title: "Erro",
         description: "Falha ao salvar observação. Tente novamente.",
         variant: "destructive",
       });
-    } finally {
-      setEstaCarregando(false);
     }
   };
 
-  const excluirObservacao = async (observacaoId: string) => {
-    try {
-      const { error } = await supabase
-        .from('observacoes_viatura')
-        .delete()
-        .eq('id', observacaoId);
+  // Debounce para salvamento automático
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (observacao !== undefined) {
+        salvarObservacao(observacao);
+      }
+    }, 1500);
 
-      if (error) throw error;
-
-      toast({
-        title: "Observação Removida",
-        description: "Observação foi excluída com sucesso.",
-      });
-      
-      carregarObservacoes();
-    } catch (error) {
-      console.error('Erro ao excluir observação:', error);
-      toast({
-        title: "Erro",
-        description: "Falha ao excluir observação. Tente novamente.",
-        variant: "destructive",
-      });
-    }
-  };
+    return () => clearTimeout(timer);
+  }, [observacao]);
 
   const excluirViatura = async () => {
     if (!confirm('Tem certeza que deseja excluir esta viatura? Esta ação não pode ser desfeita.')) {
@@ -484,54 +498,17 @@ export const VehicleDetailModal = ({
 
           <Separator />
 
-          <div className="space-y-3">
-            <h4 className="font-medium">Observações</h4>
-            
-            <div className="space-y-2">
-              <Textarea
-                placeholder="Digite uma observação..."
-                value={novaObservacao}
-                onChange={(e) => setNovaObservacao(e.target.value)}
-                className="min-h-[60px]"
-              />
-              <Button
-                onClick={adicionarObservacao}
-                disabled={estaCarregando || !novaObservacao.trim()}
-                size="sm"
-                className="w-full"
-              >
-                {estaCarregando ? 'Salvando...' : 'Adicionar Observação'}
-              </Button>
-            </div>
-
-            {observacoes.length > 0 && (
-              <div className="space-y-2 max-h-40 overflow-y-auto">
-                {observacoes.map((obs) => (
-                  <div key={obs.id} className="bg-gray-50 p-2 rounded text-sm">
-                    <div className="flex justify-between items-start">
-                      <p className="flex-1">{obs.observacao}</p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => excluirObservacao(obs.id)}
-                        className="text-red-500 hover:text-red-700 p-1 h-auto"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {new Date(obs.criado_em).toLocaleString('pt-BR')}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {observacoes.length === 0 && (
-              <p className="text-sm text-gray-500 text-center py-4">
-                Nenhuma observação registrada
-              </p>
-            )}
+          <div className="space-y-2">
+            <h4 className="font-medium">Observação</h4>
+            <Textarea
+              placeholder="Digite uma observação... (salvamento automático)"
+              value={observacao}
+              onChange={(e) => setObservacao(e.target.value)}
+              className="min-h-[80px]"
+            />
+            <p className="text-xs text-gray-500">
+              A observação é salva automaticamente após 1,5 segundos
+            </p>
           </div>
         </div>
       </DialogContent>

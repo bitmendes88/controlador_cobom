@@ -270,8 +270,10 @@ export const ItemViatura = ({
 
           {/* Indicador de observação no rodapé */}
           {vehicleObservation && (
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-yellow-400 rounded-b-lg relative z-20" 
-                 title={`⚠️ ${vehicleObservation}`}>
+            <div className="absolute bottom-0 left-0 right-0 bg-yellow-400/90 text-yellow-900 text-xs px-1 py-0.5 rounded-b-lg relative z-20 overflow-hidden whitespace-nowrap" 
+                 title={`⚠️ ${vehicleObservation}`}
+                 style={{ fontSize: 'clamp(6px, 1vw, 8px)' }}>
+              <span className="font-medium">⚠️ {vehicleObservation.length > 20 ? `${vehicleObservation.substring(0, 20)}...` : vehicleObservation}</span>
             </div>
           )}
         </div>
