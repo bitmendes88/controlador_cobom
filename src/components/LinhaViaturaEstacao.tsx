@@ -124,13 +124,13 @@ export const LinhaViaturaEstacao = ({
               {(estacao.qsa_radio || estacao.qsa_radio === 0) && (
                 <div className={`flex items-center gap-1 text-xs px-1 py-0.5 rounded ${getQsaColor(estacao.qsa_radio)}`}>
                   <Radio className="w-2.5 h-2.5" />
-                  <span className="font-medium">R:{estacao.qsa_radio}</span>
+                  <span className="font-medium">{estacao.qsa_radio}</span>
                 </div>
               )}
               {(estacao.qsa_zello || estacao.qsa_zello === 0) && (
                 <div className={`flex items-center gap-1 text-xs px-1 py-0.5 rounded ${getQsaColor(estacao.qsa_zello)}`}>
                   <Smartphone className="w-2.5 h-2.5" />
-                  <span className="font-medium">Z:{estacao.qsa_zello}</span>
+                  <span className="font-medium">{estacao.qsa_zello}</span>
                 </div>
               )}
             </div>

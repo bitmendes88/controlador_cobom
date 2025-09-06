@@ -55,6 +55,19 @@ export const ItemViatura = ({
     }
   };
 
+  const getStatusBackgroundColor = (status: string) => {
+    switch (status) {
+      case 'DISPONÍVEL': return 'rgba(16, 185, 129, 0.1)';
+      case 'QTI': return 'rgba(245, 158, 11, 0.15)';
+      case 'LOCAL': return 'rgba(37, 99, 235, 0.1)';
+      case 'QTI PS': return 'rgba(234, 88, 12, 0.15)';
+      case 'REGRESSO': return 'rgba(147, 51, 234, 0.1)';
+      case 'BAIXADO': return 'rgba(220, 38, 38, 0.15)';
+      case 'RESERVA': return 'rgba(100, 116, 139, 0.1)';
+      default: return 'rgba(107, 114, 128, 0.1)';
+    }
+  };
+
   const getBackgroundImage = (status: string, modalidade: Viatura['modalidade']) => {
     let imageUrl = '';
     switch (status) {
@@ -164,15 +177,14 @@ export const ItemViatura = ({
           relative group hover:scale-105 transition-all duration-300 cursor-pointer 
           ${statusHighlight.borderClass} ${statusHighlight.shadowClass} ${statusHighlight.glowClass}
           rounded-lg hover:shadow-xl
-          w-full min-w-[120px] max-w-[200px] 
-          sm:min-w-[140px] sm:max-w-[180px]
-          md:min-w-[160px] md:max-w-[200px]
-          flex-1 mx-1
+          w-auto min-w-fit max-w-none
+          flex-shrink-0
         `}
         style={{
           boxShadow: '0 6px 12px rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)',
-          background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
-          ...getBackgroundImage(vehicle.status, vehicle.modalidade)
+          background: `linear-gradient(145deg, ${getStatusBackgroundColor(vehicle.status)}, rgba(255,255,255,0.8))`,
+          ...getBackgroundImage(vehicle.status, vehicle.modalidade),
+          padding: '1px'
         }}
         onClick={() => onVehicleClick(vehicle)}
       >
@@ -182,7 +194,7 @@ export const ItemViatura = ({
           style={{ zIndex: 1 }}
         />
 
-        <div className="p-1 space-y-0.5 relative z-10">
+        <div className="p-1 space-y-1 relative z-10 min-w-fit">
           {/* Prefixo com destaque de bombeiros */}
           <div className="text-center relative z-10">
             <Tooltip>
@@ -256,12 +268,10 @@ export const ItemViatura = ({
             </div>
           </div>
 
-          {/* Observação com tema de bombeiros */}
+          {/* Indicador de observação no rodapé */}
           {vehicleObservation && (
-            <div className="text-xs text-red-800 bg-yellow-50/80 p-1 rounded border-l-2 border-red-400 truncate relative z-10 shadow-sm">
-              <span style={{ fontSize: 'clamp(6px, 1.2vw, 10px)' }}>
-                ⚠️ {vehicleObservation}
-              </span>
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-yellow-400 rounded-b-lg relative z-20" 
+                 title={`⚠️ ${vehicleObservation}`}>
             </div>
           )}
         </div>

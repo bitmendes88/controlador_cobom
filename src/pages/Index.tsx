@@ -302,6 +302,7 @@ const Index = () => {
 
       <div className="container mx-auto px-4 py-2 pt-28 sm:pt-30 lg:pt-32">
         <div className="space-y-0">
+          <div style={{ height: '1px' }} />
           <AnotacoesServicoDaily 
             grupamentoSelecionado={grupamentoSelecionado} 
             controladorSelecionado={controladorSelecionado}
