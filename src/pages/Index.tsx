@@ -31,27 +31,6 @@ const Index = () => {
   useEffect(() => {
     carregarGrupamentos();
     calcularCorProntidao();
-    
-    // Subscription para atualizações em tempo real dos comentários das viaturas
-    const channel = supabase
-      .channel('viatura-observacoes-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'viaturas'
-        },
-        () => {
-          // Força refresh do painel quando observações são atualizadas
-          setRefreshKey(prev => prev + 1);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, []);
 
   const carregarGrupamentos = async () => {
