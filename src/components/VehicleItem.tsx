@@ -99,63 +99,88 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
 
   return (
     <TooltipProvider>
-      <div className={`flex flex-col items-center space-y-1 p-2 border rounded-lg shadow-sm ${getBackgroundColor()}`}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="relative cursor-pointer" onClick={() => onVehicleClick(vehicle)}>
-              <div className="relative w-14 h-14 flex items-center justify-center">
-                {vehicle.modalidade?.icone_url ? (
-                  <img 
-                    src={vehicle.modalidade.icone_url} 
-                    alt={`Viatura ${vehicle.prefixo}`}
-                    className="w-10 h-10 object-contain"
-                  />
-                ) : (
-                  <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center">
-                    <span className="text-gray-500 text-xs">IMG</span>
-                  </div>
-                )}
-                
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div 
-                    className="text-red-800 font-bold text-lg whitespace-nowrap pointer-events-none"
-                    style={{
-                      textShadow: '1px 1px 2px rgba(255,255,255,0.9), -1px -1px 2px rgba(255,255,255,0.9), 1px -1px 2px rgba(255,255,255,0.9), -1px 1px 2px rgba(255,255,255,0.9)'
-                    }}
-                  >
-                    {vehicle.prefixo}
-                  </div>
-                </div>
-              </div>
-              
-              {vehicleObservation && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full flex items-center justify-center">
-                  <AlertCircle className="w-2 h-2 text-white" />
-                </div>
-              )}
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{vehicleObservation || 'Nenhuma observação disponível'}</p>
-          </TooltipContent>
-        </Tooltip>
-
-        <div className="text-center space-y-1">
-          <Badge className={`${statusColors[currentStatus]} text-white text-xs px-1 py-0`}>
-            {currentStatus}
-          </Badge>
-          <div className={`text-xs font-semibold ${getTimeColor()}`}>{timeInStatus}</div>
+      <div className={`relative flex p-2 border-2 rounded-lg shadow-sm ${getBackgroundColor()}`}>
+        {/* QSA buttons column on the left */}
+        <div className="flex flex-col space-y-1 mr-2">
+          <div className="w-6 h-6 bg-blue-600 text-white text-xs rounded flex items-center justify-center font-bold">
+            R
+          </div>
+          <div className="w-6 h-6 bg-green-600 text-white text-xs rounded flex items-center justify-center font-bold">
+            Z
+          </div>
         </div>
 
-        {currentStatus !== 'BAIXADO' && currentStatus !== 'RESERVA' && (
-          <Button
-            onClick={handleStatusClick}
-            size="sm"
-            className="text-xs bg-red-800 hover:bg-red-900 text-white h-5 px-2 py-0"
-          >
-            Status
-          </Button>
-        )}
+        {/* Main content area */}
+        <div className="flex-1 flex flex-col items-center space-y-1">
+          {/* Top section with prefix and DEJEM */}
+          <div className="flex items-center justify-center relative w-full">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="relative cursor-pointer" onClick={() => onVehicleClick(vehicle)}>
+                  <div className="relative w-14 h-14 flex items-center justify-center">
+                    {vehicle.modalidade?.icone_url ? (
+                      <img 
+                        src={vehicle.modalidade.icone_url} 
+                        alt={`Viatura ${vehicle.prefixo}`}
+                        className="w-10 h-10 object-contain"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center">
+                        <span className="text-gray-500 text-xs">IMG</span>
+                      </div>
+                    )}
+                    
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div 
+                        className="text-red-800 font-bold text-lg whitespace-nowrap pointer-events-none"
+                        style={{
+                          textShadow: '1px 1px 2px rgba(255,255,255,0.9), -1px -1px 2px rgba(255,255,255,0.9), 1px -1px 2px rgba(255,255,255,0.9), -1px 1px 2px rgba(255,255,255,0.9)'
+                        }}
+                      >
+                        {vehicle.prefixo}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {vehicleObservation && (
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full flex items-center justify-center">
+                      <AlertCircle className="w-2 h-2 text-white" />
+                    </div>
+                  )}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{vehicleObservation || 'Nenhuma observação disponível'}</p>
+              </TooltipContent>
+            </Tooltip>
+
+            {/* DEJEM "D" on the right side */}
+            <div className="absolute right-0 top-0">
+              <div className="w-6 h-6 bg-orange-600 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                D
+              </div>
+            </div>
+          </div>
+
+          {/* Status button below prefix */}
+          {currentStatus !== 'BAIXADO' && currentStatus !== 'RESERVA' && (
+            <Button
+              onClick={handleStatusClick}
+              size="sm"
+              className="text-xs bg-red-800 hover:bg-red-900 text-white h-5 px-2 py-0 mt-1"
+            >
+              Status
+            </Button>
+          )}
+
+          {/* Status badge and time */}
+          <div className="text-center space-y-1">
+            <Badge className={`${statusColors[currentStatus]} text-white text-xs px-1 py-0`}>
+              {currentStatus}
+            </Badge>
+            <div className={`text-xs font-semibold ${getTimeColor()}`}>{timeInStatus}</div>
+          </div>
+        </div>
       </div>
     </TooltipProvider>
   );
