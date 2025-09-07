@@ -99,13 +99,13 @@ export const VehicleItem = ({ vehicle, onVehicleClick, onStatusUpdate, vehicleOb
 
   return (
     <TooltipProvider>
-      <div className={`relative flex p-2 border-2 rounded-lg shadow-sm ${getBackgroundColor()}`}>
+      <div className={`relative flex items-start p-2 border-2 rounded-lg shadow-sm ${getBackgroundColor()}`}>
         {/* QSA buttons column on the left */}
-        <div className="flex flex-col space-y-1 mr-2">
-          <div className="w-6 h-6 bg-blue-600 text-white text-xs rounded flex items-center justify-center font-bold">
+        <div className="flex flex-col space-y-1 mr-3 pt-1">
+          <div className="w-7 h-7 bg-blue-600 text-white text-xs rounded flex items-center justify-center font-bold">
             R
           </div>
-          <div className="w-6 h-6 bg-green-600 text-white text-xs rounded flex items-center justify-center font-bold">
+          <div className="w-7 h-7 bg-green-600 text-white text-xs rounded flex items-center justify-center font-bold">
             Z
           </div>
         </div>
