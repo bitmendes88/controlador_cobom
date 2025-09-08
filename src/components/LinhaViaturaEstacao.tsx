@@ -144,7 +144,11 @@ export const LinhaViaturaEstacao = ({
             {viaturas.map((viatura) => (
               <div 
                 key={viatura.id} 
-                className="flex-shrink-0 w-[120px]"
+                className="flex-shrink-0"
+                style={{
+                  minWidth: 'clamp(120px, 15vw, 200px)',
+                  maxWidth: 'clamp(160px, 20vw, 240px)'
+                }}
               >
                 <ItemViatura
                   vehicle={viatura}
